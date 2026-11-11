@@ -18,6 +18,14 @@ export const motion = {
   rollStagger: '50ms',
   /** The opening, once per sign-in. */
   intro: '0.9s',
+  /** The logo and the name arrive at the start of the opening. */
+  introMark: '0.3s',
+  /** The rail's drawer on a narrow window, and its backdrop. */
+  drawer: '0.24s',
+  /** A bar of a chart grows once. */
+  grow: '0.6s',
+  /** Delay between one bar and the next. */
+  growStagger: '60ms',
   /** A loading skeleton waits this long, so a fast page never flashes it. */
   skeletonDelay: '0.15s',
   /** One breath of the skeleton's pulse. */

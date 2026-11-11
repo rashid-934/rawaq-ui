@@ -4,7 +4,7 @@ import { MAX_STAGGER, motion } from './motion';
 import { alpha } from './palette';
 import { textColors } from './presets';
 import { PILL_RADIUS, radius } from './radius';
-import type { ThemeTokens } from './resolve';
+import { RAIL_ICON, type ThemeTokens } from './resolve';
 import { fonts, fontSizes, type ResolvedFont } from './typography';
 
 // The `--app-*` CSS variables, built in one place. The Mantine theme gives them to a React app;
@@ -37,6 +37,8 @@ export function staticVariables(): CssVariables {
     '--app-highlight-text': main,
     '--app-focus-inner': main,
     '--app-sidebar-text': textColors.onDark,
+    // Resting rail icons and labels: the very colour the contrast check reads.
+    '--app-rail-icon': RAIL_ICON,
     // Soft shadows tinted with the main text colour, never pure black.
     '--app-shadow-sm': `0 1px 2px ${alpha(main, 0.06)}, 0 4px 12px ${alpha(main, 0.06)}`,
     '--app-shadow-md': `0 2px 6px ${alpha(main, 0.06)}, 0 12px 28px ${alpha(main, 0.1)}`,
@@ -60,6 +62,10 @@ export function staticVariables(): CssVariables {
     '--app-motion-roll': motion.roll,
     '--app-motion-roll-stagger': motion.rollStagger,
     '--app-motion-intro': motion.intro,
+    '--app-motion-intro-mark': motion.introMark,
+    '--app-motion-drawer': motion.drawer,
+    '--app-motion-grow': motion.grow,
+    '--app-motion-grow-stagger': motion.growStagger,
     '--app-motion-skeleton-delay': motion.skeletonDelay,
     '--app-motion-skeleton-pulse': motion.skeletonPulse,
     '--app-motion-max-stagger': String(MAX_STAGGER),

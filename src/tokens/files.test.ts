@@ -1,7 +1,7 @@
-import { densityKeys } from '../src/tokens/density';
-import { presetKeys, presets, textColors } from '../src/tokens/presets';
-import { sidebarSwatches } from '../src/tokens/sidebar';
-import { tokensCss, tokensJson } from './tokens-files';
+import { densityKeys } from './density';
+import { tokensCss, tokensJson } from './files';
+import { presetKeys, presets, textColors } from './presets';
+import { sidebarSwatches } from './sidebar';
 
 describe('tokens.css', () => {
   const css = tokensCss();

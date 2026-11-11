@@ -1,0 +1,272 @@
+/*
+ * The frame (docs/DESIGN_THEME.md section 4.1). The rail floats on the haze at the start side;
+ * everything else sits in one rounded frame. `--frame-start` is where the frame begins: past the
+ * rail, or past the 220px labelled panel when "Show labels" is on.
+ *
+ * The window scrolls the page as usual. The frame looks fixed because `.edge` (below) paints the
+ * haze over whatever scrolls past its top and bottom and rounds its four corners.
+ *
+ * The frame, its margin and its edge apply from the `sm` breakpoint up. Below it there is no
+ * frame: a 64px header at the top of the window and a centred column.
+ */
+.frame {
+  min-block-size: 100dvh;
+
+  @mixin larger-than $mantine-breakpoint-sm {
+    --frame-start: calc(var(--app-rail-inset) * 2 + var(--app-rail-width));
+
+    &[data-labels] {
+      --frame-start: calc(var(--app-rail-inset) * 2 + var(--app-rail-panel));
+    }
+  }
+}
+
+/* The frame's sheet: the padding is the haze margin, the Card surface fills the rest. */
+.body {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100dvh;
+
+  @mixin larger-than $mantine-breakpoint-sm {
+    padding-block: var(--app-frame-margin);
+    padding-inline: var(--frame-start) var(--app-frame-margin);
+    background-color: var(--app-surface);
+    background-clip: content-box;
+    transition: padding-inline-start var(--app-motion-base) ease;
+
+    /* Overview pages show the haze fully; their cards carry the Card surface themselves. */
+    .frame[data-page-kind='overview'] & {
+      background-color: transparent;
+    }
+  }
+}
+
+.header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 100;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  block-size: rem(64px);
+  padding-inline: var(--mantine-spacing-md);
+  background-color: var(--app-surface);
+  border-block-end: rem(1px) solid var(--app-hairline);
+
+  @mixin larger-than $mantine-breakpoint-sm {
+    inset-block-start: var(--app-frame-margin);
+    block-size: var(--app-header-height);
+
+    /* On the haze the header keeps the haze behind it, so the page scrolls away underneath. */
+    .frame[data-page-kind='overview'] & {
+      background-color: var(--mantine-color-body);
+      background-image: var(--app-haze);
+      background-attachment: fixed;
+      border-block-end-color: transparent;
+    }
+  }
+}
+
+/* Nothing here takes clicks: it only draws the frame's edge over the scrolling page. */
+.edge {
+  pointer-events: none;
+
+  @mixin smaller-than $mantine-breakpoint-sm {
+    display: none;
+  }
+}
+
+.edgeTop,
+.edgeBottom,
+.corner {
+  position: fixed;
+  z-index: 105;
+  background-color: var(--mantine-color-body);
+  background-image: var(--app-haze);
+  background-attachment: fixed;
+}
+
+.edgeTop,
+.edgeBottom {
+  inset-inline: 0;
+  block-size: var(--app-frame-margin);
+}
+
+.edgeTop {
+  inset-block-start: 0;
+}
+
+.edgeBottom {
+  inset-block-end: 0;
+}
+
+/* A haze square with a quarter circle cut out of it, one per corner of the frame. */
+.corner {
+  --cut-x: 100%;
+  --cut-y: 100%;
+
+  inline-size: var(--app-frame-radius);
+  block-size: var(--app-frame-radius);
+  mask-image: radial-gradient(
+    circle at var(--cut-x) var(--cut-y),
+    transparent calc(var(--app-frame-radius) - 0.5px),
+    var(--mantine-color-text) var(--app-frame-radius)
+  );
+  transition: inset-inline-start var(--app-motion-base) ease;
+
+  &[data-corner^='top'] {
+    inset-block-start: var(--app-frame-margin);
+  }
+
+  &[data-corner^='bottom'] {
+    --cut-y: 0%;
+
+    inset-block-end: var(--app-frame-margin);
+  }
+
+  &[data-corner$='start'] {
+    inset-inline-start: var(--frame-start);
+  }
+
+  &[data-corner$='end'] {
+    --cut-x: 0%;
+
+    inset-inline-end: var(--app-frame-margin);
+  }
+}
+
+/* The cut faces the middle of the frame: mirrored when the start side is on the right. */
+[dir='rtl'] .corner[data-corner$='start'] {
+  --cut-x: 0%;
+}
+
+[dir='rtl'] .corner[data-corner$='end'] {
+  --cut-x: 100%;
+}
+
+.ring {
+  position: fixed;
+  inset-block: var(--app-frame-margin);
+  inset-inline: var(--frame-start) var(--app-frame-margin);
+  z-index: 106;
+  border: rem(1px) solid var(--app-hairline);
+  border-radius: var(--app-frame-radius);
+  box-shadow: var(--app-shadow-sm);
+  transition: inset-inline-start var(--app-motion-base) ease;
+}
+
+/* Work pages use the full width of the frame; inner padding 12px, Overview 16px (section 4.1).
+   Narrow windows get a centred column. */
+.main {
+  flex: 1;
+  inline-size: 100%;
+  max-inline-size: rem(1240px);
+  margin-inline: auto;
+  padding: var(--mantine-spacing-lg) var(--mantine-spacing-md) var(--mantine-spacing-xl);
+  outline: none;
+
+  @mixin larger-than $mantine-breakpoint-sm {
+    max-inline-size: none;
+    margin-inline: 0;
+    padding: var(--app-frame-pad-work);
+    padding-block-end: var(--mantine-spacing-xl);
+
+    .frame[data-page-kind='overview'] & {
+      padding: var(--app-frame-pad-overview);
+      padding-block-start: rem(4px);
+    }
+  }
+}
+
+/*
+ * Page fade (docs/DESIGN_THEME.md section 7). Frame.tsx mounts this wrapper again for every new
+ * address, so the new page fades in once; Overview pages add a light blur. Nothing stays behind
+ * when it ends (`backwards`, and no `to` step): no opacity and no filter, so sticky headers,
+ * save bars and menus behave exactly as without it. The page takes clicks from its first frame.
+ */
+.page {
+  animation: page-in var(--app-motion-base) ease backwards;
+}
+
+.frame[data-page-kind='overview'] .page {
+  animation-name: page-in-soft;
+}
+
+/* While a loading skeleton shows, the fade waits: it plays when the real page replaces it. */
+.frame .page:has([data-page-skeleton]) {
+  animation: none;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes page-in-soft {
+  from {
+    opacity: 0;
+    filter: blur(rem(4px));
+  }
+}
+
+/* The backdrop behind the rail's drawer on narrow windows. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background-color: var(--app-scrim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--app-motion-drawer) ease;
+
+  &[data-open] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  @mixin larger-than $mantine-breakpoint-sm {
+    display: none;
+  }
+}
+
+/* Where the focus waits after a page change, just before the skip link. Never seen. */
+.focusStart {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  outline: none;
+}
+
+.skip {
+  position: fixed;
+  inset-inline-start: var(--mantine-spacing-md);
+  inset-block-start: calc(-1 * rem(48px));
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  background-color: var(--app-surface);
+  color: var(--mantine-color-text);
+  border: rem(1px) solid var(--app-hairline);
+  border-radius: var(--mantine-radius-sm);
+  z-index: 1000;
+
+  &:focus {
+    inset-block-start: var(--mantine-spacing-xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .body,
+  .corner,
+  .ring {
+    transition: none;
+  }
+
+  /* As specific as the Overview rule above, so that one is off as well. */
+  .frame[data-page-kind] .page {
+    animation: none;
+  }
+}

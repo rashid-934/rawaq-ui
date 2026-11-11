@@ -1,0 +1,156 @@
+/*
+ * Loading placeholders (docs/DESIGN_THEME.md section 7). Shapes in the theme's own surfaces:
+ * outlines in the hairline colour, fills in the raised colour, a soft pulse. The whole skeleton
+ * appears only after a short wait, so a page that loads fast never flashes it.
+ */
+.root {
+  animation: show var(--app-motion-base) ease var(--app-motion-skeleton-delay) backwards;
+}
+
+.block,
+.line {
+  display: block;
+  animation: pulse var(--app-motion-skeleton-pulse) ease-in-out infinite alternate;
+}
+
+/* A card: outlined, on the card surface. */
+.block,
+.sheet {
+  border: rem(1px) solid var(--app-hairline);
+  border-radius: var(--mantine-radius-xl);
+  background-color: var(--app-surface);
+}
+
+/* A line of text or a control: filled. */
+.line {
+  block-size: rem(14px);
+  border-radius: var(--mantine-radius-sm);
+  background-color: var(--app-raised);
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) rem(320px);
+  gap: var(--app-bento-gap);
+  align-items: start;
+}
+
+.column,
+.stack {
+  display: grid;
+  gap: var(--app-bento-gap);
+}
+
+.stack {
+  justify-items: start;
+}
+
+.hero {
+  block-size: rem(120px);
+  background-color: var(--app-raised);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--app-bento-gap);
+}
+
+.kpi {
+  block-size: rem(108px);
+}
+
+.tall {
+  block-size: rem(240px);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  min-block-size: rem(36px);
+}
+
+.title {
+  inline-size: rem(220px);
+  block-size: rem(20px);
+}
+
+.button {
+  inline-size: rem(112px);
+  block-size: rem(36px);
+  border-radius: var(--mantine-radius-md);
+}
+
+.sheet {
+  inline-size: 100%;
+  border-radius: var(--mantine-radius-md);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 1fr;
+  gap: var(--mantine-spacing-md);
+  align-items: center;
+  block-size: rem(36px);
+  padding-inline: var(--mantine-spacing-sm);
+
+  & + & {
+    border-block-start: rem(1px) solid var(--app-hairline);
+  }
+
+  /* Text never fills its column to the edge. */
+  & .line {
+    inline-size: 70%;
+  }
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-md);
+}
+
+.field {
+  display: grid;
+  gap: rem(8px);
+}
+
+.label {
+  inline-size: 40%;
+}
+
+.input {
+  block-size: rem(36px);
+  border-radius: var(--mantine-radius-md);
+}
+
+.card {
+  display: grid;
+  gap: var(--mantine-spacing-md);
+  inline-size: min(100%, rem(420px));
+  margin-inline: auto;
+  padding: var(--mantine-spacing-lg);
+}
+
+@keyframes show {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.55;
+  }
+}
+
+/* Reduced motion: still shapes (the stylesheet also removes the delay and the fade). */
+@media (prefers-reduced-motion: reduce) {
+  .block,
+  .line {
+    animation: none;
+  }
+}

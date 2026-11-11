@@ -1,0 +1,212 @@
+/*
+ * The Overview page (docs/DESIGN_THEME.md section 4.3): a bento grid on the haze. The main column
+ * is a 12 column grid; the side column is 320px. Gaps and card padding follow the density
+ * (--app-bento-gap: 12px Compact, 16px Comfortable). Cards are 16px round and lift 2px on hover;
+ * all motion stops with reduced motion.
+ */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--app-bento-gap);
+  align-items: start;
+
+  @mixin larger-than $mantine-breakpoint-lg {
+    &[data-side] {
+      grid-template-columns: minmax(0, 1fr) rem(320px);
+    }
+  }
+}
+
+.main {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--app-bento-gap);
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-bento-gap);
+}
+
+/* Hero banner: the rail colour, white text, one emphasised phrase and one pill button. About
+   96px tall with two lines of text; it grows when the text wraps (large text, high zoom), so no
+   word is ever cut off. */
+.hero {
+  display: flex;
+  grid-column: span 12;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-md);
+  min-block-size: rem(96px);
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-xl);
+  border-radius: var(--mantine-radius-xl);
+  background-color: var(--app-sidebar);
+  color: var(--app-sidebar-text);
+  box-shadow: var(--app-shadow-sm);
+
+  /* On the dark banner the highlight ring alone reaches 3:1; the inner ring blends in. */
+  --app-focus-inner: var(--app-sidebar);
+}
+
+.heroTitle {
+  flex: 1;
+  min-inline-size: 0;
+  margin: 0;
+  color: inherit;
+  font-size: clamp(rem(20px), 0.9rem + 0.9vw, rem(28px));
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* The emphasised phrase: the highlight colour, italic in left-to-right scripts. */
+.emphasis {
+  color: var(--app-highlight);
+  font-style: italic;
+}
+
+/* Arabic, Urdu, Persian and Hebrew have no italic: the phrase is heavier instead. */
+.emphasis:dir(rtl) {
+  font-style: normal;
+  font-weight: 800;
+}
+
+.heroAction {
+  flex: none;
+}
+
+/* Number cards: two per row on a narrow window, --columns per row from `md` up. */
+.stats {
+  display: grid;
+  grid-column: span 12;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--app-bento-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @mixin larger-than $mantine-breakpoint-md {
+    grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
+  }
+}
+
+.card,
+.stat {
+  padding: var(--app-bento-gap);
+  border: rem(1px) solid var(--app-hairline);
+  border-radius: var(--mantine-radius-xl);
+  background-color: var(--app-surface);
+  box-shadow: var(--app-shadow-sm);
+  transition:
+    transform var(--app-motion-fast) ease,
+    box-shadow var(--app-motion-fast) ease;
+
+  &:hover {
+    transform: translateY(rem(-2px));
+    box-shadow: var(--app-shadow-md);
+  }
+}
+
+/* A card takes --span of the 12 columns; on a narrow window every card takes the full row. */
+.card {
+  grid-column: span 12;
+  min-inline-size: 0;
+
+  @mixin larger-than $mantine-breakpoint-md {
+    grid-column: span var(--span, 12);
+  }
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  margin-block-end: var(--mantine-spacing-sm);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--mantine-font-size-md);
+  font-weight: 600;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: rem(6px);
+  block-size: 100%;
+  color: var(--mantine-color-text);
+  text-decoration: none;
+}
+
+.statTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-xs);
+}
+
+.statLabel {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* The tint is decoration only: every card says what it counts in words. */
+.statIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: rem(32px);
+  block-size: rem(32px);
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--app-glow);
+  color: var(--app-glow-text);
+
+  .stat[data-tint='green'] & {
+    background-color: var(--app-kpi-green-bg);
+    color: var(--app-kpi-green-text);
+  }
+
+  .stat[data-tint='amber'] & {
+    background-color: var(--app-kpi-amber-bg);
+    color: var(--app-kpi-amber-text);
+  }
+
+  .stat[data-tint='slate'] & {
+    background-color: var(--app-kpi-slate-bg);
+    color: var(--app-kpi-slate-text);
+  }
+
+  .stat[data-tint='clay'] & {
+    background-color: var(--app-kpi-clay-bg);
+    color: var(--app-kpi-clay-text);
+  }
+}
+
+.statValue {
+  font-size: rem(30px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.statHint {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-xs);
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .stat {
+    transition: none;
+  }
+
+  .card:hover,
+  .stat:hover {
+    transform: none;
+  }
+}

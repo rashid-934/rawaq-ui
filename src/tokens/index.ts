@@ -14,6 +14,7 @@ export {
 export type { ContrastFailure, ContrastPair, PaletteReport } from './check-palette';
 export { contrastRatio, LUMINANCE_THRESHOLD, onFillColor, relativeLuminance } from './contrast';
 export { DEFAULT_DENSITY, densities, densityKeys, isDensity, layout } from './density';
+export { tokensCss, tokensJson } from './files';
 export type { Density, DensityTokens } from './density';
 export { kpiTintKeys, kpiTints } from './kpi';
 export type { KpiTint } from './kpi';

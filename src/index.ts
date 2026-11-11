@@ -4,3 +4,5 @@ import './styles/global.css';
 
 export * from './tokens';
 export * from './theme';
+export * from './labels';
+export * from './components';

@@ -98,6 +98,48 @@ body {
   }
 }
 
+/*
+ * Bars grow once (section 7): `.grow-x` for a horizontal bar, from the start side; `.grow-y` for
+ * a vertical bar, from the bottom. `--order` staggers a row of bars. Work pages stay quiet.
+ */
+.grow-x,
+.grow-y {
+  animation: grow-x var(--app-motion-grow) var(--app-ease-out) backwards;
+  animation-delay: calc(
+    min(var(--order, 0), var(--app-motion-max-stagger)) * var(--app-motion-grow-stagger)
+  );
+}
+
+.grow-x {
+  transform-origin: left center;
+}
+
+[dir='rtl'] .grow-x {
+  transform-origin: right center;
+}
+
+.grow-y {
+  animation-name: grow-y;
+  transform-origin: center bottom;
+}
+
+[data-page-kind='work'] .grow-x,
+[data-page-kind='work'] .grow-y {
+  animation: none;
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
 .mantine-Button-root {
   transition:
     transform var(--app-motion-fast) ease,

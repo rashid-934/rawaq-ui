@@ -1,0 +1,366 @@
+/*
+ * Floating icon rail (docs/DESIGN_THEME.md section 4.2): 64px wide, fully rounded, 12px from the
+ * window edge and as tall as the frame. "Show labels" widens it to a 220px labelled panel that
+ * pushes the page (Frame.module.css moves the frame). Rows are the base layout; the icon-only
+ * circles apply from the `sm` breakpoint up while the labels are off. Below `sm` the same element
+ * is a drawer that slides in from the start side.
+ */
+.rail {
+  position: fixed;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--app-sidebar);
+  color: var(--app-sidebar-text);
+
+  /* On the dark rail the highlight ring alone reaches 3:1; the inner ring blends in. */
+  --app-focus-inner: var(--app-sidebar);
+
+  @mixin larger-than $mantine-breakpoint-sm {
+    inset-block: var(--app-frame-margin);
+    inset-inline-start: var(--app-rail-inset);
+    inline-size: var(--app-rail-width);
+    padding-block: rem(12px);
+    border-radius: var(--app-radius-pill);
+    box-shadow: var(--app-shadow-md);
+    transition:
+      inline-size var(--app-motion-base) ease,
+      border-radius var(--app-motion-base) ease;
+
+    &[data-labels] {
+      inline-size: var(--app-rail-panel);
+      border-radius: var(--app-frame-radius);
+    }
+  }
+
+  @mixin smaller-than $mantine-breakpoint-sm {
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: min(rem(288px), 86vw);
+    padding-block: var(--mantine-spacing-md) var(--mantine-spacing-sm);
+    transform: translateX(-100%);
+    transition: transform var(--app-motion-drawer) var(--app-ease-out);
+
+    &[data-open] {
+      transform: none;
+      box-shadow: var(--app-shadow-lg);
+    }
+  }
+}
+
+@mixin smaller-than $mantine-breakpoint-sm {
+  [dir='rtl'] .rail:not([data-open]) {
+    transform: translateX(100%);
+  }
+}
+
+/* The glow shape behind the active item. Rail.tsx measures the item; the shape slides there. */
+.glow {
+  position: absolute;
+  z-index: 0;
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-glow);
+  box-shadow:
+    0 0 0 rem(4px) color-mix(in srgb, var(--app-glow) 22%, transparent),
+    0 rem(6px) rem(16px) color-mix(in srgb, var(--app-glow) 30%, transparent);
+  pointer-events: none;
+  transition:
+    top var(--app-motion-base) ease,
+    left var(--app-motion-base) ease,
+    width var(--app-motion-base) ease,
+    height var(--app-motion-base) ease;
+
+  /* The notch: a small tab on the rail's inner edge, pointing at the page. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-start: calc(50% - rem(8px));
+    inset-inline-end: rem(-12px);
+    inline-size: rem(4px);
+    block-size: rem(16px);
+    border-start-start-radius: rem(4px);
+    border-end-start-radius: rem(4px);
+    background-color: var(--app-glow);
+  }
+}
+
+/* Names of pages, the app and the person. Always in the page for screen readers. */
+.label {
+  min-inline-size: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.brand {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: rem(10px);
+  padding-inline: rem(14px);
+  margin-block-end: rem(12px);
+}
+
+.logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: rem(36px);
+  block-size: rem(36px);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-highlight);
+  color: var(--app-highlight-text);
+  font-size: rem(16px);
+  font-weight: 800;
+}
+
+.brandName {
+  font-size: rem(15px);
+  font-weight: 700;
+}
+
+.drawerOnly {
+  padding-inline: rem(16px);
+  margin-block-end: var(--mantine-spacing-md);
+
+  @mixin larger-than $mantine-breakpoint-sm {
+    display: none;
+  }
+}
+
+.scroll {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-block-size: 0;
+
+  /* 6px: room for the 5px focus ring of the first and the last item, which this box clips. */
+  padding-block: rem(6px);
+  overflow: hidden auto;
+  scrollbar-width: none;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: rem(2px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: rem(12px);
+  block-size: rem(40px);
+  margin-inline: rem(12px);
+  padding-inline: rem(10px);
+  border: 0;
+  border-radius: var(--app-radius-pill);
+  background-color: transparent;
+  color: var(--app-rail-icon);
+  font: inherit;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--app-motion-fast) ease,
+    color var(--app-motion-fast) ease;
+
+  &:hover {
+    background-color: var(--app-sidebar-hover);
+    color: var(--app-sidebar-text);
+  }
+
+  /* The active page: the rail colour on the glow shape. */
+  &[data-active],
+  &[data-active]:hover {
+    background-color: transparent;
+    color: var(--app-glow-text);
+    font-weight: 600;
+  }
+
+  /* The ring sits outside the item, on the dark rail, where the highlight reaches 3:1. */
+  &:focus-visible {
+    outline-offset: rem(2px);
+  }
+}
+
+/* Before Rail.tsx has measured (first paint, no script) the active item carries the glow itself. */
+.rail:not([data-glow]) .item[data-active] {
+  background-color: var(--app-glow);
+}
+
+.icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: rem(20px);
+  block-size: rem(20px);
+}
+
+/* A highlighted entry: its icon in the highlight colour. Only the icon: as small text the
+   highlight would fall under 4.5:1 on some rail colours. */
+.item[data-highlight]:not([data-active]) .icon {
+  color: var(--app-highlight);
+}
+
+.toggle {
+  inline-size: calc(100% - rem(24px));
+
+  &[aria-pressed='true'] {
+    color: var(--app-sidebar-text);
+  }
+}
+
+.count {
+  margin-inline-start: auto;
+  min-inline-size: rem(24px);
+  padding: rem(2px) rem(8px);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-glow);
+  color: var(--app-glow-text);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  text-align: center;
+}
+
+.group {
+  margin-block-start: rem(8px);
+  padding-block-start: rem(8px);
+  border-block-start: rem(1px) solid var(--app-sidebar-line);
+}
+
+.groupLabel {
+  margin: 0 0 rem(4px);
+  padding-inline: rem(22px);
+  color: var(--app-sidebar-muted);
+  font-size: rem(12px);
+  font-weight: 700;
+}
+
+.bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: rem(2px);
+}
+
+.divider {
+  inline-size: calc(100% - rem(32px));
+  margin: rem(6px) rem(16px);
+  border: 0;
+  border-block-start: rem(1px) solid var(--app-sidebar-line);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: rem(10px);
+  block-size: rem(40px);
+  padding-inline: rem(14px);
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: rem(36px);
+  block-size: rem(36px);
+  border: rem(1px) solid var(--app-sidebar-line);
+  border-radius: 50%;
+  background-color: var(--app-sidebar-hover);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 700;
+}
+
+.userText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.userName {
+  overflow: hidden;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.userRole {
+  color: var(--app-sidebar-muted);
+  font-size: var(--mantine-font-size-xs);
+}
+
+/* "This choice could not be saved": read out at once, shown in the labelled panel. The region
+   stays in the page while it is empty (out of sight, never `display: none`), so a screen reader
+   already watches it when the message arrives. */
+.notSaved {
+  margin: 0;
+  padding-inline: rem(22px);
+  color: var(--app-sidebar-text);
+  font-size: var(--mantine-font-size-xs);
+
+  &:empty {
+    position: absolute;
+    inline-size: rem(1px);
+    block-size: rem(1px);
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+/* Icons only: every item is a 40px circle in the middle of the 64px rail, names stay readable
+   by screen readers and show in a tooltip (Rail.tsx). */
+@mixin larger-than $mantine-breakpoint-sm {
+  .rail:not([data-labels]) {
+    & .label,
+    & .notSaved {
+      position: absolute;
+      inline-size: rem(1px);
+      block-size: rem(1px);
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    & .brand,
+    & .user {
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    & .item {
+      justify-content: center;
+      inline-size: rem(40px);
+      margin-inline: auto;
+      padding-inline: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail,
+  .glow,
+  .item {
+    transition: none;
+  }
+}
+
+/* Windows high contrast replaces backgrounds, so the active page gets an outline instead. */
+@media (forced-colors: active) {
+  .item[data-active] {
+    outline: rem(2px) solid currentcolor;
+    outline-offset: rem(-2px);
+  }
+}

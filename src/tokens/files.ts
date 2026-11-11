@@ -1,30 +1,24 @@
-import { DEFAULT_DENSITY, densities, densityKeys, layout } from '../src/tokens/density';
-import { kpiTints } from '../src/tokens/kpi';
-import { rtlLocales } from '../src/tokens/locale';
-import { MAX_STAGGER, motion } from '../src/tokens/motion';
-import {
-  DEFAULT_PRESET,
-  paletteKeys,
-  presetKeys,
-  presets,
-  textColors,
-} from '../src/tokens/presets';
-import { PILL_RADIUS, radius } from '../src/tokens/radius';
-import { resolveTokens } from '../src/tokens/resolve';
-import { DEFAULT_THEME_SETTINGS } from '../src/tokens/settings';
-import { DEFAULT_SIDEBAR, type SidebarSwatch, sidebarSwatches } from '../src/tokens/sidebar';
-import { builtInFonts, fontFor, fonts, fontSizes } from '../src/tokens/typography';
+import { DEFAULT_DENSITY, densities, densityKeys, layout } from './density';
+import { kpiTints } from './kpi';
+import { rtlLocales } from './locale';
+import { MAX_STAGGER, motion } from './motion';
+import { DEFAULT_PRESET, paletteKeys, presetKeys, presets, textColors } from './presets';
+import { PILL_RADIUS, radius } from './radius';
+import { resolveTokens } from './resolve';
+import { DEFAULT_THEME_SETTINGS } from './settings';
+import { DEFAULT_SIDEBAR, type SidebarSwatch, sidebarSwatches } from './sidebar';
+import { builtInFonts, fontFor, fonts, fontSizes } from './typography';
 import {
   appVariables,
   type CssVariables,
   densityVariables,
   paletteVariables,
   sidebarVariables,
-} from '../src/tokens/variables';
+} from './variables';
 
 // Builds the text of `tokens.css` and `tokens.json` from the tokens in `src/tokens`, so a stack
 // without React or Mantine gets the same names and values. The package build writes both files
-// into `dist` (see vite.config.ts). Never edit the generated files.
+// into `dist` (scripts/write-token-files.mjs). Never edit the generated files.
 
 const swatchKeys = Object.keys(sidebarSwatches) as SidebarSwatch[];
 

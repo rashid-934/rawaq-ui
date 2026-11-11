@@ -2,9 +2,23 @@
 // fonts from the font token, words from props. So no code and no CSS in the package may test for
 // one language. This test reads every source file and fails on such a test.
 
-const sources = import.meta.glob<string>(
-  ['./**/*.{ts,tsx,css}', '!./**/*.test.{ts,tsx}', '!./**/*.story.tsx'],
-  { query: '?raw', import: 'default', eager: true }
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+/** The `src` folder: this file sits at its top. */
+const root = import.meta.dirname;
+
+/** What ships in the package: no tests, no stories, no test helpers. */
+const isSource = (file: string) =>
+  /\.(?:ts|tsx|css)$/.test(file) &&
+  !/\.(?:test|story)\.tsx?$/.test(file) &&
+  !file.startsWith('test-utils/');
+
+const sources: Record<string, string> = Object.fromEntries(
+  readdirSync(root, { recursive: true, encoding: 'utf8' })
+    .map((file) => file.replaceAll('\\', '/'))
+    .filter(isSource)
+    .map((file) => [`./${file}`, readFileSync(join(root, file), 'utf8')])
 );
 
 const LANGUAGE = '(?:ar|en|ur|fa|he)';
@@ -48,8 +62,11 @@ describe('no test for one language', () => {
   });
 
   it('reads the source files of the package', () => {
-    expect(Object.keys(sources).length).toBeGreaterThan(10);
+    expect(Object.keys(sources).length).toBeGreaterThan(30);
     expect(Object.keys(sources)).toContain('./styles/global.css');
+    expect(Object.keys(sources)).toContain('./components/Rail/Rail.module.css');
+    expect(Object.keys(sources)).toContain('./components/Rail/Rail.tsx');
+    expect(Object.keys(sources).filter((file) => file.includes('.test.'))).toEqual([]);
   });
 
   it.each(Object.entries(sources))('%s has none', (_, text) => {

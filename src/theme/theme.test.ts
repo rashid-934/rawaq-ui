@@ -1,6 +1,8 @@
+import { RawaqPaletteError } from '../tokens/check-palette';
 import { densities } from '../tokens/density';
 import { kpiTints } from '../tokens/kpi';
 import { presetKeys, presets, textColors } from '../tokens/presets';
+import { resolveTokens } from '../tokens/resolve';
 import { DEFAULT_THEME_SETTINGS, parseThemeSettings } from '../tokens/settings';
 import {
   MATCH_THEME,
@@ -8,12 +10,8 @@ import {
   sidebarChoices,
   sidebarSwatches,
 } from '../tokens/sidebar';
-import {
-  buildCssVariablesResolver,
-  buildTheme,
-  pageTableProps,
-  resolveTokens,
-} from './create-theme';
+import { buildCssVariablesResolver, buildTheme, pageTableProps } from './create-theme';
+import { createRawaqTheme } from './index';
 
 describe('parseThemeSettings', () => {
   it('defaults to Sand and Forest, matching sidebar, compact', () => {
@@ -56,7 +54,7 @@ describe('resolveSidebarColor', () => {
 });
 
 describe('presets', () => {
-  it('offers the seven presets of design v2, the first five with their v1 keys', () => {
+  it('offers the seven presets, in the order of the design table', () => {
     expect(presetKeys).toEqual([
       'sand-forest',
       'stone-navy',
@@ -111,7 +109,7 @@ describe('buildTheme', () => {
     expect(heightAt('compact')).toBe('42px');
   });
 
-  it('exposes the company colours as CSS variables', () => {
+  it('exposes the colours of the look as CSS variables', () => {
     const resolver = buildCssVariablesResolver({
       preset: 'pearl-teal',
       sidebar: 'espresso',
@@ -164,6 +162,112 @@ describe('buildTheme', () => {
     const theme = buildTheme(DEFAULT_THEME_SETTINGS);
     expect(theme.components?.Switch?.styles).toEqual({
       track: { borderColor: resolveTokens(DEFAULT_THEME_SETTINGS).control },
+    });
+  });
+});
+
+const variablesOf = (result: ReturnType<typeof createRawaqTheme>) =>
+  result.cssVariablesResolver({} as never).variables;
+
+describe('createRawaqTheme', () => {
+  it('uses the defaults for anything left out', () => {
+    expect(createRawaqTheme().theme).toEqual(buildTheme(DEFAULT_THEME_SETTINGS));
+    expect(createRawaqTheme({ density: 'comfortable' }).theme).toEqual(
+      buildTheme({ ...DEFAULT_THEME_SETTINGS, density: 'comfortable' })
+    );
+  });
+
+  describe('with a brand palette', () => {
+    const brand = {
+      background: '#F4F6FB',
+      card: '#FFFFFF',
+      border: '#DDE3EE',
+      sidebar: '#1D2A4D',
+      accent: '#3346A8',
+      highlight: '#E2A93B',
+      hazeFrom: '#E4E9F6',
+      hazeTo: '#F6ECDD',
+      glow: '#D5DDF7',
+    };
+
+    it('builds the theme from those colours', () => {
+      const result = createRawaqTheme({ palette: brand, density: 'comfortable' });
+      expect(result.theme.colors?.primary).toContain(brand.accent);
+      expect(variablesOf(result)['--app-surface']).toBe(brand.card);
+      expect(variablesOf(result)['--app-sidebar']).toBe(brand.sidebar);
+      expect(result.cssVariablesResolver({} as never).light['--mantine-color-body']).toBe(
+        brand.background
+      );
+    });
+
+    it('keeps a chosen sidebar swatch over the sidebar of the palette', () => {
+      const result = createRawaqTheme({ palette: brand, sidebar: 'plum' });
+      expect(variablesOf(result)['--app-sidebar']).toBe(sidebarSwatches.plum);
+    });
+
+    it('refuses a palette that fails a contrast pair, and names the pair', () => {
+      const attempt = () => createRawaqTheme({ palette: { ...brand, accent: '#9DB0FF' } });
+      expect(attempt).toThrow(RawaqPaletteError);
+      expect(attempt).toThrow(/link text \(accent\) on the card/);
+    });
+
+    it('checks the palette against the sidebar that will be shown', () => {
+      // Its own sidebar is too light for white text; with a swatch that sidebar is never drawn.
+      const palette = { ...brand, sidebar: '#C8D8D0' };
+      expect(() => createRawaqTheme({ palette })).toThrow(/white text on the sidebar/);
+      expect(() => createRawaqTheme({ palette, sidebar: 'slate' })).not.toThrow();
+    });
+
+    it('refuses a preset and a palette together', () => {
+      const both = { preset: 'stone-navy', palette: brand } as never;
+      expect(() => createRawaqTheme(both)).toThrow('give a preset or a palette, not both');
+    });
+  });
+
+  describe('fonts per locale', () => {
+    const fonts = { ur: { family: "'Noto Nastaliq Urdu'", lineHeight: 2.2 } };
+
+    it('gives English and Arabic the same theme as before', () => {
+      const plain = createRawaqTheme().theme;
+      expect(createRawaqTheme({ locale: 'en' }).theme).toEqual(plain);
+      expect(createRawaqTheme({ locale: 'ar' }).theme).toEqual(plain);
+      expect(plain).not.toHaveProperty('lineHeights');
+      expect(plain.headings?.sizes).toEqual({
+        h1: { fontSize: 'clamp(1.75rem, 1.35rem + 1.6vw, 2.25rem)', lineHeight: '1.2' },
+      });
+    });
+
+    it('uses the font an app adds for its language, in the theme and the variables', () => {
+      const result = createRawaqTheme({ locale: 'ur', fonts });
+      expect(result.theme.fontFamily).toMatch(
+        /^'Plus Jakarta Sans Variable', 'Noto Nastaliq Urdu'/
+      );
+      expect(result.theme.headings?.fontFamily).toBe(result.theme.fontFamily);
+      expect(variablesOf(result)['--app-font-display']).toBe(result.theme.fontFamily);
+      expect(variablesOf(result)['--app-line-height']).toBe('2.2');
+    });
+
+    it('gives a script that needs room its line height, in text and in headings', () => {
+      const { theme } = createRawaqTheme({ locale: 'ur-PK', fonts });
+      expect(theme.lineHeights).toEqual({ xs: '2.2', sm: '2.2', md: '2.2', lg: '2.2', xl: '2.2' });
+      expect(theme.headings?.sizes?.h1).toEqual({
+        fontSize: 'clamp(1.75rem, 1.35rem + 1.6vw, 2.25rem)',
+        lineHeight: '2.2',
+      });
+      expect(theme.headings?.sizes?.h4).toEqual({ lineHeight: '2.2' });
+    });
+
+    it('never makes a line tighter than Mantine has it', () => {
+      const { theme } = createRawaqTheme({
+        locale: 'hi',
+        fonts: { hi: { family: 'Mukta', lineHeight: 1.5 } },
+      });
+      expect(theme.lineHeights).toMatchObject({ xs: '1.5', md: '1.55', xl: '1.65' });
+      expect(theme.headings?.sizes?.h1?.lineHeight).toBe('1.5');
+    });
+
+    it('leaves the other languages of the app alone', () => {
+      expect(createRawaqTheme({ locale: 'en', fonts }).theme).not.toHaveProperty('lineHeights');
     });
   });
 });

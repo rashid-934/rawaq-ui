@@ -1,4 +1,5 @@
-// WCAG 2.2 contrast maths, used by contrast.test.ts to keep every design direction at AA.
+// WCAG 2.2 contrast maths. contrast.test.ts uses it to keep every preset at AA, and
+// check-palette.ts to refuse an app's own palette that is not.
 
 type Rgba = [number, number, number, number];
 

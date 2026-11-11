@@ -1,4 +1,7 @@
-/* App-wide rules. Colours come from the Mantine theme variables (src/theme), never literals. */
+/*
+ * App-wide rules. Colours, sizes and timings come from the theme's variables (`--app-*` and
+ * `--mantine-*`, see src/tokens/variables.ts), never literals.
+ */
 
 html {
   /* Design v2 haze: a soft gradient from the top start corner to the bottom end corner. */
@@ -27,14 +30,14 @@ body {
   color: var(--mantine-color-text);
   -webkit-font-smoothing: antialiased;
 
-  /* The haze belongs to the desktop frame; phones keep the plain background they had. */
+  /* The haze belongs to the desktop frame; a narrow window keeps the plain background. */
   @mixin larger-than $mantine-breakpoint-sm {
     background-image: var(--app-haze);
     background-attachment: fixed;
   }
 }
 
-/* Money and quantities line up in columns (CLAUDE.md section 8). */
+/* Money and quantities line up in columns. */
 .tabular,
 [data-numeric] {
   font-variant-numeric: tabular-nums;
@@ -57,19 +60,26 @@ body {
   transform: scaleX(-1);
 }
 
-/* Letter spacing breaks the joins between Arabic letters. */
-:lang(ar) {
+/*
+ * Letter spacing breaks the joins between the letters of Arabic, Urdu and Persian. The rule
+ * follows the direction of the text, not one language, so every right-to-left locale an app adds
+ * is covered.
+ */
+:dir(rtl) {
   letter-spacing: normal !important;
 }
 
 /*
- * Motion (docs/DESIGN_THEME.md section 7). Entrance: fade and rise 8px in 0.35s, staggered 40ms
- * per card (--stagger) for at most 8 cards. Hover: buttons lift 1px with a soft shadow in 0.15s.
- * Work pages stay quiet: no entrance and no lift, nothing may delay reading data.
+ * Motion (docs/DESIGN_THEME.md section 7; the timings are in src/tokens/motion.ts). Entrance:
+ * fade and rise 8px in 0.35s, staggered 40ms per card (--stagger) for at most 8 cards. Hover:
+ * buttons lift 1px with a soft shadow in 0.15s. Work pages stay quiet: no entrance and no lift,
+ * nothing may delay reading data.
  */
 .rise {
-  animation: rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(min(var(--stagger, 0), 7) * 40ms);
+  animation: rise var(--app-motion-rise) var(--app-ease-out) both;
+  animation-delay: calc(
+    min(var(--stagger, 0), var(--app-motion-max-stagger)) * var(--app-motion-rise-stagger)
+  );
 }
 
 [data-page-kind='work'] .rise {
@@ -79,7 +89,7 @@ body {
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(rem(8px));
+    transform: translateY(var(--app-motion-rise-distance));
   }
 
   to {
@@ -90,9 +100,9 @@ body {
 
 .mantine-Button-root {
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background-color 0.15s ease;
+    transform var(--app-motion-fast) ease,
+    box-shadow var(--app-motion-fast) ease,
+    background-color var(--app-motion-fast) ease;
 
   &:hover:not(:disabled, [data-disabled], [data-loading], [data-page-kind='work'] *) {
     transform: translateY(rem(-1px));
@@ -107,7 +117,7 @@ body {
 /*
  * Work page tables (docs/DESIGN_THEME.md section 4.4): the header row sticks under the app header
  * on the Card surface, rows tint on hover, a selected row takes the glow tint. Sizes and spacing
- * come from the Mantine theme (src/theme/create-theme.ts).
+ * come from the Mantine theme (src/theme/create-theme.ts); `pageTableProps` makes a header stick.
  */
 .mantine-Table-thead.mantine-Table-thead {
   background-color: var(--app-surface);
@@ -141,7 +151,7 @@ body {
 /*
  * Comfortable density: `md` buttons and inputs are 40px high (section 5). Compact uses `sm`
  * (36px) by default and leaves `md` at Mantine's own height, so the variable is only a
- * Comfortable override (src/theme/density.ts, `controlHeightMd`).
+ * Comfortable override (src/tokens/density.ts, `controlHeightMd`).
  */
 .mantine-Button-root.mantine-Button-root {
   --button-height-md: var(--app-control-height-md, rem(42px));

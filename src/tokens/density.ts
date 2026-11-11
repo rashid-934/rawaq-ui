@@ -1,7 +1,7 @@
 import type { MantineSize } from '@mantine/core';
 
-// Density, a company choice: Compact (default for new companies since design v2) or Comfortable
-// (docs/DESIGN_THEME.md section 3). Companies that saved Comfortable keep it.
+// Density, a choice of its own: Compact (the default) or Comfortable
+// (docs/DESIGN_THEME.md section 3).
 
 export const densityKeys = ['comfortable', 'compact'] as const;
 

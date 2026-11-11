@@ -1,10 +1,23 @@
 import { basename } from 'node:path';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
+import { tokensCss, tokensJson } from './scripts/tokens-files';
+
+/** Writes `dist/tokens.css` and `dist/tokens.json` from the same source as the TypeScript tokens. */
+function tokenFiles(): Plugin {
+  return {
+    name: 'rawaq-token-files',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'tokens.css', source: tokensCss() });
+      this.emitFile({ type: 'asset', fileName: 'tokens.json', source: tokensJson() });
+    },
+  };
+}
 
 // The package build: ES modules, one file per source file (so `'use client'` stays at the top of
 // the client files), and all CSS in one `dist/styles.css`. React, Mantine and the icons are not
 // bundled: the app that uses the package brings them.
 export default defineConfig({
+  plugins: [tokenFiles()],
   css: {
     modules: {
       // Readable and the same on every machine and in every build: `rq-Rail-item`.

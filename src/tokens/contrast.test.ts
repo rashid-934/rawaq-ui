@@ -1,12 +1,8 @@
-import {
-  LIGHT_VARIANT_ALPHA,
-  LIGHT_VARIANT_TEXT_SHADE,
-  resolveTokens,
-} from '../theme/create-theme';
 import { contrastRatio, onFillColor } from './contrast';
 import { kpiTints } from './kpi';
 import { BASE_SHADE, mix } from './palette';
 import { presetKeys, presets, textColors } from './presets';
+import { LIGHT_VARIANT_ALPHA, LIGHT_VARIANT_TEXT_SHADE, RAIL_ICON, resolveTokens } from './resolve';
 import { DEFAULT_THEME_SETTINGS } from './settings';
 import { sidebarChoices, sidebarSwatches } from './sidebar';
 
@@ -15,8 +11,12 @@ const AA_NORMAL_TEXT = 4.5;
 const AA_NON_TEXT = 3;
 /** Large text, such as the emphasised word in the hero banner (WCAG 1.4.3). */
 const AA_LARGE_TEXT = 3;
-/** Rail icons rest at this opacity of white (docs/DESIGN_THEME.md section 4.2). */
-const RAIL_ICON = 'rgba(255, 255, 255, 0.75)';
+
+describe('rail icons', () => {
+  it('rest at 75 percent of white (docs/DESIGN_THEME.md section 4.2)', () => {
+    expect(RAIL_ICON).toBe('rgba(255, 255, 255, 0.75)');
+  });
+});
 
 describe('contrastRatio', () => {
   it('matches the WCAG reference values', () => {
@@ -75,7 +75,7 @@ describe.each(presetKeys)('theme preset %s', (key) => {
   );
 
   it.each([BASE_SHADE, BASE_SHADE + 1])(
-    'highlight fills (help button, Customize) pass AA at shade %i (rest and hover)',
+    'highlight fills (pill button, highlighted entries) pass AA at shade %i (rest and hover)',
     (shade) => {
       const text = onFillColor(preset.highlight, {
         black: textColors.main,
@@ -96,7 +96,7 @@ describe.each(presetKeys)('theme preset %s', (key) => {
     }
   );
 
-  it('the highlight stays visible on the sidebar (Customize entry, tour)', () => {
+  it('the highlight stays visible on the sidebar (a highlighted rail entry)', () => {
     expect(contrastRatio(preset.highlight, preset.sidebar)).toBeGreaterThanOrEqual(AA_NON_TEXT);
   });
 
@@ -161,7 +161,7 @@ describe.each(presetKeys)('sidebar text with the %s preset', (key) => {
   );
 });
 
-// A company may pair any preset with any sidebar swatch: the glow stays the preset's glow, so it
+// Any preset may be paired with any sidebar swatch: the glow stays the preset's glow, so it
 // is checked against every swatch (docs/DESIGN_THEME.md section 2, "Sidebar colour").
 describe.each(presetKeys)('v2 rail with the %s preset', (key) => {
   it.each(sidebarChoices)(

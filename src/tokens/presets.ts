@@ -1,5 +1,5 @@
-// The seven colour presets a company can pick (docs/DESIGN_THEME.md section 2). Colours live only
-// in src/theme; components read them through the Mantine theme or the `--app-*` CSS variables.
+// The seven colour presets (docs/DESIGN_THEME.md section 2). Colours live only in src/tokens;
+// components read them through the Mantine theme or the `--app-*` CSS variables.
 
 export const presetKeys = [
   'sand-forest',
@@ -15,19 +15,19 @@ export type PresetKey = (typeof presetKeys)[number];
 
 export const DEFAULT_PRESET: PresetKey = 'sand-forest';
 
-export interface PresetTokens {
-  key: PresetKey;
+/** The nine colours of a look. A preset is one of these with a key; an app may bring its own. */
+export interface PaletteTokens {
   /** Page background, behind the frame and under the haze. */
   background: string;
   /** Cards, inputs, tables, the frame's inner surface. */
   card: string;
   /** Card and divider hairlines (decorative, not a control border). */
   border: string;
-  /** Rail and hero banner fill when the company keeps "Match theme". */
+  /** Rail and hero banner fill when the sidebar choice is "Match theme". */
   sidebar: string;
   /** Filled buttons, links, active states. */
   accent: string;
-  /** Focus ring, the banner's pill button and emphasised word, Customize entry, help button. */
+  /** Focus ring, the banner's pill button and emphasised word, highlighted rail entries. */
   highlight: string;
   /** Start of the soft background gradient (top, start side). */
   hazeFrom: string;
@@ -35,6 +35,22 @@ export interface PresetTokens {
   hazeTo: string;
   /** Circle behind the active rail icon, and soft selections (selected row, count badges). */
   glow: string;
+}
+
+export const paletteKeys = [
+  'background',
+  'card',
+  'border',
+  'sidebar',
+  'accent',
+  'highlight',
+  'hazeFrom',
+  'hazeTo',
+  'glow',
+] as const satisfies readonly (keyof PaletteTokens)[];
+
+export interface PresetTokens extends PaletteTokens {
+  key: PresetKey;
 }
 
 /** Shared by every preset; both text colours pass WCAG AA on every background (contrast.test.ts). */

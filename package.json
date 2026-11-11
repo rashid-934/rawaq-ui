@@ -22,16 +22,18 @@
       "default": "./dist/tokens/index.js"
     },
     "./styles.css": "./dist/styles.css",
+    "./tokens.css": "./dist/tokens.css",
+    "./tokens.json": "./dist/tokens.json",
     "./package.json": "./package.json"
   },
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "yarn oxlint && yarn stylelint",
-    "oxlint": "oxlint -c oxlint.config.mjs src",
+    "oxlint": "oxlint -c oxlint.config.mjs src scripts",
     "stylelint": "stylelint \"src/**/*.css\" --allow-empty-input",
-    "format:test": "oxfmt -c oxfmt.config.mjs --check \"src/**/*.{ts,tsx,css}\" vite.config.ts vitest.config.ts vitest.setup.ts",
-    "format:write": "oxfmt -c oxfmt.config.mjs --write \"src/**/*.{ts,tsx,css}\" vite.config.ts vitest.config.ts vitest.setup.ts",
+    "format:test": "oxfmt -c oxfmt.config.mjs --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" vite.config.ts vitest.config.ts vitest.setup.ts",
+    "format:write": "oxfmt -c oxfmt.config.mjs --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" vite.config.ts vitest.config.ts vitest.setup.ts",
     "test:unit": "vitest run",
     "test": "yarn format:test && yarn lint && yarn typecheck && yarn test:unit"
   },

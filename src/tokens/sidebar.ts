@@ -1,6 +1,6 @@
-import { type PresetKey, presets } from './presets';
+import { type PaletteTokens, type PresetKey, presets } from './presets';
 
-// Sidebar colour, a separate company choice: "Match theme" or one of ten curated swatches
+// Sidebar colour, a choice of its own: "Match theme" or one of ten curated swatches
 // (docs/DESIGN_THEME.md section 2). No free colour picker.
 
 export const sidebarSwatches = {
@@ -33,7 +33,13 @@ export function isSidebarChoice(value: unknown): value is SidebarChoice {
   return typeof value === 'string' && (sidebarChoices as readonly string[]).includes(value);
 }
 
-/** The sidebar fill for a preset and a sidebar choice. */
-export function resolveSidebarColor(preset: PresetKey, choice: SidebarChoice): string {
-  return choice === MATCH_THEME ? presets[preset].sidebar : sidebarSwatches[choice];
+/** The sidebar fill for a preset (or an app's own palette) and a sidebar choice. */
+export function resolveSidebarColor(
+  preset: PresetKey | PaletteTokens,
+  choice: SidebarChoice
+): string {
+  if (choice !== MATCH_THEME) {
+    return sidebarSwatches[choice];
+  }
+  return (typeof preset === 'string' ? presets[preset] : preset).sidebar;
 }

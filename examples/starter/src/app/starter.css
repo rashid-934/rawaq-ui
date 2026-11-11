@@ -1,0 +1,73 @@
+/*
+ * The app's own styles. Colours and sizes come from Rawaq UI's variables (--app-*) and Mantine's
+ * (--mantine-*), never from literal values, so every preset and both directions keep working.
+ */
+
+/* Header: the search on the start side, languages and the person on the end side. */
+.starter-search {
+  flex: 1;
+  max-inline-size: 440px;
+}
+
+.starter-languages {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  font-size: var(--mantine-font-size-sm);
+}
+
+.starter-languages a {
+  color: var(--mantine-color-text);
+  text-decoration: none;
+}
+
+.starter-languages a[aria-current] {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* The pill button of the hero banner: the highlight colour with the main text colour on it. */
+.starter-hero-action {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 36px;
+  padding-inline: var(--mantine-spacing-lg);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-highlight);
+  color: var(--app-highlight-text);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Bars: name, track, value. Every bar says its value in text; the colour is decoration. */
+.starter-bars {
+  display: grid;
+  gap: var(--mantine-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.starter-bars li {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) 3fr 48px;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  font-size: var(--mantine-font-size-sm);
+}
+
+.starter-track {
+  block-size: 8px;
+  overflow: hidden;
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-raised);
+}
+
+.starter-fill {
+  display: block;
+  inline-size: var(--value);
+  block-size: 100%;
+  border-radius: inherit;
+  background-color: var(--app-accent);
+}

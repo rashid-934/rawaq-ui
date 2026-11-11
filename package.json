@@ -29,6 +29,7 @@
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json && node scripts/finish-build.mjs",
     "check:dist": "node scripts/check-dist.mjs",
+    "check:starter": "node scripts/check-starter.mjs",
     "axe": "node scripts/axe-stories.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "yarn oxlint && yarn stylelint",

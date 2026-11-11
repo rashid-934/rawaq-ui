@@ -1,0 +1,11 @@
+node_modules
+.next
+next-env.d.ts
+*.tsbuildinfo
+
+# Yarn 4 (node_modules linker): keep the lockfile, ignore the caches
+.yarn/*
+.pnp.*
+
+# Local settings and secrets never belong here
+.env*

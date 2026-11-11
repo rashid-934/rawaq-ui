@@ -1,0 +1,52 @@
+{
+  "app": {
+    "name": "البداية",
+    "description": "تطبيق صغير مبني بواجهة رواق",
+    "search": "بحث",
+    "role": "مسؤول مشتريات"
+  },
+  "nav": {
+    "overview": "نظرة عامة",
+    "suppliers": "الموردون"
+  },
+  "overview": {
+    "hero": "صباح الخير. هناك <em>ثلاثة أمور</em> بانتظارك اليوم.",
+    "action": "عرض الموردين",
+    "openRequests": "الطلبات المفتوحة",
+    "openRequestsHint": "طلبان جديدان اليوم",
+    "awaitingQuotes": "بانتظار عروض الأسعار",
+    "awaitingQuotesHint": "الموعد النهائي غدًا",
+    "openOrders": "أوامر الشراء المفتوحة",
+    "openOrdersHint": "3 تصل هذا الأسبوع",
+    "spend": "إنفاق هذا الشهر",
+    "spendText": "12,480 ر.س",
+    "spendHint": "ضمن الميزانية",
+    "byCategory": "الإنفاق حسب الفئة",
+    "categories": {
+      "it": "تقنية المعلومات",
+      "office": "مستلزمات المكتب",
+      "services": "الخدمات",
+      "maintenance": "الصيانة"
+    },
+    "today": "اليوم",
+    "todayText": "لا توجد توريدات مستحقة اليوم."
+  },
+  "suppliers": {
+    "title": "الموردون",
+    "description": "كل من تشتري منهم",
+    "add": "إضافة مورد",
+    "supplier": "المورد {number}",
+    "name": "الاسم",
+    "category": "الفئة",
+    "city": "المدينة",
+    "orders": "الطلبات",
+    "status": "الحالة",
+    "approved": "معتمد",
+    "underReview": "قيد المراجعة",
+    "cities": {
+      "jeddah": "جدة",
+      "riyadh": "الرياض",
+      "dammam": "الدمام"
+    }
+  }
+}

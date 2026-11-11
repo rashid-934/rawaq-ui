@@ -1,0 +1,52 @@
+{
+  "app": {
+    "name": "Starter",
+    "description": "A small app built with Rawaq UI",
+    "search": "Search",
+    "role": "Buyer"
+  },
+  "nav": {
+    "overview": "Overview",
+    "suppliers": "Suppliers"
+  },
+  "overview": {
+    "hero": "Good morning. <em>Three things</em> need you today.",
+    "action": "See suppliers",
+    "openRequests": "Open requests",
+    "openRequestsHint": "2 new today",
+    "awaitingQuotes": "Awaiting quotes",
+    "awaitingQuotesHint": "Deadline tomorrow",
+    "openOrders": "Open orders",
+    "openOrdersHint": "3 arriving this week",
+    "spend": "Spend this month",
+    "spendText": "12,480 SAR",
+    "spendHint": "Under budget",
+    "byCategory": "Spend by category",
+    "categories": {
+      "it": "IT",
+      "office": "Office supplies",
+      "services": "Services",
+      "maintenance": "Maintenance"
+    },
+    "today": "Today",
+    "todayText": "No deliveries are due today."
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "description": "Everyone you buy from",
+    "add": "Add supplier",
+    "supplier": "Supplier {number}",
+    "name": "Name",
+    "category": "Category",
+    "city": "City",
+    "orders": "Orders",
+    "status": "Status",
+    "approved": "Approved",
+    "underReview": "Under review",
+    "cities": {
+      "jeddah": "Jeddah",
+      "riyadh": "Riyadh",
+      "dammam": "Dammam"
+    }
+  }
+}

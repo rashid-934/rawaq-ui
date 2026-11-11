@@ -1,6 +1,6 @@
 # Progress
 
-## Status note, 11 Nov 2026 (version 1.0.0 is prepared)
+## Status note, 11 Nov 2026 (version 1.0.0 is released)
 
 The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions. Everything of
 v1 was merged into `main` with pull request 1 on 11 Nov 2026. The test release `v1.0.0-rc.1` is
@@ -8,9 +8,13 @@ out: its file is on the Releases page, the notes come from the changelog, and th
 `verify the release` installed and built the starter from the released file. Pull request 2 (the
 starter's real lockfile) was merged on 11 Nov 2026.
 
-Version 1.0.0 is prepared on the branch `release/1.0.0`: the version in `package.json`, the
-starter's address and a changelog section. The package code is the same as 1.0.0-rc.1. It is not
-released yet: the tag `v1.0.0` is pushed after the owner merges that pull request.
+**Version 1.0.0 is released** (11 Nov 2026). Pull request 3 set the version, the starter's
+address and the changelog section; the package code is the same as 1.0.0-rc.1. The tag `v1.0.0`
+is on the merge commit of that pull request. The Release holds `rawaq-ui-1.0.0.tgz` (53 kB) with
+the notes from the changelog, the file downloads without sign-in, and the job
+`verify the release` installed and built the starter from it. The starter's lockfile was then
+made again by a real install from the 1.0.0 address (`yarn install --immutable` and `next build`
+pass on the laptop).
 
 ### Done
 
@@ -112,15 +116,12 @@ released yet: the tag `v1.0.0` is pushed after the owner merges that pull reques
    there points to the master copy here. The theme is equal for all 154 looks (7 presets, 11
    sidebar colours, 2 densities), the 28 before and after screenshots are pixel-identical, and the
    Vercel preview built with no token. **No fix for the package was needed.**
-3. After the owner merges the pull request of `release/1.0.0`: push the tag `v1.0.0` on `main`,
-   then check that the Release holds `rawaq-ui-1.0.0.tgz` with the notes from the changelog and
-   that `verify the release` is green. Then a small pull request with the starter's lockfile made
-   by a real install from the 1.0.0 address. Until then `examples/starter/yarn.lock` still names
-   1.0.0-rc.1; the `starter` job installs the packed file with `--no-immutable`, so it stays green.
-4. Hub-P- moves to the 1.0.0 address on a new branch from `master` with a new pull request
-   (pull request 15 is merged, so nothing more can be pushed to it): the address in
-   `package.json`, `yarn.lock`, the 28 screenshots repeated. Then the report that starts with
-   "Rawaq UI is fully ready".
+3. Done. Version 1.0.0 is released (see the status note above); the starter's lockfile for 1.0.0
+   is in the pull request of the branch `chore/starter-lockfile-1.0.0`.
+4. Hub-P- moves to the 1.0.0 address on a new branch from `master` (`chore/rawaq-ui-1.0.0`) with
+   a new pull request (pull request 15 is merged, so nothing more can be pushed to it): the
+   address in `package.json`, `yarn.lock`, the 28 screenshots repeated. Then, after the owner's
+   merge and his look at the live app, the report that starts with "Rawaq UI is fully ready".
 
 ### Notes for whoever continues
 

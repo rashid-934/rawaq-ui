@@ -1357,23 +1357,23 @@ __metadata:
     "@types/react-dom": "npm:^19.0.0"
     next: "npm:16.3.8"
     next-intl: "npm:4.14.9"
-    rawaq-ui: "https://github.com/rashid-934/rawaq-ui/releases/download/v1.0.0-rc.1/rawaq-ui-1.0.0-rc.1.tgz"
+    rawaq-ui: "https://github.com/rashid-934/rawaq-ui/releases/download/v1.0.0/rawaq-ui-1.0.0.tgz"
     react: "npm:19.3.0"
     react-dom: "npm:19.3.0"
     typescript: "npm:7.0.2"
   languageName: unknown
   linkType: soft
 
-"rawaq-ui@https://github.com/rashid-934/rawaq-ui/releases/download/v1.0.0-rc.1/rawaq-ui-1.0.0-rc.1.tgz":
-  version: 1.0.0-rc.1
-  resolution: "rawaq-ui@https://github.com/rashid-934/rawaq-ui/releases/download/v1.0.0-rc.1/rawaq-ui-1.0.0-rc.1.tgz"
+"rawaq-ui@https://github.com/rashid-934/rawaq-ui/releases/download/v1.0.0/rawaq-ui-1.0.0.tgz":
+  version: 1.0.0
+  resolution: "rawaq-ui@https://github.com/rashid-934/rawaq-ui/releases/download/v1.0.0/rawaq-ui-1.0.0.tgz"
   peerDependencies:
     "@mantine/core": ^9.6.0
     "@mantine/hooks": ^9.6.0
     "@tabler/icons-react": ^3.35.0
     react: ^19.0.0
     react-dom: ^19.0.0
-  checksum: 10c0/b318aeb4254cfb58fb72eef67dced6b7d1a5a9a3c5819747bf3f98385c9f13dc04e675dad662d6645ab6d9f6e33a3036e3ca6d8f0a478f6892426aa247942e1a
+  checksum: 10c0/d3f21daa323282fd7faf5014c4c9ace180399a075eaf6bd0b495afacd413b67b2931a2346c1b098b5e484745d33a1c6b63f477d8b0d46fb8e8637ac7a204b3d5
   languageName: node
   linkType: hard
 

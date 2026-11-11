@@ -1,9 +1,12 @@
 # Progress
 
-## Status note, 11 Nov 2026 (the v1 pull request)
+## Status note, 11 Nov 2026 (after the test release 1.0.0-rc.1)
 
-The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions. Branch:
-`feat/v1`, with everything of v1 in one pull request to `main`. Nothing is released yet.
+The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions. Everything of
+v1 was merged into `main` with pull request 1 on 11 Nov 2026. The test release `v1.0.0-rc.1` is
+out: its file is on the Releases page, the notes come from the changelog, and the job
+`verify the release` installed and built the starter from the released file. Version 1.0.0
+itself is not released yet.
 
 ### Done
 
@@ -95,19 +98,20 @@ The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions
 
 ### Next, in this order
 
-1. The owner: click step 1 of the README (email private, already done on 11 Nov 2026), merge the
-   pull request, then click steps 2 and 3 (ruleset on `main` with the checks `checks`,
-   `storybook and accessibility`, `starter`; Pages source "GitHub Actions").
-2. After the merge: read the merge commit's email with gh and tell the owner if it is not
-   hidden. Push the tag `v1.0.0-rc.1` and check that the Release has the `.tgz` and the notes and
-   that `verify the release` is green. Then run `yarn install` in `examples/starter` and commit
-   its real lockfile (a small pull request).
-3. Hub-P-, branch `feat/rawaq-ui` (the plan's step 2): before screenshots from `master`, add the
-   dependency, `src/theme` re-exports the package, replace the components, the docs pointer,
-   after screenshots with the pixel comparison.
-4. rawaq-ui pull request 2: version 1.0.0 (`package.json`, the starter's address, a changelog
-   section), plus any fix found in step 3. Tag `v1.0.0` after the merge.
-5. Hub-P- moves to v1.0.0; then the report that starts with "Rawaq UI is fully ready".
+1. The owner, by hand (the README has the clicks): the ruleset on `main` with the checks
+   `checks`, `storybook and accessibility` and `starter`; Pages with the source "GitHub Actions".
+   On 11 Nov 2026 neither was set yet. The merge commit of pull request 1 shows hidden addresses
+   only, so his email setting works.
+2. Built on 11 Nov 2026, open as Hub-P- pull request 15 (branch `feat/rawaq-ui`), on the
+   `v1.0.0-rc.1` address: `src/theme` re-exports the package; the rail, frame, page header,
+   skeleton, rolling numbers, opening and the stylesheet come from the package; the design file
+   there points to the master copy here. The theme is equal for all 154 looks (7 presets, 11
+   sidebar colours, 2 densities), the 28 before and after screenshots are pixel-identical, and the
+   Vercel preview built with no token. **No fix for the package was needed.** That pull request
+   stays open until it moves to the 1.0.0 address (step 4).
+3. rawaq-ui pull request for version 1.0.0 (`package.json`, the starter's address and lockfile,
+   a changelog section), plus any fix found in step 2. Tag `v1.0.0` after the merge.
+4. Hub-P- moves to v1.0.0; then the report that starts with "Rawaq UI is fully ready".
 
 ### Notes for whoever continues
 
@@ -116,6 +120,12 @@ The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions
 - Run Yarn as `corepack yarn <script>`.
 - Before every push: `git log --format='%ae %ce' origin/main..HEAD | sort -u` must show the
   noreply address only.
+- The owner's account now refuses any push that carries a private address (GitHub error GH007),
+  in every repository, Hub-P- too. Commit there with the noreply address as well.
+- The Hub-P- screenshots: build its Storybook to a folder, open the Dashboard and Responses
+  stories with `playwright-core` and the installed Chrome (1280 x 720, reduced motion, animations
+  finished), and compare the PNG files pixel by pixel on a canvas in the browser. Nothing heavy
+  may run at the same time: under load a few pixels differ by 1/255.
 - A hook on the owner's laptop refuses any change to `oxlint.config.mjs`. Make the code satisfy
   the rules as they are (sample words in files under `src/stories` go through variables, not
   literal JSX text), or ask the owner.
@@ -128,9 +138,10 @@ The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions
 - Building the starter from the packed package (what CI must do, and how it was tested here):
   `yarn build`, `yarn pack -o rawaq-ui-local.tgz`, then in `examples/starter` point the
   `rawaq-ui` dependency at `file:../../rawaq-ui-local.tgz` (in the work folder only, never
-  committed), `yarn install`, `yarn build`. The starter's `yarn.lock` is committed empty, so Yarn
-  treats the folder as its own project; fill it with a real install once the first release exists
-  and commit it then.
+  committed), `yarn install --no-immutable`, `yarn build`. The starter has its own `yarn.lock`
+  (made by a real install from the release address), so Yarn treats the folder as its own
+  project. When the version changes, install again in the starter and commit the new lockfile
+  after that version is released.
 - The axe script finishes every running transition before it scans. Pages checked side by side
   are not in front, their clock stands still, and a button would be read at the see-through start
   of its colour transition (a false contrast finding).

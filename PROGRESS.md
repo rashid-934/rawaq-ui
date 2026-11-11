@@ -1,9 +1,9 @@
 # Progress
 
-## Status note, 11 Nov 2026 (after the dist check, the axe run and the starter)
+## Status note, 11 Nov 2026 (the v1 pull request)
 
 The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions. Branch:
-`feat/v1`. Nothing is released yet. The pull request for v1 is not opened yet.
+`feat/v1`, with everything of v1 in one pull request to `main`. Nothing is released yet.
 
 ### Done
 
@@ -75,19 +75,39 @@ The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions
   in `package.json`. Tested on this laptop with the packed package (`yarn pack`): `next build`
   passes, the four pages load in both languages with no console errors, axe finds no violations,
   the skeleton shows while the Work page loads.
-- CI (`ci.yml`): commit address check, install, format, lint, types, tests, build. Actions are
-  pinned to commit SHAs; permissions are read only.
+- Workflows, all with `permissions: contents: read` at the top, every action pinned to a commit
+  SHA read from GitHub, no secrets:
+  - `ci.yml`, three jobs: `checks` (commit address check, format, lint, types, tests, build,
+    `check:dist`, `check:starter`, pack dry run), `storybook and accessibility` (Storybook build,
+    `axe`), `starter` (the starter built from the packed file).
+  - `release.yml`, on a `v*` tag: runs CI, fails when the tag is not the version in
+    `package.json`, takes the notes from `CHANGELOG.md` (`scripts/release-notes.mjs`), attaches
+    `rawaq-ui-<version>.tgz` to a GitHub Release (only this job has `contents: write`), then
+    `verify the release` installs and builds the starter from the released file.
+  - `pages.yml`: publishes the Storybook to GitHub Pages after a merge to `main`. It first asks
+    GitHub whether Pages is on with the source "GitHub Actions"; if not, the rest is skipped and
+    the run stays green. Only the deploy job has `pages: write` and `id-token: write`.
+- Docs: `docs/DESIGN_THEME.md` (the master copy, generic), `CLAUDE.md`, `CHANGELOG.md`
+  (section `1.0.0-rc.1`), the README guide (start a new app, the parts, the look, a brand
+  palette, fonts, another language with Urdu as the example, tokens without React, releases, and
+  the owner's three settings).
 - Every commit uses the GitHub noreply address (the folder has its own git identity).
 
 ### Next, in this order
 
-1. Workflows: finish `ci.yml` (`check:dist`, `check:starter`, Storybook build, `axe`, the starter
-   built from the packed file, pack dry run), add `release.yml` (with `verify-release`) and
-   `pages.yml`. Least permissions, every action pinned to a SHA read from GitHub.
-2. Docs: `docs/DESIGN_THEME.md` (master copy, generic), `CLAUDE.md`, `CHANGELOG.md`, the README
-   guide with "Add another language (example: Urdu)", "Add a brand palette" and the owner's click
-   steps.
-3. Open the pull request, CI green, report to the owner.
+1. The owner: click step 1 of the README (email private, already done on 11 Nov 2026), merge the
+   pull request, then click steps 2 and 3 (ruleset on `main` with the checks `checks`,
+   `storybook and accessibility`, `starter`; Pages source "GitHub Actions").
+2. After the merge: read the merge commit's email with gh and tell the owner if it is not
+   hidden. Push the tag `v1.0.0-rc.1` and check that the Release has the `.tgz` and the notes and
+   that `verify the release` is green. Then run `yarn install` in `examples/starter` and commit
+   its real lockfile (a small pull request).
+3. Hub-P-, branch `feat/rawaq-ui` (the plan's step 2): before screenshots from `master`, add the
+   dependency, `src/theme` re-exports the package, replace the components, the docs pointer,
+   after screenshots with the pixel comparison.
+4. rawaq-ui pull request 2: version 1.0.0 (`package.json`, the starter's address, a changelog
+   section), plus any fix found in step 3. Tag `v1.0.0` after the merge.
+5. Hub-P- moves to v1.0.0; then the report that starts with "Rawaq UI is fully ready".
 
 ### Notes for whoever continues
 

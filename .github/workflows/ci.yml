@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Every action is pinned to a full commit SHA; the version is in the comment.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # The pull request's own commits, not the merge commit GitHub prepares.
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -40,7 +40,7 @@ jobs:
           fi
       - name: Enable Corepack
         run: corepack enable
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: yarn
@@ -48,4 +48,55 @@ jobs:
       - name: Format, lint, type check and unit tests
         run: yarn test
       - name: Build the package
+        run: yarn build
+      - name: Check the built package
+        run: yarn check:dist
+      - name: The starter installs this version
+        run: yarn check:starter
+      - name: The package can be packed
+        run: yarn pack --dry-run
+
+  storybook:
+    name: storybook and accessibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Enable Corepack
+        run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --immutable
+      - name: Build the Storybook
+        run: yarn storybook:build
+      # Every story, in English and Arabic, in all seven presets, with reduced motion, against
+      # the WCAG 2.2 AA rules. It uses the Chrome that is already on the runner.
+      - name: axe on every story
+        run: yarn axe
+
+  starter:
+    name: starter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Enable Corepack
+        run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --immutable
+      - name: Build and pack the package
+        run: |
+          yarn build
+          yarn pack -o rawaq-ui-ci.tgz
+      - name: Install the packed file into the starter
+        working-directory: examples/starter
+        run: |
+          # In this work folder only: the starter in the repository keeps the release address.
+          sed -i 's#"rawaq-ui": "[^"]*"#"rawaq-ui": "file:../../rawaq-ui-ci.tgz"#' package.json
+          yarn install --no-immutable
+      - name: Build the starter
+        working-directory: examples/starter
         run: yarn build

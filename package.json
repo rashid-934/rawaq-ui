@@ -1,6 +1,6 @@
 {
   "name": "rawaq-ui",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "Rawaq UI: one theme (tokens, shell and motion) for React and Mantine apps. Layout style: Rail and Bento.",
   "private": true,
   "type": "module",

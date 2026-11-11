@@ -1,12 +1,16 @@
 # Progress
 
-## Status note, 11 Nov 2026 (after the test release 1.0.0-rc.1)
+## Status note, 11 Nov 2026 (version 1.0.0 is prepared)
 
 The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions. Everything of
 v1 was merged into `main` with pull request 1 on 11 Nov 2026. The test release `v1.0.0-rc.1` is
 out: its file is on the Releases page, the notes come from the changelog, and the job
-`verify the release` installed and built the starter from the released file. Version 1.0.0
-itself is not released yet.
+`verify the release` installed and built the starter from the released file. Pull request 2 (the
+starter's real lockfile) was merged on 11 Nov 2026.
+
+Version 1.0.0 is prepared on the branch `release/1.0.0`: the version in `package.json`, the
+starter's address and a changelog section. The package code is the same as 1.0.0-rc.1. It is not
+released yet: the tag `v1.0.0` is pushed after the owner merges that pull request.
 
 ### Done
 
@@ -100,24 +104,34 @@ itself is not released yet.
 
 1. The owner, by hand (the README has the clicks): the ruleset on `main` with the checks
    `checks`, `storybook and accessibility` and `starter`; Pages with the source "GitHub Actions".
-   On 11 Nov 2026 neither was set yet. The merge commit of pull request 1 shows hidden addresses
-   only, so his email setting works.
-2. Built on 11 Nov 2026, open as Hub-P- pull request 15 (branch `feat/rawaq-ui`), on the
+   Read again with gh on 11 Nov 2026 after pull request 2: neither was set yet. The merge commits
+   of pull requests 1 and 2 show hidden addresses only, so his email setting works.
+2. Done. Hub-P- pull request 15 (branch `feat/rawaq-ui`) was merged on 11 Nov 2026, on the
    `v1.0.0-rc.1` address: `src/theme` re-exports the package; the rail, frame, page header,
    skeleton, rolling numbers, opening and the stylesheet come from the package; the design file
    there points to the master copy here. The theme is equal for all 154 looks (7 presets, 11
    sidebar colours, 2 densities), the 28 before and after screenshots are pixel-identical, and the
-   Vercel preview built with no token. **No fix for the package was needed.** That pull request
-   stays open until it moves to the 1.0.0 address (step 4).
-3. rawaq-ui pull request for version 1.0.0 (`package.json`, the starter's address and lockfile,
-   a changelog section), plus any fix found in step 2. Tag `v1.0.0` after the merge.
-4. Hub-P- moves to v1.0.0; then the report that starts with "Rawaq UI is fully ready".
+   Vercel preview built with no token. **No fix for the package was needed.**
+3. After the owner merges the pull request of `release/1.0.0`: push the tag `v1.0.0` on `main`,
+   then check that the Release holds `rawaq-ui-1.0.0.tgz` with the notes from the changelog and
+   that `verify the release` is green. Then a small pull request with the starter's lockfile made
+   by a real install from the 1.0.0 address. Until then `examples/starter/yarn.lock` still names
+   1.0.0-rc.1; the `starter` job installs the packed file with `--no-immutable`, so it stays green.
+4. Hub-P- moves to the 1.0.0 address on a new branch from `master` with a new pull request
+   (pull request 15 is merged, so nothing more can be pushed to it): the address in
+   `package.json`, `yarn.lock`, the 28 screenshots repeated. Then the report that starts with
+   "Rawaq UI is fully ready".
 
 ### Notes for whoever continues
 
 - Yarn on the owner's laptop refuses packages published in the last few days (a safety gate).
   Ask for a range such as `^8.0.0`, not the very newest version.
 - Run Yarn as `corepack yarn <script>`.
+- Git on the owner's laptop writes Windows line endings when it checks files out
+  (`core.autocrlf` is on for the whole machine), and the format check then fails on every file.
+  The repository itself holds the correct endings, so CI is not affected. With nothing
+  uncommitted, write the work folder again:
+  `git -c core.autocrlf=false rm --cached -r -q . && git -c core.autocrlf=false reset --hard`.
 - Before every push: `git log --format='%ae %ce' origin/main..HEAD | sort -u` must show the
   noreply address only.
 - The owner's account now refuses any push that carries a private address (GitHub error GH007),

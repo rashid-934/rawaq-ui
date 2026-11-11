@@ -36,21 +36,61 @@ describe('RollingNumber', () => {
     ]);
   });
 
+  const still = () => [
+    ...screen.getByTestId('rolling-number').querySelectorAll<HTMLElement>('[data-still]'),
+  ];
+  /** The group that always reads left to right: the digits with their separators and signs. */
+  const numberGroup = () => windows()[0]!.parentElement!;
+
   it('keeps separators and units still', () => {
     render(<RollingNumber value={12480} text="12,480 SAR" />);
     expect(windows()).toHaveLength(5);
-    const root = screen.getByTestId('rolling-number');
-    const still = [...root.querySelectorAll('[aria-hidden="true"] > :not([data-digit])')];
-    expect(still.map((part) => part.textContent)).toEqual([',', ' SAR']);
+    expect(still().map((part) => part.textContent)).toEqual([',', ' ', 'SAR']);
     expect(screen.getByText('12,480 SAR')).toBeInTheDocument();
+  });
+
+  it('keeps the number in one left-to-right group and the unit after it', () => {
+    render(<RollingNumber value={12480} text="12,480 SAR" />);
+    const [comma, space, unit] = still();
+    for (const digit of windows()) {
+      expect(digit.parentElement).toBe(numberGroup());
+    }
+    expect(numberGroup()).toContainElement(comma!);
+    // The unit and its space are outside the group, after it: the page's direction places them
+    // (to the right of the number in English, to its left in Arabic or Urdu).
+    expect(numberGroup()).not.toContainElement(space!);
+    expect(numberGroup()).not.toContainElement(unit!);
+    expect(numberGroup().nextElementSibling).toBe(space);
+    expect(space!.nextElementSibling).toBe(unit);
   });
 
   it('keeps the letters of an Arabic unit together, in their own order', () => {
     renderRtl(<RollingNumber value={250} text="250 ر.س" />);
-    const root = screen.getByTestId('rolling-number');
-    const still = [...root.querySelectorAll('[aria-hidden="true"] > :not([data-digit])')];
-    expect(still.map((part) => part.textContent)).toEqual([' ر.س']);
+    expect(still().map((part) => part.textContent)).toEqual([' ', 'ر.س']);
     expect(windows().map((digit) => digit.dataset.digit)).toEqual(['2', '5', '0']);
+    expect(numberGroup()).not.toContainElement(still()[1]!);
+  });
+
+  it('keeps a unit written before the number before it', () => {
+    render(<RollingNumber value={250} text="SAR 250" />);
+    const [unit, space] = still();
+    expect(unit).toHaveTextContent('SAR');
+    expect(space!.nextElementSibling).toBe(numberGroup());
+    expect(numberGroup()).not.toContainElement(unit!);
+  });
+
+  it('keeps a sign and a percent mark with the number', () => {
+    render(<RollingNumber value={-5} text="-5.5%" />);
+    expect(still().map((part) => part.textContent)).toEqual(['-', '.', '%']);
+    for (const part of still()) {
+      expect(numberGroup()).toContainElement(part);
+    }
+  });
+
+  it('shows text that has no digit at all as it is', () => {
+    render(<RollingNumber value={0} text="n/a" />);
+    expect(windows()).toEqual([]);
+    expect(still().map((part) => part.textContent)).toEqual(['n/a']);
   });
 
   it('shows a true zero', () => {

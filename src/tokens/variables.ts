@@ -117,7 +117,11 @@ export function densityVariables(density: DensityTokens): CssVariables {
   };
 }
 
-/** The font stack of the page's locale, and its line height when the script needs one. */
+/**
+ * The font stack of the page's locale, and its line height when the script needs one. A style
+ * that sets a line height of its own takes the larger of the two, so tall letters are never
+ * squeezed: `line-height: max(1.3, var(--app-line-height, 0))`.
+ */
 export function fontVariables(font: ResolvedFont): CssVariables {
   return {
     '--app-font-body': font.family,

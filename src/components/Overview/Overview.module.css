@@ -56,7 +56,7 @@
   color: inherit;
   font-size: clamp(rem(20px), 0.9rem + 0.9vw, rem(28px));
   font-weight: 700;
-  line-height: 1.3;
+  line-height: max(1.3, var(--app-line-height, 0));
   overflow-wrap: anywhere;
 }
 
@@ -151,7 +151,7 @@
 .statLabel {
   font-size: var(--mantine-font-size-sm);
   font-weight: 600;
-  line-height: 1.35;
+  line-height: max(1.35, var(--app-line-height, 0));
   overflow-wrap: anywhere;
 }
 
@@ -190,13 +190,13 @@
 .statValue {
   font-size: rem(30px);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: max(1.1, var(--app-line-height, 0));
 }
 
 .statHint {
   color: var(--mantine-color-dimmed);
   font-size: var(--mantine-font-size-xs);
-  line-height: 1.4;
+  line-height: max(1.4, var(--app-line-height, 0));
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,13 +1,19 @@
 /*
  * Rolling number (docs/DESIGN_THEME.md section 7). Each digit is a window one line high over a
  * strip of the digits 0 to 9. The strip rests on its digit (--digit) and, when it first shows,
- * rolls there once from 0. Numbers always read left to right, in right-to-left pages too.
+ * rolls there once from 0.
  */
 .root {
   display: inline-flex;
 }
 
+/* The number and what is around it (a unit, a word), in the direction of the page. */
 .digits {
+  display: inline-flex;
+}
+
+/* The number itself always reads left to right, in right-to-left pages too. */
+.number {
   display: inline-flex;
   direction: ltr;
 }

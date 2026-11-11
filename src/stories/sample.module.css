@@ -1,0 +1,89 @@
+/* Styles of the sample app in the stories. Not part of the package. */
+
+.search {
+  flex: 1;
+  max-inline-size: rem(440px);
+}
+
+.padded {
+  display: grid;
+  gap: var(--mantine-spacing-lg);
+  padding: var(--mantine-spacing-lg);
+}
+
+.controls {
+  position: fixed;
+  inset-block-end: rem(16px);
+  inset-inline: 0;
+  z-index: 4000;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+
+  & > * {
+    pointer-events: auto;
+  }
+}
+
+/* Horizontal bars: name, track, value. */
+.bars {
+  display: grid;
+  gap: var(--mantine-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: minmax(rem(96px), 1fr) 3fr rem(48px);
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  font-size: var(--mantine-font-size-sm);
+}
+
+.track {
+  block-size: rem(8px);
+  overflow: hidden;
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-raised);
+}
+
+.fill {
+  display: block;
+  inline-size: var(--value);
+  block-size: 100%;
+  border-radius: inherit;
+  background-color: var(--app-accent);
+}
+
+/* Vertical bars: count, bar, day. */
+.columns {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: end;
+  gap: var(--mantine-spacing-sm);
+  min-block-size: rem(150px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: rem(4px);
+  font-size: var(--mantine-font-size-xs);
+}
+
+.columnFill {
+  inline-size: 100%;
+  max-inline-size: rem(36px);
+  block-size: var(--value);
+  border-start-start-radius: var(--mantine-radius-sm);
+  border-start-end-radius: var(--mantine-radius-sm);
+  background-color: var(--app-accent);
+}

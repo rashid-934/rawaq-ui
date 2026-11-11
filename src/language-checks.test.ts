@@ -11,7 +11,8 @@ const root = import.meta.dirname;
 /** What ships in the package: no tests, no stories, no test helpers. */
 const isSource = (file: string) =>
   /\.(?:ts|tsx|css)$/.test(file) &&
-  !/\.(?:test|story)\.tsx?$/.test(file) &&
+  !/\.test\.tsx?$/.test(file) &&
+  !file.startsWith('stories/') &&
   !file.startsWith('test-utils/');
 
 const sources: Record<string, string> = Object.fromEntries(

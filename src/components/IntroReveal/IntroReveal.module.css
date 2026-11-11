@@ -1,0 +1,82 @@
+/*
+ * The opening (docs/DESIGN_THEME.md section 7): under one second in all. The rail colour covers
+ * the window with the logo tile and the app name, then a circle shrinks into the bottom end
+ * corner (the bottom left corner in a right-to-left page), so a curved edge sweeps across and
+ * reveals the app.
+ *
+ * Safety: the layer never takes a click or a key, and the animation ends hidden by CSS alone,
+ * so the app is reachable even if no script runs.
+ */
+.layer {
+  --intro-corner: 100%;
+
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  background-color: var(--app-sidebar);
+  color: var(--app-sidebar-text);
+  pointer-events: none;
+  animation: reveal var(--app-motion-intro) var(--app-ease-in-out) forwards;
+
+  /* No opening below `sm`: a narrow window shows the app at once. */
+  @mixin smaller-than $mantine-breakpoint-sm {
+    display: none;
+  }
+}
+
+[dir='rtl'] .layer {
+  --intro-corner: 0%;
+}
+
+.mark {
+  display: flex;
+  align-items: center;
+  gap: rem(14px);
+  animation: mark var(--app-motion-intro-mark) ease backwards;
+}
+
+.logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: rem(52px);
+  block-size: rem(52px);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-highlight);
+  color: var(--app-highlight-text);
+  font-size: rem(24px);
+  font-weight: 800;
+}
+
+.name {
+  font-size: rem(22px);
+  font-weight: 700;
+}
+
+@keyframes reveal {
+  0%,
+  40% {
+    clip-path: circle(150vmax at var(--intro-corner) 100%);
+  }
+
+  100% {
+    clip-path: circle(0vmax at var(--intro-corner) 100%);
+    visibility: hidden;
+  }
+}
+
+@keyframes mark {
+  from {
+    opacity: 0;
+    transform: translateY(rem(6px));
+  }
+}
+
+/* Reduced motion: no opening at all. */
+@media (prefers-reduced-motion: reduce) {
+  .layer {
+    display: none;
+  }
+}

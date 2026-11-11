@@ -1,0 +1,111 @@
+/* The preset gallery of the stories. Not part of the package. */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(rem(280px), 1fr));
+  gap: var(--mantine-spacing-md);
+  margin: 0;
+  padding: var(--mantine-spacing-lg);
+  list-style: none;
+}
+
+/* One preset: its haze, with a small rail and a small card on it. */
+.tile {
+  display: flex;
+  gap: rem(10px);
+  padding: rem(10px);
+  border: rem(1px) solid var(--app-hairline);
+  border-radius: var(--mantine-radius-xl);
+  background-image: linear-gradient(135deg, var(--app-haze-from), var(--app-haze-to));
+}
+
+.rail {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: rem(10px);
+  inline-size: rem(36px);
+  padding-block: rem(8px);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-sidebar);
+}
+
+.glow {
+  inline-size: rem(24px);
+  block-size: rem(24px);
+  border-radius: 50%;
+  background-color: var(--app-glow);
+}
+
+.dot {
+  inline-size: rem(12px);
+  block-size: rem(12px);
+  border-radius: 50%;
+  background-color: var(--app-rail-icon);
+}
+
+.sheet {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: rem(6px);
+  min-inline-size: 0;
+  padding: var(--mantine-spacing-md);
+  border: rem(1px) solid var(--app-hairline);
+  border-radius: var(--mantine-radius-lg);
+  background-color: var(--app-surface);
+  color: var(--app-text);
+}
+
+.name {
+  margin: 0;
+  font-weight: 700;
+}
+
+.key {
+  margin: 0;
+  color: var(--app-text-muted);
+  font-family: var(--app-font-mono);
+  font-size: var(--mantine-font-size-xs);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: rem(6px);
+}
+
+.accent,
+.highlight,
+.count {
+  padding: rem(4px) rem(12px);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+}
+
+.accent {
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--app-accent);
+  color: var(--app-sidebar-text);
+}
+
+.highlight {
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-highlight);
+  color: var(--app-highlight-text);
+}
+
+.count {
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-glow);
+  color: var(--app-glow-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.link {
+  color: var(--app-accent-text);
+  font-size: var(--mantine-font-size-sm);
+  text-decoration: underline;
+}

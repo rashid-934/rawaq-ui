@@ -1,0 +1,64 @@
+/*
+ * Rolling number (docs/DESIGN_THEME.md section 7). Each digit is a window one line high over a
+ * strip of the digits 0 to 9. The strip rests on its digit (--digit) and, when it first shows,
+ * rolls there once from 0.
+ */
+.root {
+  display: inline-flex;
+}
+
+/* The number and what is around it (a unit, a word), in the direction of the page. */
+.digits {
+  display: inline-flex;
+}
+
+/* The number itself always reads left to right, in right-to-left pages too. */
+.number {
+  display: inline-flex;
+  direction: ltr;
+}
+
+.window,
+.still {
+  display: block;
+  block-size: 1lh;
+}
+
+.window {
+  overflow: hidden;
+}
+
+/* A separator, a sign or a unit: it reads in its own direction (an Arabic unit right to left). */
+.still {
+  white-space: pre;
+  unicode-bidi: plaintext;
+}
+
+.strip {
+  display: block;
+  transform: translateY(calc(var(--digit) * -10%));
+  animation: roll var(--app-motion-roll) var(--app-ease-out) backwards;
+  animation-delay: calc(
+    min(var(--order, 0), var(--app-motion-max-stagger)) * var(--app-motion-roll-stagger)
+  );
+
+  /* The ten digits, one per line. Drawn by CSS, so the page text holds the real number only. */
+  &::before {
+    content: '0\a 1\a 2\a 3\a 4\a 5\a 6\a 7\a 8\a 9';
+    display: block;
+    white-space: pre;
+  }
+}
+
+@keyframes roll {
+  from {
+    transform: translateY(0);
+  }
+}
+
+/* Reduced motion: the final number at once. */
+@media (prefers-reduced-motion: reduce) {
+  .strip {
+    animation: none;
+  }
+}

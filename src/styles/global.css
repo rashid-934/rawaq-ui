@@ -1,0 +1,232 @@
+/*
+ * App-wide rules. Colours, sizes and timings come from the theme's variables (`--app-*` and
+ * `--mantine-*`, see src/tokens/variables.ts), never literals.
+ */
+
+html {
+  /* Design v2 haze: a soft gradient from the top start corner to the bottom end corner. */
+  --app-haze: linear-gradient(135deg, var(--app-haze-from), var(--app-haze-to));
+
+  /* The app header inside the frame, and where sticky side panels stop under it. */
+  --app-header-height: rem(56px);
+  --app-sticky-top: calc(var(--app-frame-margin) + var(--app-header-height) + rem(12px));
+
+  /* Table header rows stick right under the app header. */
+  --app-table-sticky-top: calc(var(--app-frame-margin) + var(--app-header-height));
+
+  /* Keeps focused elements clear of the frame edge and the sticky header (WCAG 2.4.11). */
+  scroll-padding-block-start: calc(var(--app-sticky-top) + rem(8px));
+
+  /* ...and clear of the sticky save bars and the floating help button at the bottom. */
+  scroll-padding-block-end: calc(var(--app-frame-margin) + rem(120px));
+}
+
+html[dir='rtl'] {
+  --app-haze: linear-gradient(225deg, var(--app-haze-from), var(--app-haze-to));
+}
+
+body {
+  background-color: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  -webkit-font-smoothing: antialiased;
+
+  /* The haze belongs to the desktop frame; a narrow window keeps the plain background. */
+  @mixin larger-than $mantine-breakpoint-sm {
+    background-image: var(--app-haze);
+    background-attachment: fixed;
+  }
+}
+
+/* Money and quantities line up in columns. */
+.tabular,
+[data-numeric] {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Focus ring: 3px highlight colour (docs/DESIGN_THEME.md section 4). The highlight alone is too
+ * light for 3:1 on the page background, so a 2px dark ring sits inside it (WCAG 1.4.11).
+ */
+.mantine-focus-auto.mantine-focus-auto:focus-visible,
+.mantine-Input-input.mantine-Input-input:focus-visible,
+:where(a, button, [tabindex]:not([tabindex='-1'])):focus-visible {
+  outline: rem(3px) solid var(--app-highlight);
+  outline-offset: rem(2px);
+  box-shadow: 0 0 0 rem(2px) var(--app-focus-inner);
+}
+
+/* Icons that point "forward" (chevrons, arrows) flip in right-to-left layouts. */
+[dir='rtl'] .mirror-rtl {
+  transform: scaleX(-1);
+}
+
+/*
+ * Letter spacing breaks the joins between the letters of Arabic, Urdu and Persian. The rule
+ * follows the direction of the text, not one language, so every right-to-left locale an app adds
+ * is covered.
+ */
+:dir(rtl) {
+  letter-spacing: normal !important;
+}
+
+/*
+ * Motion (docs/DESIGN_THEME.md section 7; the timings are in src/tokens/motion.ts). Entrance:
+ * fade and rise 8px in 0.35s, staggered 40ms per card (--stagger) for at most 8 cards. Hover:
+ * buttons lift 1px with a soft shadow in 0.15s. Work pages stay quiet: no entrance and no lift,
+ * nothing may delay reading data.
+ */
+.rise {
+  animation: rise var(--app-motion-rise) var(--app-ease-out) both;
+  animation-delay: calc(
+    min(var(--stagger, 0), var(--app-motion-max-stagger)) * var(--app-motion-rise-stagger)
+  );
+}
+
+[data-page-kind='work'] .rise {
+  animation: none;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--app-motion-rise-distance));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Bars grow once (section 7): `.grow-x` for a horizontal bar, from the start side; `.grow-y` for
+ * a vertical bar, from the bottom. `--order` staggers a row of bars. Work pages stay quiet.
+ */
+.grow-x,
+.grow-y {
+  animation: grow-x var(--app-motion-grow) var(--app-ease-out) backwards;
+  animation-delay: calc(
+    min(var(--order, 0), var(--app-motion-max-stagger)) * var(--app-motion-grow-stagger)
+  );
+}
+
+.grow-x {
+  transform-origin: left center;
+}
+
+[dir='rtl'] .grow-x {
+  transform-origin: right center;
+}
+
+.grow-y {
+  animation-name: grow-y;
+  transform-origin: center bottom;
+}
+
+[data-page-kind='work'] .grow-x,
+[data-page-kind='work'] .grow-y {
+  animation: none;
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.mantine-Button-root {
+  transition:
+    transform var(--app-motion-fast) ease,
+    box-shadow var(--app-motion-fast) ease,
+    background-color var(--app-motion-fast) ease;
+
+  &:hover:not(:disabled, [data-disabled], [data-loading], [data-page-kind='work'] *) {
+    transform: translateY(rem(-1px));
+    box-shadow: var(--app-shadow-sm);
+  }
+
+  &:active:not(:disabled, [data-disabled]) {
+    transform: none;
+  }
+}
+
+/*
+ * Work page tables (docs/DESIGN_THEME.md section 4.4): the header row sticks under the app header
+ * on the Card surface, rows tint on hover, a selected row takes the glow tint. Sizes and spacing
+ * come from the Mantine theme (src/theme/create-theme.ts); `pageTableProps` makes a header stick.
+ */
+.mantine-Table-thead.mantine-Table-thead {
+  background-color: var(--app-surface);
+}
+
+.mantine-Table-tr[data-selected],
+.mantine-Table-tr[aria-selected='true'] {
+  background-color: var(--app-row-selected);
+}
+
+/* A table scrolls sideways on its own only on narrow windows, so its header can stick. */
+.table-wrap {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    overflow-x: auto;
+
+    & > table {
+      min-inline-size: rem(520px);
+    }
+  }
+}
+
+/*
+ * A control in a table row that takes the keyboard focus must not hide under the sticky table
+ * header: the header row (about 36px) sits below the app header that `scroll-padding` on <html>
+ * already clears, so these controls ask for that much more room (WCAG 2.4.11).
+ */
+.mantine-Table-tbody :where(a, button, input, select, textarea, [tabindex]) {
+  scroll-margin-block-start: rem(40px);
+}
+
+/*
+ * Comfortable density: `md` buttons and inputs are 40px high (section 5). Compact uses `sm`
+ * (36px) by default and leaves `md` at Mantine's own height, so the variable is only a
+ * Comfortable override (src/tokens/density.ts, `controlHeightMd`).
+ */
+.mantine-Button-root.mantine-Button-root {
+  --button-height-md: var(--app-control-height-md, rem(42px));
+}
+
+.mantine-Input-wrapper.mantine-Input-wrapper,
+.mantine-InputWrapper-root .mantine-Input-wrapper {
+  --input-height-md: var(--app-control-height-md, rem(42px));
+}
+
+/* Numbers in tables and totals: tabular digits, aligned to the end side (section 4.4). */
+.num {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* No lift either: hover changes colour only. */
+  .mantine-Button-root:hover,
+  .rise {
+    transform: none !important;
+  }
+}

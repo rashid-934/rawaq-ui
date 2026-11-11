@@ -30,8 +30,3 @@ It has:
 | `src/app/[locale]/shell.tsx` | The rail's entries and the header. Add a page to `items` to add it to the rail. |
 | `src/app/starter.css` | The app's own styles. They use the `--app-*` variables, never literal colours. |
 | `messages/en.json`, `messages/ar.json` | The app's words. Rawaq UI's own words in English and Arabic are built in. |
-
-## About the lockfile
-
-`yarn.lock` is empty until the first install, which fills it in. It is there so Yarn treats this
-folder as its own project.

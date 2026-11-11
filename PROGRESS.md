@@ -27,7 +27,7 @@ The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions
     English and Arabic get exactly the theme they had before.
   - `rtlLocales` (`ar`, `ur`, `fa`, `he`) and `directionOf(locale, extraRtlLocales?)`.
 - `tokensCss()` and `tokensJson()` (`src/tokens/files.ts`) are exported, and `yarn build` writes
-  `dist/tokens.css` and `dist/tokens.json` with them (`scripts/write-token-files.mjs`), exported as
+  `dist/tokens.css` and `dist/tokens.json` with them (`scripts/finish-build.mjs`), exported as
   `rawaq-ui/tokens.css` and `rawaq-ui/tokens.json`. In `tokens.css` the default look is on `:root`;
   `data-rawaq-preset`, `data-rawaq-sidebar` and `data-rawaq-density` choose another.
 - Words: `src/labels.ts`. English and Arabic are built in (`rawaqLabels`, `labelsFor`); every

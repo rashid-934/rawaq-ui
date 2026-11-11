@@ -18,7 +18,7 @@ import {
 
 // Builds the text of `tokens.css` and `tokens.json` from the tokens in `src/tokens`, so a stack
 // without React or Mantine gets the same names and values. The package build writes both files
-// into `dist` (scripts/write-token-files.mjs). Never edit the generated files.
+// into `dist` (scripts/finish-build.mjs). Never edit the generated files.
 
 const swatchKeys = Object.keys(sidebarSwatches) as SidebarSwatch[];
 

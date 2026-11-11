@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 // The package build: ES modules, one file per source file (so `'use client'` stays at the top of
 // the client files), and all CSS in one `dist/styles.css`. React, Mantine and the icons are not
 // bundled: the app that uses the package brings them. `tokens.css` and `tokens.json` are written
-// right after this build by scripts/write-token-files.mjs.
+// right after this build by scripts/finish-build.mjs.
 export default defineConfig({
   css: {
     modules: {

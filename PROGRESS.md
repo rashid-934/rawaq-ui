@@ -1,6 +1,6 @@
 # Progress
 
-## Status note, 12 Nov 2026 (hardening pass, branch `rawaq-hardening-2`, not finished)
+## Status note, 12 Nov 2026 (hardening pass, branch `rawaq-hardening-3`, not finished)
 
 The owner approved a hardening pass on 12 Nov 2026 (no change to colours, layout, spacing, fonts
 or shapes; smoother motion, less weight, fewer bugs, safety, everything tested twice). It has two
@@ -12,7 +12,14 @@ plan with its 14 additions is on the owner's laptop:
 merged from the owner's account 12 seconds apart; CI on `main` passed). It holds everything under
 "Done" below up to the glow's CSS transition (`4274f2b`). No release was made: the latest release
 is still 1.0.0, so Hub-P- is not affected. The branch `rawaq-hardening` is merged and takes no
-more commits; the rest of stage A continues on `rawaq-hardening-2`, made from `main`.
+more commits.
+
+**Pull request 6 merged the second part into `main`** on 12 Nov 2026 at 11:32 UTC (opened at
+11:31 and merged from the owner's account; head `0813018`: A3, A4, A6 and the status note). Its
+branch `rawaq-hardening-2` is merged and deleted, and takes no more commits. The rest of stage A
+(A7 to A10) continues on `rawaq-hardening-3`, made from `main` (`45763d8`). Before every push the
+state of the branch's pull request is read with `gh`: a push goes out only while there is no pull
+request yet or its state is exactly OPEN.
 
 ### Done (stage A, parts A0 to A6 and a part of A8)
 
@@ -160,7 +167,8 @@ His gate: during the 0.2 s slide, no long task over 50 ms and no gap between two
 ### Next, in this order
 
 The owner answered on 12 Nov 2026 "Yes, continue": the rest of stage A goes on
-`rawaq-hardening-2`, and its pull request carries the stage A report.
+`rawaq-hardening-3` (since pull request 6 merged `rawaq-hardening-2`), and its pull request
+carries the stage A report.
 
 1. **A7**: `@playwright/test` as a development dependency (approved with the plan). Smoke test on
    the starter, built against the packed branch package (as the CI starter job does; never commit

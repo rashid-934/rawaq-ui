@@ -2,6 +2,13 @@
 //   node shots.cjs <storybook-static dir> <out dir>
 // Every story x 7 presets x 2 densities x English and Arabic at 1280 x 720, plus the Dashboard
 // screen at 1920 x 1080. Reduced motion, animations finished, fonts loaded.
+//
+// Chrome runs with --disable-partial-raster. Without it, Chrome repaints only the changed
+// rectangles of a tile while the page loads, and soft shadows and smooth edges keep traces of the
+// order of those repaints: up to 1 level of 255 in a shadow, and up to about 20 in one smooth edge
+// pixel. That order depends on timing, so the same build gave different pictures from one run to
+// the next (found on 12 Nov 2026). With the switch, two runs and two builds that draw the same
+// page give the same pixels.
 const { existsSync, mkdirSync, readFileSync, statSync } = require('node:fs');
 const { createServer } = require('node:http');
 const { extname, join, normalize, resolve } = require('node:path');
@@ -24,6 +31,8 @@ const DENSITIES = ['compact', 'comfortable'];
 const LOCALES = ['en', 'ar'];
 const WIDE_STORY = 'screens--overview';
 const ONLY_WIDE = process.env.ONLY_WIDE === '1';
+// ONLY_STORIES=screens--loading,screens--overview takes those stories only (quick rounds).
+const ONLY_STORIES = (process.env.ONLY_STORIES || '').split(',').filter(Boolean);
 const WORKERS = 2;
 
 const types = {
@@ -56,6 +65,7 @@ const server = createServer((request, response) => {
   const stories = Object.values(JSON.parse(readFileSync(join(site, 'index.json'), 'utf8')).entries)
     .filter((entry) => entry.type === 'story')
     .map((entry) => entry.id)
+    .filter((id) => ONLY_STORIES.length === 0 || ONLY_STORIES.includes(id))
     .sort();
 
   const jobs = [];
@@ -74,7 +84,9 @@ const server = createServer((request, response) => {
     }
   }
 
-  const browser = await chromium.launch({ channel: 'chrome' });
+  // See the top of this file. CHROME_ARGS="..." adds more switches.
+  const args = ['--disable-partial-raster', ...(process.env.CHROME_ARGS || '').split(' ')];
+  const browser = await chromium.launch({ channel: 'chrome', args: args.filter(Boolean) });
   const failures = [];
   let next = 0;
 

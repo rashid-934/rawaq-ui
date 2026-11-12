@@ -279,8 +279,10 @@ request yet or its state is exactly OPEN.
     workflow refuses a tag whose commit is not on `main`; the test server is never reused.
     Checked and not changed: the copy status is a `span` already (the reviewer's "div in p" was
     wrong); CSP keeps `'unsafe-inline'` (nonces make every page dynamic: ask first); the `alert`
-    covers the whole error card, the rail's count has no unit word, the reference code has no
-    `lang` (minor, each would change the DOM of released parts); Mantine closes tooltips on Esc.
+    covers the whole error card (moving it needs an extra element in the card, a layout risk, for
+    a minor gain), the rail's count has no unit word (a change to a part released in 1.0.0), the
+    reference code has no `lang` (a code is in no language; a screen reader spells it); Mantine
+    closes tooltips on Esc.
   - Found while testing: the comfort motion checks sampled once, 90 ms after the click, and failed
     when a busy laptop started a slide late. They now follow each slide on every frame: some
     frame must be on the way and the way must go one direction (glow, "Show labels" push,

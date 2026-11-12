@@ -232,7 +232,8 @@ Node.js 22 or newer and Yarn 4 through Corepack (`corepack yarn <script>`).
 | `yarn check:dist` | Checks the built package |
 | `yarn check:starter` | Checks that the starter installs the version in `package.json` |
 | `yarn storybook` | Storybook on `http://localhost:6006` |
-| `yarn storybook:build`, then `yarn axe` | Runs axe on every story (WCAG 2.2 AA, both languages, seven presets) |
+| `yarn storybook:build`, then `yarn axe` | Runs axe on every story (WCAG 2.2 AA, both languages, seven presets, both densities) |
+| `yarn storybook:build`, then `yarn comfort` | Layout, target size, keyboard, 200 percent zoom, high contrast and right-to-left motion checks on every story |
 
 The rules for changes are in [CLAUDE.md](CLAUDE.md).
 

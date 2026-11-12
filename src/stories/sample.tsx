@@ -4,6 +4,8 @@ import {
   type CSSProperties,
   type ReactNode,
   useContext,
+  useEffect,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -15,7 +17,8 @@ import {
   IconSearch,
   IconSettings,
 } from '@tabler/icons-react';
-import { Avatar, TextInput } from '@mantine/core';
+import { Avatar, Burger, CloseButton, em, TextInput } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import {
   type FontMap,
   Frame,
@@ -86,6 +89,8 @@ export interface Words {
   noSuppliersHelp: string;
   cardWorks: string;
   breakCard: string;
+  openMenu: string;
+  closeMenu: string;
   /** Words for the components themselves, for a language that is not built in. */
   labels?: Partial<RawaqLabels>;
 }
@@ -161,6 +166,8 @@ const dictionary = {
     noSuppliersHelp: 'Add the first one to start buying from them.',
     cardWorks: 'This card works.',
     breakCard: 'Break this card',
+    openMenu: 'Open the menu',
+    closeMenu: 'Close the menu',
   },
   ar: {
     appName: 'رواق',
@@ -232,6 +239,8 @@ const dictionary = {
     noSuppliersHelp: 'أضف أول مورد لتبدأ الشراء منه.',
     cardWorks: 'هذه البطاقة تعمل.',
     breakCard: 'عطّل هذه البطاقة',
+    openMenu: 'افتح القائمة',
+    closeMenu: 'أغلق القائمة',
   },
   ur: {
     appName: 'رواق',
@@ -297,6 +306,8 @@ const dictionary = {
     noSuppliersHelp: 'خریداری شروع کرنے کے لیے پہلا سپلائر شامل کریں۔',
     cardWorks: 'یہ کارڈ کام کر رہا ہے۔',
     breakCard: 'اس کارڈ کو خراب کریں',
+    openMenu: 'مینو کھولیں',
+    closeMenu: 'مینو بند کریں',
     labels: {
       emptyTitle: 'ابھی یہاں کچھ نہیں',
       errorTitle: 'کچھ غلط ہو گیا',
@@ -366,6 +377,41 @@ export function AppShell({
   const [pathname, setPathname] = useState(path);
   const [showLabels, setShowLabels] = useState(labelsOpen);
 
+  // Below the `sm` width (also a desktop window zoomed to 200 percent) the rail is a drawer that
+  // the menu button in the header opens, as an app does it. Wider windows never show the button.
+  const narrow = useMediaQuery(`(max-width: ${em(767.98)})`) ?? false;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const drawerOpen = narrow && menuOpen;
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const nav = useRef<HTMLElement>(null);
+  const go = (href: string) => {
+    setPathname(href);
+    setMenuOpen(false);
+  };
+
+  // The open drawer takes the focus and Esc closes it. Closed, the focus goes back to the button.
+  useEffect(() => {
+    if (!drawerOpen) {
+      return undefined;
+    }
+    const drawer = nav.current;
+    drawer?.querySelector<HTMLElement>('a[href], button:not([disabled])')?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+      }
+    };
+    drawer?.addEventListener('keydown', onKeyDown);
+    return () => {
+      drawer?.removeEventListener('keydown', onKeyDown);
+      const focused = document.activeElement;
+      if (!focused || focused === document.body || drawer?.contains(focused)) {
+        // After the draw that lifts `inert` from the page.
+        requestAnimationFrame(() => menuButton.current?.focus());
+      }
+    };
+  }, [drawerOpen]);
+
   const items: RailItem[] = [
     {
       key: 'dashboard',
@@ -401,7 +447,7 @@ export function AppShell({
   ];
 
   return (
-    <Go value={setPathname}>
+    <Go value={go}>
       <Frame
         pageKind={pageKind}
         pathname={pathname}
@@ -409,8 +455,11 @@ export function AppShell({
         locale={locale}
         labels={words.labels}
         after={after}
+        drawerOpen={drawerOpen}
+        onCloseDrawer={() => setMenuOpen(false)}
         rail={
           <Rail
+            ref={nav}
             id="story-nav"
             appName={words.appName}
             items={items}
@@ -420,12 +469,33 @@ export function AppShell({
             linkComponent={StoryLink}
             showLabels={showLabels}
             onToggleLabels={() => setShowLabels((shown) => !shown)}
+            open={drawerOpen}
+            // A closed drawer is only moved off screen; inert keeps it out of the keyboard's way.
+            inert={narrow && !menuOpen}
             locale={locale}
             labels={words.labels}
-          />
+          >
+            <CloseButton
+              size="lg"
+              radius="xl"
+              onClick={() => setMenuOpen(false)}
+              aria-label={words.closeMenu}
+            />
+          </Rail>
         }
         header={
           <>
+            <Burger
+              ref={menuButton}
+              opened={menuOpen}
+              onClick={() => setMenuOpen((opened) => !opened)}
+              hiddenFrom="sm"
+              size="sm"
+              aria-label={menuOpen ? words.closeMenu : words.openMenu}
+              aria-expanded={menuOpen}
+              aria-controls="story-nav"
+              data-testid="menu-button"
+            />
             <TextInput
               className={classes.search}
               aria-label={words.search}

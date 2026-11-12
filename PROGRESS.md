@@ -21,7 +21,7 @@ branch `rawaq-hardening-2` is merged and deleted, and takes no more commits. The
 state of the branch's pull request is read with `gh`: a push goes out only while there is no pull
 request yet or its state is exactly OPEN.
 
-### Done (stage A, parts A0 to A6 and a part of A8)
+### Done (stage A, parts A0 to A7 and a part of A8)
 
 - **Baseline (A0)**, taken from `main` before any change:
   - 448 pictures of the built Storybook (15 stories x 7 presets x 2 densities x English and
@@ -140,10 +140,59 @@ request yet or its state is exactly OPEN.
   branch package: every page 200 (the missing one 404), no console error, no hydration warning,
   and with Onyx Black, Comfortable, Arabic the server's HTML already has `dir="rtl"` and the Onyx
   rail colour. In production it answers 404 unless `RAWAQ_GALLERY=1` (checked both ways).
-  **Open:** the 404 page's first HTML is Next.js's error document (`<html id="__next_error__">`),
-  and the not-found state appears once the scripts run. Moving `not-found.tsx` below the root
-  layout (the route group `(pages)`) did not change it. Find the cause in A7 with the first-frame
-  test (it matters for the Hub-P- not-found pages in stage B too).
+  The 404 page's first HTML is Next.js's error document (`<html id="__next_error__">`), and the
+  not-found state appears once the scripts run: explained in A7 below.
+- **A7 (browser tests)**: `@playwright/test` 1.65.0 (the same version as the `playwright-core`
+  already there), `playwright.config.ts` and `e2e/`. The tests start `next start` on the starter,
+  which is built against this branch's packed package first (steps at the top of the config; the
+  `file:` address is never committed). On this laptop they use the installed Chrome, started with
+  `--disable-partial-raster`; in CI `E2E_BROWSERS` picks Chromium, Firefox and WebKit (A9).
+  - `yarn e2e` (20 tests, all green on 12 Nov 2026): `e2e/smoke.spec.ts` opens the 4 starter pages
+    and the 6 gallery pages plus the missing one in English and Arabic; each fails on a console
+    error, a hydration warning, a script error, an answer of 400 or more (only the missing page's
+    own 404 is expected) or a failed request, checks `lang` and `dir`, and runs axe (WCAG 2.2 AA).
+    The error page shows a reference code and no message or stack. `e2e/first-frame.spec.ts`
+    (Chromium) saves Onyx Black, Comfortable, Arabic in the gallery's cookie and opens the Work
+    page: the first painted frame of Chrome's own screen recording already has the rail on the
+    right in Onyx colours (pixels read on a canvas, the rail's colour taken from the installed
+    package's `tokens.json`); with scripts off, the server's HTML alone has `lang="ar"`,
+    `dir="rtl"`, the same rail place, the Onyx variables and the Comfortable spacing, and is
+    painted the same way.
+  - Each check was proven to catch a planted problem first (pages made for it and deleted again):
+    a console error, a failed request, a hydration mismatch (React error 418), an image without a
+    name (axe `image-alt`), and a theme that waits for the scripts (the first frame showed the
+    default rail colour `rgb(23, 59, 48)`, and the server's HTML had the default variables).
+  - `yarn e2e:perf` (Chromium, processor slowed 4 times, run alone; 8 tests, all green):
+    - Load, longest task: `/en` 160 ms, `/ar` 104 ms, `/en/suppliers` 60 ms, `/ar/suppliers`
+      68 ms. Limit 200 ms.
+    - "Show labels" (reported only, the owner kept it): open passes 3 of 7 (English) and 1 of 7
+      (Arabic), close 1 of 7 and 1 of 7; worst gap 117 ms, longest task 86 ms. The same picture
+      as before the changes.
+    - The glow: its window starts at the glow's own `transitionstart`, because the glow moves
+      only once the click's new page is in place (Rail.tsx follows the address): 0.2 to 0.4 s after
+      the press at 4x, after the page change's own work (51 to 74 ms for the click, 99 to 160 ms
+      for the new page). From the table page to the Overview it passes 6 of 7 in both languages
+      (worst gap 33 ms); the misses are a task of 54 to 73 ms that starts 48 to 59 ms before the
+      slide and ends about 14 ms into it: the Overview's first layout, in the frame that starts
+      the slide. To a light page (gallery Work to Empty) it passes 7 of 7 in both languages. The
+      test needs most visits to pass on both. Each test writes its numbers to
+      `e2e-results/<test>/numbers.json`.
+  - **Why the gallery's 404 HTML is `__next_error__`** (found with two throwaway routes, then
+    deleted): React does not run error boundaries while it draws a page on the server, and a
+    `not-found.tsx` is an error boundary. So when a page calls `notFound()` during a dynamic
+    render, the error leaves the server's first draw, and Next.js 16 answers 404 with its empty
+    error document plus the page data; the browser then draws the nearest `not-found.tsx`. A probe
+    with a plain server-only not-found file did the same (404, `__next_error__`). With a
+    `<Suspense>` around the page, the shell was drawn by the server, but the answer became 200 and
+    the not-found text was still drawn by the browser. Only addresses that match no route are drawn
+    by the server (Next.js's own `_not-found`; one in the gallery's layout would need
+    `global-not-found`, still experimental in Next.js 16, so not used). The gallery keeps its real
+    404 status; the test waits for the not-found state. For stage B: Hub-P-'s `notFound()` pages
+    behave the same (a white first frame, then the not-found state), and the first-frame test
+    there applies to normal pages.
+  - Starter on Next.js 16.3.8: `yarn npm audit` lists two critical and one high advisory (fixed
+    after 16.4.0); the starter's upgrade is in A8. Hub-P- has the same version: proposed to the
+    owner as its own task on 12 Nov 2026, not part of this pass.
 
 ### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
 
@@ -170,15 +219,7 @@ The owner answered on 12 Nov 2026 "Yes, continue": the rest of stage A goes on
 `rawaq-hardening-3` (since pull request 6 merged `rawaq-hardening-2`), and its pull request
 carries the stage A report.
 
-1. **A7**: `@playwright/test` as a development dependency (approved with the plan). Smoke test on
-   the starter, built against the packed branch package (as the CI starter job does; never commit
-   the `file:` address): every starter page and every gallery page, English and Arabic, fails on a
-   console error, a hydration warning or a failed request; axe on each; at CPU 4x no long task
-   over 200 ms on load, and the smooth gate for the slides (report "Show labels" as it is, see
-   above); the first-frame test: a gallery cookie with Onyx Black, Comfortable, Arabic, the first
-   painted frame captured (the browser's screen recording, and once with scripts off) must show
-   the rail on the right in Onyx colours. Then the open 404 question above. Start Chrome with
-   `--disable-partial-raster` for any picture.
+1. ~~A7~~ done (above).
 2. The rest of **A8**: `yarn npm audit` (root and starter; a major upgrade = ask first), secretlint
    on the files and the whole history, a guard test against `dangerouslySetInnerHTML`, `eval` and
    `new Function`, `THIRD_PARTY_LICENSES.md` (runtime and development lists; the OFL fonts

@@ -14,6 +14,7 @@ const SINGLE_FILES = [
   'vite.config.ts',
   'vitest.config.ts',
   'vitest.setup.ts',
+  'examples/starter/next.config.mjs',
 ];
 const CODE_FILE = /\.(?:ts|tsx|js|jsx|mjs|cjs)$/;
 const THIS_FILE = 'src/code-safety.test.ts';
@@ -35,11 +36,21 @@ const forbidden: [what: string, pattern: RegExp][] = [
   ['dangerouslySetInnerHTML', /\bdangerouslySetInnerHTML\b/],
   // `window.eval(` too; Playwright's `$eval(` is a different call.
   ['eval', /(?<![\w$])eval\s*\(/],
-  ['new Function', /\bnew\s+Function\s*\(/],
-  ['innerHTML or outerHTML written', /\.(?:inner|outer)HTML\s*\+?=(?!=)/],
+  ['eval reached by name', /\[\s*['"`]eval['"`]\s*\]|,\s*eval\s*\)/],
+  // `new Function(`, `Function(` and `window.Function(`; not `isFunction(` or a type.
+  ['Function', /(?<![\w$])Function\s*\(/],
+  [
+    'innerHTML or outerHTML written',
+    /(?:\.(?:inner|outer)HTML|\[\s*['"`](?:inner|outer)HTML['"`]\s*\])\s*\+?=(?!=)/,
+  ],
   ['insertAdjacentHTML', /\.insertAdjacentHTML\s*\(/],
+  ['setHTMLUnsafe', /\bsetHTMLUnsafe\s*\(/],
+  ['createContextualFragment', /\.createContextualFragment\s*\(/],
   ['document.write', /\bdocument\.write(?:ln)?\s*\(/],
   ['a timer that runs a string', /\bset(?:Timeout|Interval)\s*\(\s*['"`]/],
+  ['a frame drawn from a string', /\bsrcdoc\b/i],
+  ['a script address', /['"`]\s*javascript:/i],
+  ['code loaded from a data address', /\bimport\s*\(\s*['"`]data:/],
 ];
 
 function problemsIn(text: string): string[] {
@@ -57,6 +68,16 @@ describe('no HTML from strings and no strings run as code', () => {
     "node.insertAdjacentHTML('beforeend', text);",
     'document.write(text);',
     "setTimeout('run()', 10);",
+    "window['eval'](input);",
+    '(0, eval)(input);',
+    "const run = Function('return 1');",
+    'new window.Function(body);',
+    "node['innerHTML'] = label;",
+    'node.setHTMLUnsafe(text);',
+    'range.createContextualFragment(text);',
+    '<iframe srcDoc={page} />',
+    '<a href="javascript:void(0)">',
+    "await import('data:text/javascript,run()');",
   ])('catches: %s', (line) => {
     expect(problemsIn(line)).not.toEqual([]);
   });
@@ -68,6 +89,9 @@ describe('no HTML from strings and no strings run as code', () => {
     'const html = node.innerHTML;',
     'setTimeout(() => run(), 10);',
     'const fn: Function = noop;',
+    'if (isFunction(value)) {',
+    "await page.$eval('h1', (node) => node.textContent);",
+    "const label = 'Evaluate (beta)';",
   ])('lets through: %s', (line) => {
     expect(problemsIn(line)).toEqual([]);
   });

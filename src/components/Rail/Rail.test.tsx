@@ -175,6 +175,46 @@ describe('Rail', () => {
     vi.unstubAllGlobals();
   });
 
+  it('measures again when a block inside the rail changes size or a late font arrives', () => {
+    const watched: Element[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe(element: Element) {
+          watched.push(element);
+        }
+
+        unobserve() {}
+
+        disconnect() {}
+      }
+    );
+    const fonts = new EventTarget();
+    Object.defineProperty(document, 'fonts', { value: fonts, configurable: true });
+    let moved = 0;
+    mockLayout(() => moved);
+    renderRail();
+    const glow = screen.getByTestId('rail-glow');
+    expect(glow).toHaveStyle({ transform: 'translate(12px, 102px)' });
+    // The rail and every block in it (the list, the bottom block with the "not saved" note),
+    // but not the glow itself.
+    const rail = glow.parentElement;
+    expect(rail).not.toBeNull();
+    expect(watched).toContain(rail);
+    expect(watched).toContain(rail?.querySelector('[data-rail-scroll]'));
+    expect(watched).toContain(screen.getByTestId('rail-labels-not-saved').parentElement);
+    expect(watched).not.toContain(glow);
+
+    // The font arrives and the lines get taller: the glow follows its entry.
+    moved = 5;
+    act(() => {
+      fonts.dispatchEvent(new Event('loadingdone'));
+    });
+    expect(glow).toHaveStyle({ transform: 'translate(12px, 107px)' });
+    Reflect.deleteProperty(document, 'fonts');
+    vi.unstubAllGlobals();
+  });
+
   it('draws an entry again only when something it shows has changed', () => {
     let draws = 0;
     const Counted = () => {

@@ -1,7 +1,9 @@
 // Every page of the starter and of the gallery, in English and Arabic: the page is drawn in the
 // right language and direction, with no console error, no hydration warning, no failed request,
-// and no axe finding (WCAG 2.2 AA).
+// no axe finding (WCAG 2.2 AA), and nothing private in the HTML the server sends (keys, email
+// addresses, a client's name, folder paths), also for pages drawn per request.
 import { expect, test } from '@playwright/test';
+import { privateFindings } from '../scripts/lib/private-patterns.mjs';
 import {
   axeFindings,
   GALLERY_MISSING,
@@ -10,6 +12,7 @@ import {
   setLook,
   settle,
   STARTER_PAGES,
+  tokens,
   watchPage,
 } from './support';
 
@@ -27,6 +30,7 @@ for (const path of STARTER_PAGES) {
     const problems = watchPage(page);
     const response = await page.goto(path);
     expect(response?.status()).toBe(200);
+    expect(privateFindings((await response?.text()) ?? ''), 'served HTML').toEqual([]);
     await settle(page);
     const locale = path.split('/')[1] ?? 'en';
     await expect(page.locator('html')).toHaveAttribute('lang', locale);
@@ -47,6 +51,7 @@ for (const locale of LOCALES) {
         const problems = watchPage(page);
         const response = await page.goto(path);
         expect(response?.status()).toBe(200);
+        expect(privateFindings((await response?.text()) ?? ''), 'served HTML').toEqual([]);
         await settle(page);
         await expect(page.locator('html')).toHaveAttribute('lang', locale);
         await expect(page.locator('html')).toHaveAttribute('dir', dirOf(locale));
@@ -68,6 +73,7 @@ for (const locale of LOCALES) {
       const problems = watchPage(page, GALLERY_MISSING);
       const response = await page.goto(GALLERY_MISSING);
       expect(response?.status()).toBe(404);
+      expect(privateFindings((await response?.text()) ?? ''), 'served HTML').toEqual([]);
       await settle(page);
       // Next.js draws a page's not-found file in the browser (PROGRESS.md, A7): wait for it.
       const state = page.getByTestId('empty-state');
@@ -79,3 +85,31 @@ for (const locale of LOCALES) {
     });
   });
 }
+
+test('the gallery look bar changes nothing until "Apply", then the server draws the choice', async ({
+  page,
+}) => {
+  const sidebar = () =>
+    page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--app-sidebar').trim()
+    );
+  await page.goto(GALLERY_PAGES[1] ?? '');
+  await settle(page);
+  const before = await sidebar();
+  let loads = 0;
+  page.on('load', () => {
+    loads += 1;
+  });
+  // A choice alone (as the arrow keys make it) does not reload the page.
+  await page.getByTestId('look-preset').selectOption('onyx-black');
+  await page.getByTestId('look-density').selectOption('comfortable');
+  await page.waitForTimeout(300);
+  expect(loads).toBe(0);
+  expect(await sidebar()).toBe(before);
+  // "Apply" saves it; the page loads again in the chosen look.
+  await Promise.all([page.waitForEvent('load'), page.getByTestId('look-apply').click()]);
+  await settle(page);
+  expect((await sidebar()).toLowerCase()).toBe(tokens.presets['onyx-black']?.sidebar.toLowerCase());
+  await expect(page.getByTestId('look-preset')).toHaveValue('onyx-black');
+  await expect(page.getByTestId('look-density')).toHaveValue('comfortable');
+});

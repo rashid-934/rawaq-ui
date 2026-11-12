@@ -1,5 +1,6 @@
 // Checks the size of the built package against `size-budget.json`: a size more than 10 percent
-// above its budget fails. The budget holds the sizes of version 1.1.0 (the hardening pass).
+// above its budget fails, and so does one more than 30 percent below it (a part left out of the
+// build). The budget holds the sizes of version 1.1.0 (the hardening pass).
 //
 //   yarn build && yarn check:size            check
 //   yarn build && yarn check:size --write    write the current sizes as the new budget (only in
@@ -15,6 +16,7 @@ const repo = join(import.meta.dirname, '..');
 const dist = join(repo, 'dist');
 const budgetFile = join(repo, 'size-budget.json');
 const ALLOWANCE = 1.1;
+const FLOOR = 0.7;
 
 const gzip = (bytes) => gzipSync(bytes, { level: 9 }).length;
 
@@ -63,13 +65,15 @@ for (const [part, sizes] of Object.entries(now)) {
     const line = `${part} ${kind}: ${value} (budget ${allowed}, ${change >= 0 ? '+' : ''}${change.toFixed(1)}%)`;
     console.log(`  ${line}`);
     if (value > allowed * ALLOWANCE) {
-      problems.push(line);
+      problems.push(`${line}: more than 10 percent over`);
+    } else if (value < allowed * FLOOR) {
+      problems.push(`${line}: more than 30 percent under (is a part missing from the build?)`);
     }
   }
 }
 
 if (problems.length > 0) {
-  console.error(`Over the size budget by more than 10 percent:\n  ${problems.join('\n  ')}`);
+  console.error(`Outside the size budget:\n  ${problems.join('\n  ')}`);
   process.exit(1);
 }
 console.log('The built package is within its size budget.');

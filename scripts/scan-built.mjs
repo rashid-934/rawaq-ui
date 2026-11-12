@@ -1,6 +1,7 @@
 // Searches what gets built for things that must never be in it: secret values of the environment,
 // key-like strings (Supabase, GitHub, cloud keys, private keys), email addresses, a client's name,
-// folder paths of a computer, private network addresses, and source maps handed to the browser.
+// folder paths of a computer, private network addresses, and source maps (scripts/lib/
+// private-patterns.mjs holds the patterns; the browser tests run them on every served page too).
 //
 //   yarn scan:built                    every folder below that exists (at least one must)
 //   yarn scan:built dist               one folder
@@ -11,58 +12,19 @@
 // It prints the file, what was found and how often; never the text that was found.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { privateFindings } from './lib/private-patterns.mjs';
 
 const repo = join(import.meta.dirname, '..');
 const FOLDERS = ['dist', 'storybook-static', 'examples/starter/.next'];
 const TEXT = /\.(?:js|mjs|cjs|css|html|json|map|txt|rsc|body|meta|md|svg|d\.ts)$/;
-// Bigger files are not code or pages (pictures, fonts); they are skipped.
+// Bigger files are not code or pages (pictures, fonts); they are skipped and listed.
 const MAX_BYTES = 8 * 1024 * 1024;
 
-/** Everything, everywhere. */
-const SECRETS = [
-  ['a private key', /-----BEGIN (?:[A-Z]+ )?PRIVATE KEY-----/g],
-  ['a Supabase secret or publishable key', /\bsb_(?:secret|publishable)_[A-Za-z0-9_-]{16,}/g],
-  ['a Supabase service role key', /service_role/g],
-  ['a signed token (JWT)', /\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g],
-  ['a GitHub token', /\b(?:ghp|gho|ghu|ghs|ghr|github_pat)_[A-Za-z0-9_]{20,}/g],
-  ['a cloud access key', /\bAKIA[0-9A-Z]{16}\b/g],
-  ['a Stripe live key', /\b[rs]k_live_[A-Za-z0-9]{16,}/g],
-  ['a Supabase project address', /\b[a-z0-9]{20}\.supabase\.co\b/g],
-];
-
-/** Only in what a browser can get (and in the package). */
-const PUBLIC = [
-  // Any address with a dot after the @, except GitHub's noreply addresses and example domains.
-  // Sample files have none. A library's own package data (its author or maintainers) that a
-  // bundle carries is public and not ours: `isPackageData` lets it through.
-  [
-    'an email address',
-    /\b[A-Za-z0-9._%+-]+@(?!users\.noreply\.github\.com|example\.(?:com|org|net)\b)[A-Za-z0-9-]+\.[A-Za-z0-9.-]*[A-Za-z]\b/g,
-    (text, index) => isPackageData(text.slice(Math.max(0, index - 200), index)),
-  ],
-  ['a client name (Woqoof)', /woqoof/gi],
-  [
-    'a folder path of a computer',
-    /[A-Za-z]:\\\\?Users\\\\?|\/Users\/[^/\s"']+\/|\/home\/(?!runner\b)[^/\s"']+\//g,
-  ],
-  [
-    'a private network address',
-    /\b(?:10\.\d{1,3}|192\.168|172\.(?:1[6-9]|2\d|3[01]))\.\d{1,3}\.\d{1,3}\b/g,
-  ],
-];
-
-/** True when the text before an address is a library's package data: `maintainers:[{..., email:`. */
-function isPackageData(before) {
-  return /\b(?:maintainers|author|contributors)\b/.test(before) && /\bemail\W{0,4}$/.test(before);
-}
-
 /** Values of the environment whose names say they are secret: none may be in a built file. */
-const SECRET_NAME = /TOKEN|SECRET|PASSWORD|PRIVATE|_KEY$|^KEY_|API_KEY/i;
-const envValues = Object.entries(process.env)
-  .filter(
-    ([name, value]) => SECRET_NAME.test(name) && typeof value === 'string' && value.length >= 12
-  )
-  .map(([name, value]) => [name, value]);
+const SECRET_NAME = /TOKEN|SECRET|PASSWORD|PRIVATE|CREDENTIAL|AUTH|_KEY$|^KEY_|API_KEY/i;
+const envValues = Object.entries(process.env).filter(
+  ([name, value]) => SECRET_NAME.test(name) && typeof value === 'string' && value.length >= 12
+);
 
 function* walk(folder) {
   for (const entry of readdirSync(folder, { withFileTypes: true })) {
@@ -91,27 +53,30 @@ if (folders.length === 0) {
 }
 
 const findings = [];
+const skipped = [];
 let scanned = 0;
 for (const folder of folders) {
   const isNext = folder.endsWith('.next');
+  let inFolder = 0;
   for (const path of walk(join(repo, folder))) {
     const file = relative(repo, path).replaceAll('\\', '/');
     const isPublic = !isNext || servedByNext(file);
-    if (isNext && isPublic && file.endsWith('.map') && file.includes('/static/')) {
-      findings.push([file, 'a source map handed to the browser', 1]);
+    // A source map hands the original code to whoever opens the page or the package.
+    if (isPublic && file.endsWith('.map')) {
+      findings.push([file, 'a source map', 1]);
     }
-    if (!TEXT.test(file) || statSync(path).size > MAX_BYTES) {
+    if (!TEXT.test(file)) {
+      continue;
+    }
+    if (statSync(path).size > MAX_BYTES) {
+      skipped.push(file);
       continue;
     }
     const text = readFileSync(path, 'utf8');
     scanned += 1;
-    for (const [what, pattern, allowed] of isPublic ? [...SECRETS, ...PUBLIC] : SECRETS) {
-      const count = [...text.matchAll(pattern)].filter(
-        (match) => !allowed?.(text, match.index)
-      ).length;
-      if (count > 0) {
-        findings.push([file, what, count]);
-      }
+    inFolder += 1;
+    for (const [what, count] of privateFindings(text, isPublic)) {
+      findings.push([file, what, count]);
     }
     for (const [name, value] of envValues) {
       if (text.includes(value)) {
@@ -119,9 +84,15 @@ for (const folder of folders) {
       }
     }
   }
+  if (inFolder === 0) {
+    findings.push([folder, 'no file to scan (an empty or broken build)', 1]);
+  }
 }
 
 console.log(`Scanned ${scanned} files in ${folders.join(', ')}.`);
+for (const file of skipped) {
+  console.log(`  skipped (over 8 MB): ${file}`);
+}
 if (findings.length > 0) {
   for (const [file, what, count] of findings) {
     console.log(`  ${file}: ${what} (${count})`);

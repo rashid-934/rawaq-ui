@@ -203,6 +203,10 @@ English and Arabic need nothing. For another language, four small things:
    <PageSkeleton locale="ur" labels={labels} ... />
    ```
 
+   Since 1.1.0 the state screens (`EmptyState`, `ErrorBoundary`) have words too: `emptyTitle`,
+   `errorTitle`, `errorHelp`, `notFoundTitle`, `notFoundHelp`, `tryAgain`, `reference`,
+   `copyReference` and `referenceCopied`. A word that is not given is shown in English.
+
 4. **The app's own words** (page names, button texts) come from the app's translations, as for
    any language.
 

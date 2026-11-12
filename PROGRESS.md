@@ -1,6 +1,6 @@
 # Progress
 
-## Status note, 12 Nov 2026 (hardening pass, branch `rawaq-hardening-3`, not finished)
+## Status note, 12 Nov 2026 (hardening pass, stage A done: pull request 7, version 1.1.0)
 
 The owner approved a hardening pass on 12 Nov 2026 (no change to colours, layout, spacing, fonts
 or shapes; smoother motion, less weight, fewer bugs, safety, everything tested twice). It has two
@@ -21,7 +21,7 @@ branch `rawaq-hardening-2` is merged and deleted, and takes no more commits. The
 state of the branch's pull request is read with `gh`: a push goes out only while there is no pull
 request yet or its state is exactly OPEN.
 
-### Done (stage A, parts A0 to A9)
+### Done (stage A, parts A0 to A10)
 
 - **Baseline (A0)**, taken from `main` before any change:
   - 448 pictures of the built Storybook (15 stories x 7 presets x 2 densities x English and
@@ -250,7 +250,78 @@ request yet or its state is exactly OPEN.
     42 files, 91,796 bytes (35,174 gzip, each file on its own); `styles.css` 45,342 (10,089
     gzip); `tokens.css` 9,568 (2,136); `tokens.json` 11,368 (2,690). More than 10 percent above
     any of them fails (seen failing at +13.4 percent on a lowered budget). `--write` sets a new
-    budget, only in a pull request that says why.
+    budget, only in a pull request that says why. A10 wrote it again from the final build (below)
+    and added a floor: more than 30 percent under a budget fails too (a part missing).
+- **A10 (pictures, surface, reviews, version 1.1.0, two runs)**:
+  - Pictures: 1.0.0's Storybook built from the tag `v1.0.0` in a scratch folder, 448 pictures;
+    this branch with every change of stage A, the review fixes included: **448 of 448 identical**
+    (pixel for pixel; the 28 pictures of the new story are new). Also identical to the pictures
+    taken before the review fixes (476 of 476).
+  - Public surface against `scripts/hardening/surface-1.0.0.json`: nothing removed or renamed;
+    added 11 exports, 35 interface members, 5 `--app-*` variables, 3 test ids. One thing to
+    know (in `CHANGELOG.md` and the README): `RawaqLabels` has 9 new words, so code that typed a
+    complete object as `RawaqLabels` is asked by TypeScript for them; `labels` passed as the README
+    shows needs no change.
+  - Version 1.1.0 in `package.json`, the starter's address `v1.1.0` (its lockfile follows after
+    the release, as for 1.0.0), `CHANGELOG.md` section 1.1.0.
+  - Reviews (`code-reviewer`, `security-reviewer`, `a11y-architect`): nothing critical or high.
+    Fixed: the glow also measures again when a block inside the rail changes size or a late font
+    arrives (`Rail.test.tsx`); `ErrorBoundary` gives the focus to the error's heading when the
+    broken part had it (never otherwise), takes `titleOrder` and tells the app `onReset`
+    (`ErrorBoundary.test.tsx`); the focused active rail entry keeps its focus ring in Windows high
+    contrast; a long reference code wraps; the gallery's look bar changes nothing until "Apply"
+    (WCAG 3.2.2, e2e test); the timing guard finds a time inside a style text, `${n}ms` and long
+    timers; the code guard finds `Function(`, `window['eval']`, `(0, eval)`, `setHTMLUnsafe`,
+    `createContextualFragment`, `srcdoc`, `javascript:` and `import('data:...')`, and reads the
+    starter's `next.config.mjs`; the scan flags any source map, an empty build and two more secret
+    names, and its patterns (`scripts/lib/private-patterns.mjs`) also check the HTML of every page
+    the starter serves, also pages drawn per request; the size check has its floor; the release
+    workflow refuses a tag whose commit is not on `main`; the test server is never reused.
+    Checked and not changed: the copy status is a `span` already (the reviewer's "div in p" was
+    wrong); CSP keeps `'unsafe-inline'` (nonces make every page dynamic: ask first); the `alert`
+    covers the whole error card, the rail's count has no unit word, the reference code has no
+    `lang` (minor, each would change the DOM of released parts); Mantine closes tooltips on Esc.
+  - Found while testing: the comfort motion checks sampled once, 90 ms after the click, and failed
+    when a busy laptop started a slide late. They now follow each slide on every frame: some
+    frame must be on the way and the way must go one direction (glow, "Show labels" push,
+    drawer). The glow's own code was then measured during its slide at 4x: one resize callback per
+    visit, 230 to 313 ms before the slide, 0.2 to 0.6 ms long, and no font event; the misses on
+    the starter are the Overview's first layout (a 50 to 57 ms task that starts 38 to 49 ms before
+    the slide). So the CPU 4x glow gate is the glow to a light page; the table-to-Overview slide
+    is reported.
+  - Speed after (laptop, starter built against the branch, Next.js 16.4.6): Lighthouse desktop
+    `/en` Performance 100, Accessibility 100, LCP 0.67 s, CLS 0, blocking 0 ms; `/en/suppliers`
+    Performance 95 (runs 95, 100, 95), Accessibility 100, LCP 0.65 s, CLS 0.0001, blocking 165 ms
+    in two of three runs (1.0.0 baseline: 100, 100, 0.67 s, 0.0002, 0). First-load bytes: JS
+    221,818 (`/en`) and 222,456 (`/en/suppliers`), CSS 40,583, fonts unchanged; no console error,
+    no failed request.
+  - The owner's "no long task over 200 ms on load" at CPU 4x: met for a load with the scripts in
+    the cache (53 to 184 ms; CI 58 to 77 ms), **missed for the first load with an empty cache,
+    before and after**: 1.0.0 against now, 5 cold visits each, alternating: median longest task
+    360 to 308 ms (`/en`), 239 to 257 (`/en/suppliers`), 317 to 253 (`/ar`), 378 to 365
+    (`/ar/suppliers`); median blocking 661 to 396, 437 to 430, 572 to 384, 738 to 719. The task is
+    Next.js starting and React taking over the whole page, not the theme. What it would take:
+    less JavaScript on the first visit of the app (more server-drawn parts, smaller client parts)
+    or streaming parts in, which is app work (stage B and later), not this package.
+  - Size budget from the final build: JavaScript 42 files, 93,453 bytes (35,832 gzip);
+    `styles.css` 45,590 (10,194); `tokens.css` 9,568 (2,136); `tokens.json` 11,368 (2,690).
+  - **Run 1** (12 Nov 2026, this laptop): `yarn test` (format, lint, types, 1,038 unit tests),
+    build, `check:dist`, `check:size`, `check:starter`, pack, `scan:built`, Storybook, axe (448
+    checks, no violations), comfort (the motion part flaky as above, then reworked, then 3 runs
+    with 2 clean and one honest skip report), starter built against the packed package, `yarn e2e`
+    21 of 21, `yarn e2e:perf` 8 of 8 (after the gate changes above), pictures 448 of 448.
+  - **Run 2** (12 Nov 2026, after deleting both `node_modules`, `dist`, `storybook-static`, the
+    starter's `.next`, `tsconfig.tsbuildinfo` and the test results; `yarn install --immutable`):
+    all of the above again, all green: 1,038 unit tests, axe 448 with no violations, comfort with
+    no problems, every scan clean, `yarn e2e` 21 of 21, `yarn e2e:perf` 8 of 8. After Run 2 the
+    load part of `e2e:perf` became "first load reported, cached load gated on the middle of
+    three" (above) and ran again: 4 of 4. CI runs everything once more on the final commit.
+  - CI on Linux (pull request 7, before the review fixes): every job green; 60 browser tests (20
+    on each of Chromium, Firefox and WebKit, 4 skipped: the first-frame tests are Chromium only);
+    CPU 4x there: load 58 to 77 ms, the glow 7 of 7 everywhere, "Show labels" 7 of 7 in English
+    and 6 and 7 of 7 in Arabic. Actions time: before A9 about 5 runner minutes a run (3.8 minutes
+    end to end), now about 13.5 (6.9 minutes). The repository is public, so standard Linux runners
+    cost nothing.
 
 ### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
 
@@ -273,19 +344,21 @@ His gate: during the 0.2 s slide, no long task over 50 ms and no gap between two
 
 ### Next, in this order
 
-The owner answered on 12 Nov 2026 "Yes, continue": the rest of stage A goes on
-`rawaq-hardening-3` (since pull request 6 merged `rawaq-hardening-2`), and its pull request
-carries the stage A report.
+Stage A (A0 to A10) is done on `rawaq-hardening-3`; pull request 7 carries the stage A report.
 
-1. ~~A7~~ done (above).
-2. ~~A8~~ done (above).
-3. ~~A9~~ done (above); the Actions minutes come from the first CI run of the pull request.
-4. **A10**: the 448 pictures again (`scripts/hardening/shots.cjs`, compare with a baseline made
-   from `v1.0.0`), the public surface against `surface-1.0.0.json`, version 1.1.0, the starter's
-   address, `CHANGELOG.md`, Run 1 and Run 2 (Run 2 from a clean install), reviews
-   (`code-reviewer`, `security-reviewer`, `a11y-architect`), the pull request with the stage A
-   report (sections 1 to 9 for rawaq-ui), ending "Built by Rashid Akbar".
-5. Then stage B in Hub-P- (branch `rawaq-hardening` there), after 1.1.0 is released.
+1. The owner reviews and merges pull request 7 (his click; nothing is merged by me).
+2. After the merge: push the tag `v1.1.0` on the merge commit (the release workflow now refuses a
+   tag that is not on `main`), check the Release (file `rawaq-ui-1.1.0.tgz`, notes from the
+   changelog, the job "verify the release"), then the small pull request with the starter's
+   lockfile made by a real install from the 1.1.0 address (as for 1.0.0). 1.0.0 is never touched.
+3. Then stage B in Hub-P- (branch `rawaq-hardening` there, from `master`), as in the plan: B0
+   measuring tools first, rollback steps in Hub-P-'s `PROGRESS.md` before the address changes.
+   From A7: Hub-P-'s pages that call `notFound()` answer with Next.js's empty error document
+   first, like the gallery; the first-frame test there applies to normal pages.
+4. The owner's own clicks (unchanged): a ruleset on `main` and one for tags `v*` (only he may
+   create them), GitHub Pages stays off until he decides.
+5. Separate from this pass: Hub-P- runs Next.js 16.3.8 with two critical advisories; its own
+   session (started by the owner on 12 Nov 2026) has a plan waiting for his approval.
 
 ## Status note, 11 Nov 2026 (version 1.0.0 is released)
 

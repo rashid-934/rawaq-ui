@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { densityKeys, presetKeys, sidebarChoices } from 'rawaq-ui/tokens';
-import { NativeSelect } from '@mantine/core';
+import { Button, NativeSelect } from '@mantine/core';
 import {
   GALLERY_BASE,
   GALLERY_LOCALES,
@@ -17,14 +18,17 @@ export interface LookBarProps {
 }
 
 /**
- * The switches of the gallery: preset, sidebar colour, density and language. A choice is saved in
- * the cookie and the page loads again, so the server draws it in the new look from the first
- * frame (the way an app reads a company's saved look).
+ * The switches of the gallery: preset, sidebar colour, density and language. "Apply" saves the
+ * choice in the cookie and loads the page again, so the server draws it in the new look from the
+ * first frame (the way an app reads a company's saved look). A switch alone changes nothing: with
+ * the arrow keys a closed list changes its value at once, and a reload on every key would lose
+ * the keyboard's place (WCAG 3.2.2).
  */
 export function LookBar({ look, words }: LookBarProps) {
-  const change = (key: keyof GalleryLook, value: string) => {
-    const next = { ...look, [key]: value } as GalleryLook;
-    document.cookie = `${LOOK_COOKIE}=${lookValue(next)}; path=${GALLERY_BASE}; max-age=31536000; samesite=lax`;
+  const [chosen, setChosen] = useState<GalleryLook>(look);
+  const apply = () => {
+    // Preferences only, no secret. An app that keeps real settings in a cookie adds `secure`.
+    document.cookie = `${LOOK_COOKIE}=${lookValue(chosen)}; path=${GALLERY_BASE}; max-age=31536000; samesite=lax`;
     window.location.reload();
   };
   const lists = [
@@ -57,12 +61,18 @@ export function LookBar({ look, words }: LookBarProps) {
           key={key}
           size="xs"
           label={label}
-          value={look[key]}
+          value={chosen[key]}
           data={[...data]}
-          onChange={(event) => change(key, event.currentTarget.value)}
+          onChange={(event) => {
+            const value = event.currentTarget.value;
+            setChosen((current) => ({ ...current, [key]: value }) as GalleryLook);
+          }}
           data-testid={`look-${key}`}
         />
       ))}
+      <Button size="xs" variant="default" onClick={apply} data-testid="look-apply">
+        {words.look.apply}
+      </Button>
     </div>
   );
 }

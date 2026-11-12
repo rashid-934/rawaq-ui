@@ -131,11 +131,22 @@ function Glow({ rail, pathname, showLabels, open, items, groups, bottomItems }: 
     }
     const observer = new ResizeObserver(measure);
     observer.observe(rail);
+    // A block inside the rail that grows or shrinks (the "not saved" note, the person, a list
+    // that gains an entry) moves the entries after it while the rail keeps its own size.
+    for (const block of Array.from(rail.children)) {
+      if (block.getAttribute('data-testid') !== 'rail-glow') {
+        observer.observe(block);
+      }
+    }
     // The list scrolls inside the rail when the window is short.
     rail.addEventListener('scroll', measure, true);
+    // A web font that arrives late changes the height of the lines of text.
+    const fonts = typeof document === 'undefined' ? undefined : document.fonts;
+    fonts?.addEventListener('loadingdone', measure);
     return () => {
       observer.disconnect();
       rail.removeEventListener('scroll', measure, true);
+      fonts?.removeEventListener('loadingdone', measure);
     };
   }, [measure, rail]);
 

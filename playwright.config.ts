@@ -53,6 +53,8 @@ export default defineConfig({
     // measures motion turns it on for itself.
     viewport: { width: 1280, height: 720 },
     reducedMotion: 'reduce',
+    // CI keeps the traces of failed tests in the run's public files (network, cookies, page):
+    // a test never uses a real secret.
     trace: 'retain-on-failure',
   },
   projects: wanted.map((name) => {
@@ -68,7 +70,8 @@ export default defineConfig({
     url: `http://localhost:${PORT}/en`,
     // The gallery answers 404 in production unless the server is started with RAWAQ_GALLERY=1.
     env: { RAWAQ_GALLERY: '1' },
-    reuseExistingServer: !ci,
+    // Never a server that is already running: it may lack RAWAQ_GALLERY=1 or run another build.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

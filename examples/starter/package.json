@@ -14,7 +14,7 @@
     "@mantine/core": "9.6.3",
     "@mantine/hooks": "9.6.3",
     "@tabler/icons-react": "^3.35.0",
-    "next": "16.3.8",
+    "next": "16.4.6",
     "next-intl": "4.14.9",
     "rawaq-ui": "https://github.com/rashid-934/rawaq-ui/releases/download/v1.0.0/rawaq-ui-1.0.0.tgz",
     "react": "19.3.0",

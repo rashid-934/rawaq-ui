@@ -31,6 +31,7 @@
     "build": "vite build && tsc -p tsconfig.build.json && node scripts/finish-build.mjs",
     "check:dist": "node scripts/check-dist.mjs",
     "check:starter": "node scripts/check-starter.mjs",
+    "scan:built": "node scripts/scan-built.mjs",
     "axe": "node scripts/axe-stories.mjs",
     "comfort": "node scripts/comfort-stories.mjs",
     "typecheck": "tsc --noEmit",

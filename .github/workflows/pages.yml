@@ -54,6 +54,10 @@ jobs:
           cache: yarn
       - run: yarn install --immutable
       - run: yarn storybook:build
+      # Nothing secret or private may go online: keys, email addresses, a client's name, folder
+      # paths of a computer, source maps (scripts/scan-built.mjs). A finding stops the publish.
+      - name: Scan what goes online
+        run: yarn scan:built storybook-static
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: storybook-static

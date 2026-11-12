@@ -193,6 +193,50 @@ request yet or its state is exactly OPEN.
   - Starter on Next.js 16.3.8: `yarn npm audit` lists two critical and one high advisory (fixed
     after 16.4.0); the starter's upgrade is in A8. Hub-P- has the same version: proposed to the
     owner as its own task on 12 Nov 2026, not part of this pass.
+- **A8 (security), the rest**:
+  - `yarn npm audit --all --recursive`. Starter: `next` 16.3.8 had two critical advisories
+    (GHSA-2464-fhr4-w9xw, remote code execution in image resizing with SVG files;
+    GHSA-673q-mjm6-r5xr, remote code execution in `use cache` functions) and one high
+    (GHSA-p3m5-59mp-jv5r, Server Actions denial of service), all for 16.0.0 to 16.4.0. The starter
+    now pins `next` 16.4.6 (a minor upgrade; its lockfile made by a real install from the 1.0.0
+    address): no audit finding left. The starter uses none of the three features, but it is the
+    example apps copy. Package (development tools only, nothing ships): `tldts-core` 7.4.20 (a
+    partial release) is now 7.4.22 inside its range. Left, reported: `glob` 13.0.7 and `minimatch`
+    10.2.6 (moderate, inside Storybook's docgen plugin, which asks for `glob` ^13). They are fixed
+    only in new majors (`glob` after 14.0.1, `minimatch` 11.0.1 and up) that the plugin does not
+    accept: forcing them is a major upgrade (ask first). Only our own fixed patterns reach them, at build
+    time on this laptop and in CI.
+  - secretlint 11.7.1 with the recommended rules (through `yarn dlx`, nothing installed): every
+    tracked file and the whole history (`git log -p --all`, 1.08 MB, every commit) are clean. It
+    was seen to catch a planted GitHub token first.
+  - `src/code-safety.test.ts` reads every code file of `src`, `.storybook`, `scripts`, `e2e`, the
+    starter's `src` and the config files, and fails on `dangerouslySetInnerHTML`, `eval`,
+    `new Function`, writing `innerHTML` or `outerHTML`, `insertAdjacentHTML`, `document.write` and
+    a timer that runs a string (with cases that it catches and cases it lets through). None is
+    used today.
+  - `THIRD_PARTY_LICENSES.md`: the package ships no third-party code and no font; peers are MIT;
+    the fonts are SIL OFL 1.1 (flagged, with what that allows); the starter's and the
+    development lists, with `axe-core` (MPL-2.0), sharp's `libvips` (LGPL-3.0-or-later, not used)
+    and `caniuse-lite` (CC-BY-4.0, build data) named.
+  - `yarn scan:built` (`scripts/scan-built.mjs`) searches `dist`, `storybook-static` and the
+    starter's `.next` for private keys, Supabase keys and project addresses, signed tokens,
+    GitHub tokens, cloud and Stripe keys, the values of secret environment variables, and in what
+    a browser can get also email addresses, the client's name, folder paths of a computer, private
+    network addresses and browser source maps. It prints file, kind and count, never the text.
+    469 files, clean. Proven on planted problems (5 of 5 caught). One address in the Storybook is
+    a library's own maintainer data (bundled `package.json` of a parser), public and not ours: such
+    package data is let through, any other address fails. The Pages workflow now runs it on the
+    Storybook before anything is uploaded; CI runs it in A9.
+  - What a public Storybook would show (Pages stays off, the owner's call): the built code of
+    every part (the package's own JavaScript and CSS, minified but readable with some effort), the
+    tokens, the words in English and Arabic, the invented sample content, and the stories' code.
+    Nothing of an app, no client data, no key. The package is `UNLICENSED`: a public Storybook
+    lets anyone read the theme's code, but grants no right to use it.
+  - Report only, files that name the owner or the repository (no file names Woqoof, no email
+    address, no key): `README.md` and `scripts/check-starter.mjs` (the release address on GitHub,
+    `rashid-934`, needed), the starter's `package.json` and `yarn.lock` (the same release
+    address), `PROGRESS.md` (the plan's path on the owner's laptop, which holds his name, and
+    "Built by Rashid Akbar").
 
 ### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
 
@@ -220,11 +264,7 @@ The owner answered on 12 Nov 2026 "Yes, continue": the rest of stage A goes on
 carries the stage A report.
 
 1. ~~A7~~ done (above).
-2. The rest of **A8**: `yarn npm audit` (root and starter; a major upgrade = ask first), secretlint
-   on the files and the whole history, a guard test against `dangerouslySetInnerHTML`, `eval` and
-   `new Function`, `THIRD_PARTY_LICENSES.md` (runtime and development lists; the OFL fonts
-   flagged), `scripts/scan-built.mjs` on `dist`, `storybook-static` and the starter's `.next`,
-   and the report-only list of files that name Woqoof, the owner's GitHub name, addresses or keys.
+2. ~~A8~~ done (above).
 3. **A9**: CI on Chromium, Firefox and WebKit on Linux runners only (`yarn comfort` and the A7
    tests join the workflow; actions pinned to SHAs), `scripts/check-size.mjs` with
    `size-budget.json` (the after numbers, +10 percent fails); the Actions minutes estimate.

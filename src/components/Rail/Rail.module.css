@@ -66,9 +66,10 @@
     0 rem(6px) rem(16px) color-mix(in srgb, var(--app-glow) 30%, transparent);
   pointer-events: none;
 
-  /* Rail.tsx puts it at its place and plays the slide from one page to the next with a
-     `transform`, so that slide needs no layout. Only its size changes here ("Show labels"). */
+  /* Rail.tsx moves it to the active entry with `transform`, so the slide from one page to the
+     next needs no layout. Its size changes only with "Show labels". */
   transition:
+    transform var(--app-motion-base) var(--app-ease),
     width var(--app-motion-base) var(--app-ease),
     height var(--app-motion-base) var(--app-ease);
 

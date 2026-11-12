@@ -10,13 +10,12 @@ import {
   useCallback,
   useId,
   useLayoutEffect,
-  useRef,
   useState,
 } from 'react';
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand } from '@tabler/icons-react';
 import { Tooltip, useDirection } from '@mantine/core';
 import { labelsFor, type RawaqLabels } from '../../labels';
-import { motion, motionMs } from '../../tokens/motion';
+import { motionMs } from '../../tokens/motion';
 import { isRailItemActive, type RailGroup, type RailItem, type RailUser } from './rail-items';
 import classes from './Rail.module.css';
 
@@ -80,25 +79,18 @@ interface GlowProps {
 }
 
 /**
- * The glow shape behind the active entry. It is put at its new place at once (one layout), and
- * a `transform` then plays it there from where it was. So the slide itself is transform only and
- * costs the browser no layout work, and at rest the shape has no transform: it is painted
- * exactly as a plain positioned element. The slide mirrors by itself in a right-to-left page,
- * because it is measured, not assumed.
+ * The glow shape behind the active entry. It sits at the rail's top left corner and is moved to
+ * the entry by `transform`; a CSS transition (Rail.module.css) slides it from one entry to the
+ * next, so the slide costs the browser no layout work. The place is measured, not assumed, so
+ * the slide mirrors by itself in a right-to-left page.
  *
  * It is a part of its own so that following the entry, on every frame while "Show labels"
  * slides the rail open, draws this one element again and not the whole rail.
  */
 function Glow({ rail, pathname, showLabels, open, items, groups, bottomItems }: GlowProps) {
   const [box, setBox] = useState<Box | null>(null);
-  const shape = useRef<HTMLSpanElement | null>(null);
-  /** Where the shape was on screen just before it was measured again. */
-  const from = useRef<{ left: number; top: number } | null>(null);
-  const slide = useRef<Animation | null>(null);
 
   const measure = useCallback(() => {
-    const seen = shape.current?.getBoundingClientRect();
-    from.current = seen ? { left: seen.left, top: seen.top } : null;
     const active = rail?.querySelector<HTMLElement>('[data-rail-item][aria-current="page"]');
     if (!rail || !active) {
       setBox(null);
@@ -133,32 +125,6 @@ function Glow({ rail, pathname, showLabels, open, items, groups, bottomItems }: 
     measure();
   }, [measure, pathname, showLabels, open, items, groups, bottomItems]);
 
-  // The slide. The shape already sits at its new place; play it there from where it was.
-  useLayoutEffect(() => {
-    const element = shape.current;
-    const start = from.current;
-    from.current = null;
-    if (!element || !start || typeof element.animate !== 'function') {
-      return;
-    }
-    slide.current?.cancel();
-    slide.current = null;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
-    const now = element.getBoundingClientRect();
-    const x = start.left - now.left;
-    const y = start.top - now.top;
-    // Less than half a pixel is no move: the size alone changed ("Show labels").
-    if (Math.abs(x) < 0.5 && Math.abs(y) < 0.5) {
-      return;
-    }
-    slide.current = element.animate(
-      [{ transform: `translate(${x}px, ${y}px)` }, { transform: 'none' }],
-      { duration: motionMs('base'), easing: motion.ease }
-    );
-  }, [box]);
-
   useLayoutEffect(() => {
     if (!rail || typeof ResizeObserver === 'undefined') {
       return undefined;
@@ -181,11 +147,17 @@ function Glow({ rail, pathname, showLabels, open, items, groups, bottomItems }: 
 
   return box ? (
     <span
-      ref={shape}
       className={classes.glow}
       aria-hidden
       data-testid="rail-glow"
-      style={{ top: box.top, left: box.left, width: box.width, height: box.height }}
+      style={{
+        // Anchored at the rail's top left corner, moved by `transform` alone.
+        top: 0,
+        left: 0,
+        transform: `translate(${box.left}px, ${box.top}px)`,
+        width: box.width,
+        height: box.height,
+      }}
     />
   ) : null;
 }

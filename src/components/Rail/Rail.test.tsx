@@ -1,4 +1,6 @@
 import type { ComponentPropsWithoutRef } from 'react';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { IconCircle } from '@tabler/icons-react';
 import { act, render, renderRtl, screen, userEvent, within } from '../../test-utils';
 import { motionMs } from '../../tokens/motion';
@@ -87,82 +89,44 @@ describe('Rail', () => {
     mockLayout();
     const { rerender } = renderRail();
     const glow = screen.getByTestId('rail-glow');
+    const at = (left: number, top: number) => ({
+      transform: `translate(${left}px, ${top}px)`,
+      width: '40px',
+      height: '40px',
+    });
     // Requests is the second item.
-    expect(glow).toHaveStyle({ top: '102px', left: '12px', width: '40px', height: '40px' });
-    // At rest it has no transform: it is painted as a plain positioned element.
-    expect(glow.style.transform).toBe('');
+    expect(glow).toHaveStyle(at(12, 102));
 
     rerender({ pathname: `${base}/suppliers` });
     expect(screen.getByRole('link', { name: 'الموردون' })).toHaveAttribute('aria-current', 'page');
-    // The same element, so it can slide; a new element would jump. Only its position changed.
+    // The same element, so the CSS transition slides it (Rail.module.css); a new element would
+    // jump. Only its transform changed.
     expect(screen.getByTestId('rail-glow')).toBe(glow);
-    expect(glow).toHaveStyle({ top: '144px', left: '12px', width: '40px', height: '40px' });
+    expect(glow).toHaveStyle(at(12, 144));
 
     rerender({ pathname: base });
     expect(screen.getByTestId('rail-glow')).toBe(glow);
-    expect(glow).toHaveStyle({ top: '60px' });
+    expect(glow).toHaveStyle(at(12, 60));
   });
 
-  describe('the slide of the glow shape', () => {
-    const animate = vi.fn(() => ({ cancel: vi.fn() }));
-    const reducedMotion = (on: boolean) =>
-      vi
-        .spyOn(window, 'matchMedia')
-        .mockImplementation(
-          (query) => ({ matches: on && query.includes('reduce'), media: query }) as MediaQueryList
-        );
+  it('moves the glow shape by transform alone, never by its place in the layout', () => {
+    mockLayout();
+    const { rerender } = renderRail();
+    const glow = screen.getByTestId('rail-glow');
+    // A change of `top` or `left` would make the browser lay the rail out again on every frame.
+    expect(glow).toHaveStyle({ top: '0px', left: '0px' });
+    rerender({ pathname: `${base}/suppliers` });
+    expect(glow).toHaveStyle({ top: '0px', left: '0px', transform: 'translate(12px, 144px)' });
+  });
 
-    beforeEach(() => {
-      animate.mockClear();
-      // jsdom has no animations: the shape gets a stand-in that records what it is asked to play.
-      Object.defineProperty(HTMLElement.prototype, 'animate', {
-        configurable: true,
-        value: animate,
-      });
-    });
-
-    afterEach(() => {
-      Reflect.deleteProperty(HTMLElement.prototype, 'animate');
-    });
-
-    it('is a transform from the old place to the new one, for the time of the motion token', () => {
-      reducedMotion(false);
-      mockLayout();
-      const { rerender } = renderRail();
-      // It appears in place: nothing slides in on the first draw.
-      expect(animate).not.toHaveBeenCalled();
-
-      rerender({ pathname: `${base}/suppliers` });
-      // One entry down: it starts 42 px above its new place and ends with no transform at all.
-      expect(animate).toHaveBeenCalledTimes(1);
-      expect(animate).toHaveBeenLastCalledWith(
-        [{ transform: 'translate(0px, -42px)' }, { transform: 'none' }],
-        { duration: motionMs('base'), easing: 'ease' }
-      );
-
-      rerender({ pathname: base });
-      expect(animate).toHaveBeenLastCalledWith(
-        [{ transform: 'translate(0px, 84px)' }, { transform: 'none' }],
-        { duration: 200, easing: 'ease' }
-      );
-    });
-
-    it('does not play when only the size changes, as with "Show labels"', () => {
-      reducedMotion(false);
-      mockLayout();
-      const { rerender } = renderRail();
-      rerender({ showLabels: true });
-      expect(animate).not.toHaveBeenCalled();
-    });
-
-    it('does not play at all with reduced motion: the shape is simply at its new place', () => {
-      reducedMotion(true);
-      mockLayout();
-      const { rerender } = renderRail();
-      rerender({ pathname: `${base}/suppliers` });
-      expect(animate).not.toHaveBeenCalled();
-      expect(screen.getByTestId('rail-glow')).toHaveStyle({ top: '144px' });
-    });
+  it('slides by a stylesheet transition with the motion tokens, off with reduced motion', () => {
+    const css = readFileSync(join(import.meta.dirname, 'Rail.module.css'), 'utf8');
+    const glowRule = css.slice(css.indexOf('.glow {'), css.indexOf('.label {'));
+    expect(glowRule).toContain('transform var(--app-motion-base) var(--app-ease)');
+    // Nothing that needs layout is animated for the slide from one entry to the next.
+    expect(glowRule).not.toMatch(/\b(?:top|left|inset[a-z-]*)\s+var\(/);
+    const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+    expect(reduced).toMatch(/\.glow,[^}]*transition: none/);
   });
 
   it('follows the active entry without drawing the entries of the rail again', () => {
@@ -191,7 +155,7 @@ describe('Rail', () => {
     mockLayout(() => moved);
     renderRail({ items: items.map((item) => ({ ...item, icon: Counted })) });
     const glow = screen.getByTestId('rail-glow');
-    expect(glow).toHaveStyle({ top: '102px' });
+    expect(glow).toHaveStyle({ transform: 'translate(12px, 102px)' });
     expect(sizeChanged.length).toBeGreaterThan(0);
 
     const before = draws;
@@ -205,7 +169,7 @@ describe('Rail', () => {
     }
     // The shape followed, and it is still the same element.
     expect(screen.getByTestId('rail-glow')).toBe(glow);
-    expect(glow).toHaveStyle({ top: '111px' });
+    expect(glow).toHaveStyle({ transform: 'translate(12px, 111px)' });
     // Not one entry was drawn again for it: three frames cost three small updates, no more.
     expect(draws).toBe(before);
     vi.unstubAllGlobals();

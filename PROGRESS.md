@@ -25,10 +25,12 @@ plan with its 14 additions is on the owner's laptop:
   every stylesheet and component reads them (the keyword `ease`, the tooltip's 120 and the
   opening's 1500 were written by hand before). `motionVariables()` gives every token its CSS
   variable. The rail's glow shape now slides by `transform` only (it animated `top` and `left`):
-  it is put at its new place at once and a transform plays it there from where it was, so at
-  rest it has no transform and the slide mirrors by itself in right-to-left pages. It is a part
-  of its own (following the entry no longer draws the whole rail again), and an entry of the
-  rail is drawn again only when something it shows has changed.
+  it sits at the rail's top left corner, `Rail.tsx` moves it with `transform`, and a CSS
+  transition slides it. The place is measured, so the slide mirrors by itself in right-to-left
+  pages. The owner chose this on 12 Nov 2026 ("CSS transition only") over a version that used
+  the browser's animation call; that version is in the branch history (`eaafae0`) and gave the
+  same pictures. The glow is a part of its own (following the entry no longer draws the whole
+  rail again), and an entry of the rail is drawn again only when something it shows has changed.
   New tests: `src/tokens/motion.test.ts`, `src/motion-checks.test.ts` (fails on any timing
   written by hand in a stylesheet or a component), and more cases in `Rail.test.tsx`.
 - **State parts (A5)**: `EmptyState` with the variants `empty`, `error` and `not-found` (one

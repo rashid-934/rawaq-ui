@@ -4,8 +4,11 @@ import { IconFileDescription } from '@tabler/icons-react';
 import { Button, Text, TextInput } from '@mantine/core';
 import {
   BentoCard,
+  EmptyState,
+  ErrorBoundary,
   FormGrid,
   FormGridItem,
+  labelsFor,
   PageHeader,
   PageSkeleton,
   RollingNumber,
@@ -132,6 +135,70 @@ function Form() {
   );
 }
 
+const SAMPLE_REFERENCE = 'K7QM2XWD';
+const SAMPLE_FAILURE = 'A sample failure. This text must never reach the screen.';
+
+/** A card that fails while it draws, once it is told to. "Try again" draws a new one. */
+function Fragile() {
+  const words = useWords();
+  const [broken, setBroken] = useState(false);
+  if (broken) {
+    throw new Error(SAMPLE_FAILURE);
+  }
+  return (
+    <div className={classes.padded}>
+      <Text>{words.cardWorks}</Text>
+      <div>
+        <Button variant="default" onClick={() => setBroken(true)}>
+          {words.breakCard}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function States() {
+  const words = useWords();
+  const locale = useStoryLocale();
+  const labels = labelsFor(locale, words.labels);
+  return (
+    <div className={classes.padded}>
+      <WorkCard>
+        <EmptyState
+          title={words.noSuppliers}
+          description={words.noSuppliersHelp}
+          action={<Button>{words.addSupplier}</Button>}
+          locale={locale}
+          labels={words.labels}
+        />
+      </WorkCard>
+      <WorkCard>
+        <EmptyState
+          variant="error"
+          reference={SAMPLE_REFERENCE}
+          action={<Button variant="default">{labels.tryAgain}</Button>}
+          locale={locale}
+          labels={words.labels}
+        />
+      </WorkCard>
+      <WorkCard>
+        <EmptyState
+          variant="not-found"
+          action={<Button variant="default">{words.nav.dashboard}</Button>}
+          locale={locale}
+          labels={words.labels}
+        />
+      </WorkCard>
+      {/* One broken part never blanks the page: only this card is replaced. */}
+      <WorkCard>
+        <ErrorBoundary locale={locale} labels={words.labels}>
+          <Fragile />
+        </ErrorBoundary>
+      </WorkCard>
+    </div>
+  );
+}
+
 /** The one-line header of a Work page: title, count, description, the action on the end side. */
 export const PageHeaders: Story = { name: 'Page header', render: () => <Headers /> };
 
@@ -149,3 +216,10 @@ export const LoadingSkeletons: Story = { name: 'Loading skeleton', render: () =>
 
 /** A Work card with fields in two columns and one wide field. */
 export const FormGridInCard: Story = { name: 'Form grid', render: () => <Form /> };
+
+/**
+ * One shape for three moments: nothing to show yet, something went wrong (with a reference code,
+ * never the error itself) and page not found. The last card breaks when asked, and only that
+ * card is replaced.
+ */
+export const EmptyStates: Story = { name: 'Empty, error and not found', render: () => <States /> };

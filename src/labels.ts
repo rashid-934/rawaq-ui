@@ -16,6 +16,24 @@ export interface RawaqLabels {
   loading: string;
   /** What a screen reader hears for the count beside a page title: "16 items". */
   itemCount: (count: number) => string;
+  /** The title of an empty state when the app gives none. */
+  emptyTitle: string;
+  /** The title of the error state. */
+  errorTitle: string;
+  /** One line of help under it. Never the error itself. */
+  errorHelp: string;
+  /** The title of the "page not found" state. */
+  notFoundTitle: string;
+  /** One line of help under it. */
+  notFoundHelp: string;
+  /** The button of the error state. */
+  tryAgain: string;
+  /** The word before the reference code of an error. */
+  reference: string;
+  /** The name of the button that copies the reference code. */
+  copyReference: string;
+  /** Said once the reference code is copied. */
+  referenceCopied: string;
 }
 
 const arabicPlurals = new Intl.PluralRules('ar');
@@ -36,6 +54,15 @@ export const rawaqLabels = {
     labelsNotSaved: 'This choice could not be saved. It will reset next time.',
     loading: 'Loading',
     itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+    emptyTitle: 'Nothing here yet',
+    errorTitle: 'Something went wrong',
+    errorHelp: 'Please try again. If it keeps happening, send us the reference code.',
+    notFoundTitle: 'Page not found',
+    notFoundHelp: 'This page does not exist, or you cannot open it.',
+    tryAgain: 'Try again',
+    reference: 'Reference',
+    copyReference: 'Copy the reference code',
+    referenceCopied: 'Copied',
   },
   ar: {
     skipToContent: 'تخطَّ إلى المحتوى الرئيسي',
@@ -44,6 +71,15 @@ export const rawaqLabels = {
     labelsNotSaved: 'تعذر حفظ هذا الاختيار. سيعود كما كان في المرة القادمة.',
     loading: 'جارٍ التحميل',
     itemCount: (count) => arabicItems[arabicPlurals.select(count)](count),
+    emptyTitle: 'لا يوجد شيء هنا بعد',
+    errorTitle: 'حدث خطأ ما',
+    errorHelp: 'حاول مرة أخرى. إذا تكرر الخطأ، أرسل لنا الرمز المرجعي.',
+    notFoundTitle: 'الصفحة غير موجودة',
+    notFoundHelp: 'هذه الصفحة غير موجودة، أو لا يمكنك فتحها.',
+    tryAgain: 'حاول مرة أخرى',
+    reference: 'الرمز المرجعي',
+    copyReference: 'نسخ الرمز المرجعي',
+    referenceCopied: 'تم النسخ',
   },
 } satisfies Record<string, RawaqLabels>;
 

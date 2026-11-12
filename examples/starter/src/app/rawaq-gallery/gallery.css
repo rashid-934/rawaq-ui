@@ -1,0 +1,19 @@
+/* The look switches in the header: each label beside its list, in one row. */
+.gallery-look {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+}
+
+.gallery-look .mantine-InputWrapper-root {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.gallery-look .mantine-InputWrapper-label {
+  margin: 0;
+  white-space: nowrap;
+}

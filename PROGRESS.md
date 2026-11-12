@@ -1,6 +1,6 @@
 # Progress
 
-## Status note, 12 Nov 2026 (hardening pass, branch `rawaq-hardening`, not finished)
+## Status note, 12 Nov 2026 (hardening pass, branch `rawaq-hardening-2`, not finished)
 
 The owner approved a hardening pass on 12 Nov 2026 (no change to colours, layout, spacing, fonts
 or shapes; smoother motion, less weight, fewer bugs, safety, everything tested twice). It has two
@@ -8,7 +8,13 @@ stages: **A** this package (it becomes version 1.1.0), then **B** the app Hub-P-
 plan with its 14 additions is on the owner's laptop:
 `C:\Users\Rashid Akbar\.claude\plans\pasted-content-id-cc52-task-rawaq-compiled-nova.md`.
 
-### Done on the branch (stage A, parts A0, A2, A5 and a part of A8)
+**Pull request 5 merged the first part into `main`** on 12 Nov 2026 at 09:30 UTC (opened and
+merged from the owner's account 12 seconds apart; CI on `main` passed). It holds everything under
+"Done" below up to the glow's CSS transition (`4274f2b`). No release was made: the latest release
+is still 1.0.0, so Hub-P- is not affected. The branch `rawaq-hardening` is merged and takes no
+more commits; the rest of stage A continues on `rawaq-hardening-2`, made from `main`.
+
+### Done (stage A, parts A0 to A6 and a part of A8)
 
 - **Baseline (A0)**, taken from `main` before any change:
   - 448 pictures of the built Storybook (15 stories x 7 presets x 2 densities x English and
@@ -47,6 +53,90 @@ plan with its 14 additions is on the owner's laptop:
   or renamed: 11 exports, 5 variables and 3 test ids were added.
 - `scripts/hardening/` holds the measuring tools of this pass as they are (pictures, picture
   compare, public surface, starter measurements). They become proper scripts in A7 and A9.
+- **The after pictures are identical to the baseline** (12 Nov 2026, branch
+  `rawaq-hardening-2`): 448 of 448, in two runs, and each set is identical to its own second run
+  (the 28 pictures of the new story are new). The 120 differences found first were not a change
+  of the look. Chrome repaints only the changed rectangles of a screen tile while a page loads
+  ("partial raster"), and soft shadows and smooth edges keep traces of the order of those
+  repaints: up to 1 level of 255 in the rail's shadow, up to about 20 in one smooth edge pixel of
+  the glow's notch. That order depends on timing: the same build of the branch gave different
+  pictures from one run to the next (25 of 84), while 1.0.0 happened to stay steady. Proof:
+  - The page is fully still before each picture (no change to the page, no paint, no running
+    animation in the 2 seconds before it), in 1.0.0 and on the branch.
+  - With the Chrome switch `--disable-partial-raster`, 1.0.0 and the branch give the same pixels,
+    and each gives the same pixels run after run.
+  - Taking the files of 1.0.0 back one by one: the stylesheet is not the cause; no single change
+    in `Rail.tsx` is (`transform`, `data-glow` from an effect, the `memo` on entries); only the
+    timing of the first draws moved, inside the wave of 0.01 ms transitions that the reduced
+    motion rule gives every element while Storybook applies the look.
+  - `scripts/hardening/shots.cjs` now always starts Chrome with `--disable-partial-raster` (and
+    `ONLY_STORIES=a,b` takes a few stories for a quick round). The browser tests of A7 and the
+    Hub-P- pictures of stage B use the same switch.
+- **First-load bytes of the starter**, 1.0.0 against this branch (the package packed and
+  installed in the starter for the measurement, then put back), counted with the browser's own
+  size of each file without headers (`encodedBodySize`; the earlier way subtracted a header count
+  that can already hold a part of a small file):
+
+  | Page | JS 1.0.0 | JS now | CSS 1.0.0 | CSS now | Fonts |
+  |---|---|---|---|---|---|
+  | `/en`, `/ar` | 219,876 | 220,731 (+855, +0.4%) | 40,277 | 40,576 (+299, +0.7%) | same |
+  | `/en/suppliers`, `/ar/suppliers` | 220,537 | 221,392 (+855) | 40,277 | 40,576 | same |
+
+  Fonts: 70,196 bytes (2 files) in English, 205,460 (5 files) in Arabic, both unchanged. No
+  console error and no failed request on any page. The package itself: JavaScript 80.5 kB to
+  91.8 kB (gzip per file 30.8 to 35.7 kB, 37 to 42 files), `styles.css` 41.9 to 45.3 kB (gzip
+  9.5 to 10.2 kB); the growth is the new parts (`EmptyState`, `ErrorBoundary`) and the rail's
+  parts. A page pays only for what it uses: `EmptyState` adds no JavaScript to the starter.
+- A1 read again with gh on 12 Nov 2026: still no ruleset on `main`, no branch protection, Pages
+  not switched on (the owner's clicks, README). The stale line in the 1.0.0 note was already put
+  right in `0436b7c`.
+- **A3 (light)**, commit `5ac67b6`: knip 5.66.0 (through `yarn dlx`, with its own TypeScript
+  5.9.3; TypeScript 7 has no JavaScript interface it can read) finds no unused dependency and no
+  unused file in the package. Two names were exported but used only in their own file, and are
+  not public: `PURE_BLACK`, `ReferenceCodeProps` (now file-private). Kept: `MATCH_THEME` and
+  `DEFAULT_SIDEBAR` are the same value but both public in 1.0.0; three exported types in story and
+  test helpers do not ship. Every CSS module class is used; every icon is a named import.
+  Fonts need no change: a page fetches only the Latin set of Plus Jakarta Sans (one variable file
+  for every weight) and the Arabic set of IBM Plex Sans Arabic in the weights used (400 to 700;
+  the theme's 800 falls back to 700, the font has no heavier weight), all `font-display: swap`.
+  An English page also fetches Arabic 400 for one word, the language link "العربية". The package
+  ships no font files; the starter takes them from the `@fontsource` packages, which carry their
+  licence (SIL OFL 1.1; for the licence list in A8).
+- **A4 (comfort and accessibility)**, commit `f5d0d30`: `yarn comfort`
+  (`scripts/comfort-stories.mjs`, shared server in `scripts/lib/storybook-server.mjs`), on the
+  built Storybook. All green on 12 Nov 2026:
+  - layout: 896 pages (every story x 7 presets x 2 densities x en/ar x 1280 and 1920): no
+    sideways scroll, no cut text, no scroll area inside the scrolling page;
+  - WCAG 2.5.8 target size (64 pages), the keyboard walk (20 pages: WCAG 2.4.11 focus never
+    hidden, a visible ring on every stop, no trap, every rail entry shows its name on focus),
+    WCAG 1.4.4 at 200 percent zoom (10 pages: no cut text, all text in reach, the menu opens with
+    the keyboard, takes the focus, Esc closes it and the focus comes back), Windows high contrast
+    (the active rail entry and every focus ring are outlines);
+  - right-to-left motion, measured at start, half way and end, English and Arabic: the glow slides
+    straight along the rail and ends on the clicked entry; the tooltip opens toward the page; "Show
+    labels" widens the rail from its inner side and pushes the frame step by step; the drawer
+    comes in from the start side; the entrance rise is vertical only. The pill tab slide is not a
+    part of the package (no tabs part), so there is nothing to measure.
+  - Each check was proven to catch a planted problem first (cut text, sideways scroll, small
+    targets, a focus under a sticky bar, no ring).
+  - `yarn axe` now covers both densities: 448 checks, no violations.
+  - The contrast tests already cover every preset with every sidebar swatch (text, controls,
+    focus ring, glow, rail icons); nothing was missing.
+  - The story app (`src/stories/sample.tsx`) opens the drawer from a menu button below the `sm`
+    width, as an app does it (Hub-P- has the same). Desktop pictures unchanged: 252 of 252.
+- **A6 (gallery)**, commit `db6f9c3`: `examples/starter/src/app/rawaq-gallery/`, its own root
+  layout at `/rawaq-gallery` (no language in the address, so the starter's own pages stay static
+  and nothing of theirs moved). Pages: Overview, Work with a filled table, loading, empty, error
+  (reference code only), a real 404 (`/rawaq-gallery/no-such-page`), a form with an invalid and a
+  disabled field. A bar in the header switches preset, sidebar colour, density and language; the
+  choice is the cookie `rawaq-gallery-look`, read by the server. Checked against the packed
+  branch package: every page 200 (the missing one 404), no console error, no hydration warning,
+  and with Onyx Black, Comfortable, Arabic the server's HTML already has `dir="rtl"` and the Onyx
+  rail colour. In production it answers 404 unless `RAWAQ_GALLERY=1` (checked both ways).
+  **Open:** the 404 page's first HTML is Next.js's error document (`<html id="__next_error__">`),
+  and the not-found state appears once the scripts run. Moving `not-found.tsx` below the root
+  layout (the route group `(pages)`) did not change it. Find the cause in A7 with the first-frame
+  test (it matters for the Hub-P- not-found pages in stage B too).
 
 ### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
 
@@ -69,29 +159,32 @@ His gate: during the 0.2 s slide, no long task over 50 ms and no gap between two
 
 ### Next, in this order
 
-1. **Open, must be solved before the pull request: the after pictures.** 328 of 448 are
-   identical to the baseline; 120 differ, all in stories with the rail, each by about 100 to 650
-   scattered pixels that are exactly 1 level of 255 apart (nothing an eye can see), all in the
-   soft shadow at the rail's bottom corner next to the frame's corner. Ruled out: noise of the
-   laptop (the baseline taken again hours later is identical, 448 of 448) and the glow's
-   transform (the same pictures differ with and without it). Not yet known: which change makes
-   the browser blend that corner differently. Way to find it: build the Storybook with
-   `Rail.tsx` and `Rail.module.css` of `v1.0.0` and compare, then bring the changes back one by
-   one (the glow as a part of its own, `data-glow` set by an effect, the entries as their own
-   part, the stylesheet's easing variables). `scripts/hardening/diffview.cjs` paints the
-   differing pixels of one picture in red. The 28 pictures of the new story are new, as expected.
-   Make the baseline again when needed: check out the tag `v1.0.0` in another folder,
-   `yarn storybook:build`, then `scripts/hardening/shots.cjs`.
-2. First-load bytes of the starter, before and after, counted without response headers (the new
-   security headers made the first numbers too high): install 1.0.0 in the starter for "before".
-3. A3 (unused code with knip, fonts: subsets and weights), A4 (matrix check, keyboard walk,
-   WCAG 2.4.11, 2.5.8, 1.4.4 at 200 percent zoom, forced colours, right-to-left motion of every
-   moving part), A6 (the gallery pages in the starter, the look in a cookie the server reads),
-   A7 (browser tests with `@playwright/test`, first painted frame), the rest of A8 (audit, secret
-   scan of files and history, built output scan, licence list, the list of files that name
-   Woqoof or the owner), A9 (CI: three browsers on Linux, size budget), A10 (version 1.1.0,
-   changelog, everything twice, pull request with the stage A report in its text).
-4. Then stage B in Hub-P- (branch `rawaq-hardening` there), after 1.1.0 is released.
+The owner answered on 12 Nov 2026 "Yes, continue": the rest of stage A goes on
+`rawaq-hardening-2`, and its pull request carries the stage A report.
+
+1. **A7**: `@playwright/test` as a development dependency (approved with the plan). Smoke test on
+   the starter, built against the packed branch package (as the CI starter job does; never commit
+   the `file:` address): every starter page and every gallery page, English and Arabic, fails on a
+   console error, a hydration warning or a failed request; axe on each; at CPU 4x no long task
+   over 200 ms on load, and the smooth gate for the slides (report "Show labels" as it is, see
+   above); the first-frame test: a gallery cookie with Onyx Black, Comfortable, Arabic, the first
+   painted frame captured (the browser's screen recording, and once with scripts off) must show
+   the rail on the right in Onyx colours. Then the open 404 question above. Start Chrome with
+   `--disable-partial-raster` for any picture.
+2. The rest of **A8**: `yarn npm audit` (root and starter; a major upgrade = ask first), secretlint
+   on the files and the whole history, a guard test against `dangerouslySetInnerHTML`, `eval` and
+   `new Function`, `THIRD_PARTY_LICENSES.md` (runtime and development lists; the OFL fonts
+   flagged), `scripts/scan-built.mjs` on `dist`, `storybook-static` and the starter's `.next`,
+   and the report-only list of files that name Woqoof, the owner's GitHub name, addresses or keys.
+3. **A9**: CI on Chromium, Firefox and WebKit on Linux runners only (`yarn comfort` and the A7
+   tests join the workflow; actions pinned to SHAs), `scripts/check-size.mjs` with
+   `size-budget.json` (the after numbers, +10 percent fails); the Actions minutes estimate.
+4. **A10**: the 448 pictures again (`scripts/hardening/shots.cjs`, compare with a baseline made
+   from `v1.0.0`), the public surface against `surface-1.0.0.json`, version 1.1.0, the starter's
+   address, `CHANGELOG.md`, Run 1 and Run 2 (Run 2 from a clean install), reviews
+   (`code-reviewer`, `security-reviewer`, `a11y-architect`), the pull request with the stage A
+   report (sections 1 to 9 for rawaq-ui), ending "Built by Rashid Akbar".
+5. Then stage B in Hub-P- (branch `rawaq-hardening` there), after 1.1.0 is released.
 
 ## Status note, 11 Nov 2026 (version 1.0.0 is released)
 
@@ -232,7 +325,9 @@ pass on the laptop).
 - The Hub-P- screenshots: build its Storybook to a folder, open the Dashboard and Responses
   stories with `playwright-core` and the installed Chrome (1280 x 720, reduced motion, animations
   finished), and compare the PNG files pixel by pixel on a canvas in the browser. Nothing heavy
-  may run at the same time: under load a few pixels differ by 1/255.
+  may run at the same time: under load a few pixels differ by 1/255. (Found on 12 Nov 2026: that
+  is Chrome's partial raster; start Chrome with `--disable-partial-raster` and the pixels no
+  longer depend on timing. See the status note of 12 Nov 2026.)
 - A hook on the owner's laptop refuses any change to `oxlint.config.mjs`. Make the code satisfy
   the rules as they are (sample words in files under `src/stories` go through variables, not
   literal JSX text), or ask the owner.

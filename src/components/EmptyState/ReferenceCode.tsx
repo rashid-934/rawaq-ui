@@ -4,7 +4,7 @@ import { IconCheck, IconCopy } from '@tabler/icons-react';
 import { CopyButton, VisuallyHidden } from '@mantine/core';
 import classes from './EmptyState.module.css';
 
-export interface ReferenceCodeProps {
+interface ReferenceCodeProps {
   /** The short code. Never an error message. */
   code: string;
   /** The word before the code: "Reference". */

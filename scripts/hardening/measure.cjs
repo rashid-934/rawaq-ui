@@ -56,25 +56,10 @@ async function firstLoad(browser, path) {
   const page = await context.newPage();
   const client = await context.newCDPSession(page);
   await client.send('Network.enable');
-  const kinds = new Map();
-  const bytes = { Script: 0, Stylesheet: 0, Font: 0, Document: 0, Other: 0 };
-  const counts = { Script: 0, Stylesheet: 0, Font: 0 };
   const failed = [];
-  const headers = new Map();
   client.on('Network.responseReceived', (event) => {
-    kinds.set(event.requestId, event.type);
-    // Bytes so far are the response headers: they are not part of the file.
-    headers.set(event.requestId, event.response.encodedDataLength ?? 0);
     if (event.response.status >= 400) {
       failed.push(`${event.response.status} ${event.response.url}`);
-    }
-  });
-  client.on('Network.loadingFinished', (event) => {
-    const kind = kinds.get(event.requestId);
-    const key = kind in bytes ? kind : 'Other';
-    bytes[key] += Math.max(0, event.encodedDataLength - (headers.get(event.requestId) ?? 0));
-    if (key in counts) {
-      counts[key] += 1;
     }
   });
   const errors = [];
@@ -86,6 +71,24 @@ async function firstLoad(browser, path) {
   page.on('pageerror', (error) => errors.push(String(error).slice(0, 200)));
   await page.goto(`${origin}${path}`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1500);
+  // The browser's own count of each file as it came over the wire (compressed), without the
+  // response headers. (Bytes received when the headers arrive can already hold a part of a small
+  // file, so subtracting those undercounted; found on 12 Nov 2026.)
+  const files = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((entry) => ({ url: entry.name, size: entry.encodedBodySize }))
+  );
+  const bytes = { Script: 0, Stylesheet: 0, Font: 0 };
+  const counts = { Script: 0, Stylesheet: 0, Font: 0 };
+  const KINDS = { js: 'Script', css: 'Stylesheet', woff: 'Font', woff2: 'Font' };
+  for (const file of files) {
+    const key = KINDS[new URL(file.url).pathname.split('.').pop()];
+    if (key) {
+      bytes[key] += file.size;
+      counts[key] += 1;
+    }
+  }
   const vitals = await page.evaluate(
     () =>
       new Promise((done) => {
@@ -322,7 +325,11 @@ function lighthouse(path, folder) {
   const server = spawn(
     process.execPath,
     [join(app, 'node_modules', 'next', 'dist', 'bin', 'next'), 'start', '-p', String(PORT)],
-    { cwd: app, stdio: 'inherit', env: { ...process.env, ...JSON.parse(process.env.APP_ENV || '{}') } }
+    {
+      cwd: app,
+      stdio: 'inherit',
+      env: { ...process.env, ...JSON.parse(process.env.APP_ENV || '{}') },
+    }
   );
   const result = { app, pages: {}, cpu4x: {}, cpu1x: {}, lighthouse: {} };
   try {
@@ -352,14 +359,18 @@ function lighthouse(path, folder) {
       mkdirSync(folder, { recursive: true });
       for (const path of LIGHTHOUSE_PAGES) {
         result.lighthouse[path] = lighthouse(path, folder);
-        console.log(`lighthouse ${path}: ${JSON.stringify({ ...result.lighthouse[path], runs: undefined })}`);
+        console.log(
+          `lighthouse ${path}: ${JSON.stringify({ ...result.lighthouse[path], runs: undefined })}`
+        );
       }
     }
   } finally {
     server.kill();
   }
   writeFileSync(out, `${JSON.stringify(result, null, 2)}\n`);
-  console.log(JSON.stringify({ pages: result.pages, cpu4x: result.cpu4x, cpu1x: result.cpu1x }, null, 1));
+  console.log(
+    JSON.stringify({ pages: result.pages, cpu4x: result.cpu4x, cpu1x: result.cpu1x }, null, 1)
+  );
 })().catch((error) => {
   console.error(error);
   process.exit(1);

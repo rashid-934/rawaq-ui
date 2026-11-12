@@ -59,7 +59,8 @@ where things stand is in `PROGRESS.md`.
   when it must (the release job, the Pages deploy job). Every action is pinned to a full commit
   SHA, read from GitHub, with the version in a comment.
 - Before saying done: `yarn test` (format, lint, types, unit tests), `yarn build`,
-  `yarn check:dist`, `yarn check:starter`, `yarn storybook:build`, `yarn axe`. Look at the
+  `yarn check:dist`, `yarn check:starter`, `yarn storybook:build`, `yarn axe`,
+  `yarn comfort`. Look at the
   stories in English, Arabic and Urdu at 1280 x 720 and 1920 x 1080. Then read the CI result.
 - The linter and formatter configs are not edited to make a finding go away: fix the code.
 - Text the package writes (errors, labels) has no em dashes. Plain words.
@@ -74,3 +75,4 @@ where things stand is in `PROGRESS.md`.
 | `yarn check:starter` | The starter installs the version in `package.json` |
 | `yarn storybook` | Storybook on port 6006 |
 | `yarn storybook:build` then `yarn axe` | axe on every story (WCAG 2.2 AA) |
+| `yarn storybook:build` then `yarn comfort` | Layout, target size, keyboard, zoom, high contrast and right-to-left motion checks |

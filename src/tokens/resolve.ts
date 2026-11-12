@@ -9,7 +9,7 @@ import { resolveSidebarColor } from './sidebar';
 // Mantine at run time, so the theme builder, the palette check and the token files share it.
 
 export const PURE_WHITE = '#FFFFFF';
-export const PURE_BLACK = '#000000';
+const PURE_BLACK = '#000000';
 /** Text of Mantine's "light" buttons and badges: one shade darker than the accent passes AA. */
 export const LIGHT_VARIANT_TEXT_SHADE = 7;
 /** Mantine's "light" variant background: the accent at this opacity over the page or card. */

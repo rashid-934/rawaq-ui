@@ -30,3 +30,16 @@ It has:
 | `src/app/[locale]/shell.tsx` | The rail's entries and the header. Add a page to `items` to add it to the rail. |
 | `src/app/starter.css` | The app's own styles. They use the `--app-*` variables, never literal colours. |
 | `messages/en.json`, `messages/ar.json` | The app's words. Rawaq UI's own words in English and Arabic are built in. |
+| `src/app/rawaq-gallery/` | The gallery (below). Not a part of the app: delete the folder in your own app. |
+
+## Gallery (`/rawaq-gallery`)
+
+Full composed pages in every look, to check the theme by eye and in browser tests: an Overview
+page, a Work page with a table, the same page loading, empty and in error (a reference code, never
+a message), a missing page (a real 404), and a form with an invalid and a disabled field. The bar
+in the header switches the preset, the sidebar colour, the density and the language. The choice is
+kept in a cookie that the server reads, so the page is drawn in that look from the first frame.
+
+- `yarn dev`, then open `http://localhost:3000/rawaq-gallery`.
+- In production it answers 404, unless the server starts with `RAWAQ_GALLERY=1`.
+- Its sample content is invented.

@@ -5,6 +5,6 @@ import { routing } from '@/i18n/routing';
 export const proxy = createIntlMiddleware(routing);
 
 export const config = {
-  // Skip Next.js internals and files with an extension.
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
+  // Skip Next.js internals, files with an extension, and the gallery (its language is a switch).
+  matcher: ['/((?!api|_next|_vercel|rawaq-gallery|.*\\..*).*)'],
 };

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Rawaq UI: one theme (tokens, shell and motion) for React and Mantine apps. Layout style: Rail and Bento.",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "sideEffects": [
     "**/*.css"

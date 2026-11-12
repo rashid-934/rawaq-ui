@@ -142,9 +142,9 @@ body {
 
 .mantine-Button-root {
   transition:
-    transform var(--app-motion-fast) ease,
-    box-shadow var(--app-motion-fast) ease,
-    background-color var(--app-motion-fast) ease;
+    transform var(--app-motion-fast) var(--app-ease),
+    box-shadow var(--app-motion-fast) var(--app-ease),
+    background-color var(--app-motion-fast) var(--app-ease);
 
   &:hover:not(:disabled, [data-disabled], [data-loading], [data-page-kind='work'] *) {
     transform: translateY(rem(-1px));

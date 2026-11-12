@@ -1,10 +1,11 @@
 'use client';
 
 import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { motionMs } from '../../tokens/motion';
 import classes from './IntroReveal.module.css';
 
 /** The CSS ends the opening in under 1 s. This timer removes the layer even if no event comes. */
-export const INTRO_SAFETY_MS = 1500;
+export const INTRO_SAFETY_MS = motionMs('introSafety');
 
 export interface IntroLayerProps {
   appName: string;

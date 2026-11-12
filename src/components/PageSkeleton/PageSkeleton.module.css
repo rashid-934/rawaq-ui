@@ -4,13 +4,13 @@
  * appears only after a short wait, so a page that loads fast never flashes it.
  */
 .root {
-  animation: show var(--app-motion-base) ease var(--app-motion-skeleton-delay) backwards;
+  animation: show var(--app-motion-base) var(--app-ease) var(--app-motion-skeleton-delay) backwards;
 }
 
 .block,
 .line {
   display: block;
-  animation: pulse var(--app-motion-skeleton-pulse) ease-in-out infinite alternate;
+  animation: pulse var(--app-motion-skeleton-pulse) var(--app-ease-breath) infinite alternate;
 }
 
 /* A card: outlined, on the card surface. */

@@ -25,8 +25,8 @@
     border-radius: var(--app-radius-pill);
     box-shadow: var(--app-shadow-md);
     transition:
-      inline-size var(--app-motion-base) ease,
-      border-radius var(--app-motion-base) ease;
+      inline-size var(--app-motion-base) var(--app-ease),
+      border-radius var(--app-motion-base) var(--app-ease);
 
     &[data-labels] {
       inline-size: var(--app-rail-panel);
@@ -65,11 +65,12 @@
     0 0 0 rem(4px) color-mix(in srgb, var(--app-glow) 22%, transparent),
     0 rem(6px) rem(16px) color-mix(in srgb, var(--app-glow) 30%, transparent);
   pointer-events: none;
+
+  /* Rail.tsx puts it at its place and plays the slide from one page to the next with a
+     `transform`, so that slide needs no layout. Only its size changes here ("Show labels"). */
   transition:
-    top var(--app-motion-base) ease,
-    left var(--app-motion-base) ease,
-    width var(--app-motion-base) ease,
-    height var(--app-motion-base) ease;
+    width var(--app-motion-base) var(--app-ease),
+    height var(--app-motion-base) var(--app-ease);
 
   /* The notch: a small tab on the rail's inner edge, pointing at the page. */
   &::after {
@@ -170,8 +171,8 @@
   text-decoration: none;
   cursor: pointer;
   transition:
-    background-color var(--app-motion-fast) ease,
-    color var(--app-motion-fast) ease;
+    background-color var(--app-motion-fast) var(--app-ease),
+    color var(--app-motion-fast) var(--app-ease);
 
   &:hover {
     background-color: var(--app-sidebar-hover);

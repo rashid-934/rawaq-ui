@@ -1,5 +1,98 @@
 # Progress
 
+## Status note, 12 Nov 2026 (hardening pass, branch `rawaq-hardening`, not finished)
+
+The owner approved a hardening pass on 12 Nov 2026 (no change to colours, layout, spacing, fonts
+or shapes; smoother motion, less weight, fewer bugs, safety, everything tested twice). It has two
+stages: **A** this package (it becomes version 1.1.0), then **B** the app Hub-P-. The approved
+plan with its 14 additions is on the owner's laptop:
+`C:\Users\Rashid Akbar\.claude\plans\pasted-content-id-cc52-task-rawaq-compiled-nova.md`.
+
+### Done on the branch (stage A, parts A0, A2, A5 and a part of A8)
+
+- **Baseline (A0)**, taken from `main` before any change:
+  - 448 pictures of the built Storybook (15 stories x 7 presets x 2 densities x English and
+    Arabic at 1280 x 720, plus the Overview at 1920 x 1080), taken twice: both runs identical.
+  - Public surface: 140 exports, 85 token exports, 148 interface members, 82 `--app-*` variables,
+    16 test ids. Package size: 80.5 kB of JavaScript (30.4 kB gzip, 37 files), `styles.css`
+    41.9 kB (9.5 kB gzip).
+  - Starter with 1.0.0: Lighthouse desktop 1280 x 720, Performance 100 and Accessibility 100 on
+    the Overview and on the Work page, LCP 0.67 s, CLS 0.0002, blocking time 0. No console error,
+    no failed request. Next.js 16 no longer prints "First Load JS", so it is measured in the
+    browser (see "Next", point 2).
+- **Motion (A2)**: `src/tokens/motion.ts` is now the one place for every duration and easing.
+  New tokens `tooltip`, `pop`, `introSafety`, `ease`, `easeBreath` and the helper `motionMs()`;
+  every stylesheet and component reads them (the keyword `ease`, the tooltip's 120 and the
+  opening's 1500 were written by hand before). `motionVariables()` gives every token its CSS
+  variable. The rail's glow shape now slides by `transform` only (it animated `top` and `left`):
+  it sits at the rail's top left corner, `Rail.tsx` moves it with `transform`, and a CSS
+  transition slides it. The place is measured, so the slide mirrors by itself in right-to-left
+  pages. The owner chose this on 12 Nov 2026 ("CSS transition only") over a version that used
+  the browser's animation call; that version is in the branch history (`eaafae0`) and gave the
+  same pictures. The glow is a part of its own (following the entry no longer draws the whole
+  rail again), and an entry of the rail is drawn again only when something it shows has changed.
+  New tests: `src/tokens/motion.test.ts`, `src/motion-checks.test.ts` (fails on any timing
+  written by hand in a stylesheet or a component), and more cases in `Rail.test.tsx`.
+- **State parts (A5)**: `EmptyState` with the variants `empty`, `error` and `not-found` (one
+  shape), the reference code of an error with a copy button (`ReferenceCode`), `isReferenceCode`
+  and `makeReference`, and `ErrorBoundary`. An error screen has no way to show a message or a
+  stack: only a short code. Words in English and Arabic in `src/labels.ts`; one story
+  ("Empty, error and not found"); tests in `EmptyState.test.tsx` and `ErrorBoundary.test.tsx`.
+- **Safety (a part of A8)**: `package.json` says `"license": "UNLICENSED"` and stays private
+  (`src/package.test.ts` fails if either goes); the starter sends the security headers (a content
+  security policy, no framing, no type sniffing, referrer and permissions policies) and keeps
+  browser source maps off.
+- Checks on the branch: `yarn test` passes (879 unit tests, 697 before), `yarn build` and
+  `yarn check:dist` pass. Compared with the baseline, nothing of the public surface was removed
+  or renamed: 11 exports, 5 variables and 3 test ids were added.
+- `scripts/hardening/` holds the measuring tools of this pass as they are (pictures, picture
+  compare, public surface, starter measurements). They become proper scripts in A7 and A9.
+
+### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
+
+He chose "Keep the slide" after seeing the numbers below. It is the one accepted exception to
+"animate transform and opacity only", written into `docs/DESIGN_THEME.md` section 7. Do not
+change it, and do not treat the 4x gate as failed because of it; report the numbers as they are.
+
+His gate: during the 0.2 s slide, no long task over 50 ms and no gap between two frames over
+50 ms, on the table page, English and Arabic. Measured over 7 visits per page:
+
+- At normal speed every frame is on time (16.7 ms), before and after.
+- At 4x slower it misses the gate, **before and after** the changes above (it passes 1 to 6 of
+  7 visits; worst gap about 100 ms). The frames of the slide itself are mostly on time. What
+  misses is the click: drawing the rail's state again and the first layout take 60 to 110 ms at
+  4x, and one or two frames drop while the page is laid out again on every frame of the push.
+- Moving the tooltip work out of the click was tried and taken out again: it moved the work into
+  the slide and was no better.
+- The choice was his: keep the slide as designed, or open and close the panel with no slide. He
+  kept the slide.
+
+### Next, in this order
+
+1. **Open, must be solved before the pull request: the after pictures.** 328 of 448 are
+   identical to the baseline; 120 differ, all in stories with the rail, each by about 100 to 650
+   scattered pixels that are exactly 1 level of 255 apart (nothing an eye can see), all in the
+   soft shadow at the rail's bottom corner next to the frame's corner. Ruled out: noise of the
+   laptop (the baseline taken again hours later is identical, 448 of 448) and the glow's
+   transform (the same pictures differ with and without it). Not yet known: which change makes
+   the browser blend that corner differently. Way to find it: build the Storybook with
+   `Rail.tsx` and `Rail.module.css` of `v1.0.0` and compare, then bring the changes back one by
+   one (the glow as a part of its own, `data-glow` set by an effect, the entries as their own
+   part, the stylesheet's easing variables). `scripts/hardening/diffview.cjs` paints the
+   differing pixels of one picture in red. The 28 pictures of the new story are new, as expected.
+   Make the baseline again when needed: check out the tag `v1.0.0` in another folder,
+   `yarn storybook:build`, then `scripts/hardening/shots.cjs`.
+2. First-load bytes of the starter, before and after, counted without response headers (the new
+   security headers made the first numbers too high): install 1.0.0 in the starter for "before".
+3. A3 (unused code with knip, fonts: subsets and weights), A4 (matrix check, keyboard walk,
+   WCAG 2.4.11, 2.5.8, 1.4.4 at 200 percent zoom, forced colours, right-to-left motion of every
+   moving part), A6 (the gallery pages in the starter, the look in a cookie the server reads),
+   A7 (browser tests with `@playwright/test`, first painted frame), the rest of A8 (audit, secret
+   scan of files and history, built output scan, licence list, the list of files that name
+   Woqoof or the owner), A9 (CI: three browsers on Linux, size budget), A10 (version 1.1.0,
+   changelog, everything twice, pull request with the stage A report in its text).
+4. Then stage B in Hub-P- (branch `rawaq-hardening` there), after 1.1.0 is released.
+
 ## Status note, 11 Nov 2026 (version 1.0.0 is released)
 
 The owner approved the plan for Rawaq UI v1 on 11 Nov 2026, with seven additions. Everything of
@@ -118,10 +211,9 @@ pass on the laptop).
    Vercel preview built with no token. **No fix for the package was needed.**
 3. Done. Version 1.0.0 is released (see the status note above); the starter's lockfile for 1.0.0
    is in the pull request of the branch `chore/starter-lockfile-1.0.0`.
-4. Hub-P- moves to the 1.0.0 address on a new branch from `master` (`chore/rawaq-ui-1.0.0`) with
-   a new pull request (pull request 15 is merged, so nothing more can be pushed to it): the
-   address in `package.json`, `yarn.lock`, the 28 screenshots repeated. Then, after the owner's
-   merge and his look at the live app, the report that starts with "Rawaq UI is fully ready".
+4. Done. Hub-P- pull request 16 (branch `chore/rawaq-ui-1.0.0`) was merged on 11 Nov 2026: the
+   app installs the package from the 1.0.0 address, the 28 screenshots were identical, and the
+   report "Rawaq UI is fully ready" was sent.
 
 ### Notes for whoever continues
 

@@ -99,8 +99,8 @@
   background-color: var(--app-surface);
   box-shadow: var(--app-shadow-sm);
   transition:
-    transform var(--app-motion-fast) ease,
-    box-shadow var(--app-motion-fast) ease;
+    transform var(--app-motion-fast) var(--app-ease),
+    box-shadow var(--app-motion-fast) var(--app-ease);
 
   &:hover {
     transform: translateY(rem(-2px));

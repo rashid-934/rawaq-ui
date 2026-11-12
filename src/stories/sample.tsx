@@ -82,6 +82,10 @@ export interface Words {
   sampleButton: string;
   samplePill: string;
   sampleLink: string;
+  noSuppliers: string;
+  noSuppliersHelp: string;
+  cardWorks: string;
+  breakCard: string;
   /** Words for the components themselves, for a language that is not built in. */
   labels?: Partial<RawaqLabels>;
 }
@@ -153,6 +157,10 @@ const dictionary = {
     sampleButton: 'Button',
     samplePill: 'Pill',
     sampleLink: 'Link',
+    noSuppliers: 'No suppliers yet',
+    noSuppliersHelp: 'Add the first one to start buying from them.',
+    cardWorks: 'This card works.',
+    breakCard: 'Break this card',
   },
   ar: {
     appName: 'رواق',
@@ -220,6 +228,10 @@ const dictionary = {
     sampleButton: 'زر',
     samplePill: 'شارة',
     sampleLink: 'رابط',
+    noSuppliers: 'لا يوجد موردون بعد',
+    noSuppliersHelp: 'أضف أول مورد لتبدأ الشراء منه.',
+    cardWorks: 'هذه البطاقة تعمل.',
+    breakCard: 'عطّل هذه البطاقة',
   },
   ur: {
     appName: 'رواق',
@@ -281,7 +293,20 @@ const dictionary = {
     sampleButton: 'بٹن',
     samplePill: 'ٹیگ',
     sampleLink: 'لنک',
+    noSuppliers: 'ابھی کوئی سپلائر نہیں',
+    noSuppliersHelp: 'خریداری شروع کرنے کے لیے پہلا سپلائر شامل کریں۔',
+    cardWorks: 'یہ کارڈ کام کر رہا ہے۔',
+    breakCard: 'اس کارڈ کو خراب کریں',
     labels: {
+      emptyTitle: 'ابھی یہاں کچھ نہیں',
+      errorTitle: 'کچھ غلط ہو گیا',
+      errorHelp: 'دوبارہ کوشش کریں۔ اگر یہ مسئلہ برقرار رہے تو ہمیں حوالہ کوڈ بھیجیں۔',
+      notFoundTitle: 'صفحہ نہیں ملا',
+      notFoundHelp: 'یہ صفحہ موجود نہیں، یا آپ اسے نہیں کھول سکتے۔',
+      tryAgain: 'دوبارہ کوشش کریں',
+      reference: 'حوالہ',
+      copyReference: 'حوالہ کوڈ کاپی کریں',
+      referenceCopied: 'کاپی ہو گیا',
       skipToContent: 'مرکزی مواد پر جائیں',
       mainNavigation: 'مرکزی مینو',
       showLabels: 'نام دکھائیں',

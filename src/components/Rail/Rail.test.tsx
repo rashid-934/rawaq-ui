@@ -1,6 +1,9 @@
 import type { ComponentPropsWithoutRef } from 'react';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { IconCircle } from '@tabler/icons-react';
-import { render, renderRtl, screen, userEvent, within } from '../../test-utils';
+import { act, render, renderRtl, screen, userEvent, within } from '../../test-utils';
+import { motionMs } from '../../tokens/motion';
 import { Rail, type RailProps } from './Rail';
 import { isRailItemActive, type RailGroup, type RailItem } from './rail-items';
 
@@ -52,15 +55,20 @@ function renderRail(props: Partial<RailProps> = {}) {
  * jsdom has no layout, so every menu item gets its own place: 42 px apart, from 60 px down.
  * Everything else (the rail, its scrolling list) is one tall box that holds them all.
  */
-function mockLayout() {
+function mockLayout(shift: () => number = () => 0) {
   return vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function place(
     this: HTMLElement
   ) {
     const index = [...document.querySelectorAll('[data-rail-item]')].indexOf(this);
-    const box =
-      index < 0
-        ? { top: 0, left: 0, width: 64, height: 2000 }
-        : { top: 60 + index * 42, left: 12, width: 40, height: 40 };
+    const place = { top: 0, left: 0, width: 64, height: 2000 };
+    if (index >= 0) {
+      Object.assign(place, { top: 60 + index * 42 + shift(), left: 12, width: 40, height: 40 });
+    } else if (this.dataset.testid === 'rail-glow') {
+      // The glow shape is where its style puts it.
+      const { top, left } = this.style;
+      Object.assign(place, { top: parseFloat(top), left: parseFloat(left), width: 40, height: 40 });
+    }
+    const box = place;
     return {
       ...box,
       x: box.left,
@@ -81,19 +89,131 @@ describe('Rail', () => {
     mockLayout();
     const { rerender } = renderRail();
     const glow = screen.getByTestId('rail-glow');
+    const at = (left: number, top: number) => ({
+      transform: `translate(${left}px, ${top}px)`,
+      width: '40px',
+      height: '40px',
+    });
     // Requests is the second item.
-    expect(glow).toHaveStyle({ top: '102px', left: '12px', width: '40px', height: '40px' });
+    expect(glow).toHaveStyle(at(12, 102));
 
     rerender({ pathname: `${base}/suppliers` });
     expect(screen.getByRole('link', { name: 'الموردون' })).toHaveAttribute('aria-current', 'page');
     // The same element, so the CSS transition slides it (Rail.module.css); a new element would
-    // jump. Only its position changed.
+    // jump. Only its transform changed.
     expect(screen.getByTestId('rail-glow')).toBe(glow);
-    expect(glow).toHaveStyle({ top: '144px', left: '12px', width: '40px', height: '40px' });
+    expect(glow).toHaveStyle(at(12, 144));
 
     rerender({ pathname: base });
     expect(screen.getByTestId('rail-glow')).toBe(glow);
-    expect(glow).toHaveStyle({ top: '60px' });
+    expect(glow).toHaveStyle(at(12, 60));
+  });
+
+  it('moves the glow shape by transform alone, never by its place in the layout', () => {
+    mockLayout();
+    const { rerender } = renderRail();
+    const glow = screen.getByTestId('rail-glow');
+    // A change of `top` or `left` would make the browser lay the rail out again on every frame.
+    expect(glow).toHaveStyle({ top: '0px', left: '0px' });
+    rerender({ pathname: `${base}/suppliers` });
+    expect(glow).toHaveStyle({ top: '0px', left: '0px', transform: 'translate(12px, 144px)' });
+  });
+
+  it('slides by a stylesheet transition with the motion tokens, off with reduced motion', () => {
+    const css = readFileSync(join(import.meta.dirname, 'Rail.module.css'), 'utf8');
+    const glowRule = css.slice(css.indexOf('.glow {'), css.indexOf('.label {'));
+    expect(glowRule).toContain('transform var(--app-motion-base) var(--app-ease)');
+    // Nothing that needs layout is animated for the slide from one entry to the next.
+    expect(glowRule).not.toMatch(/\b(?:top|left|inset[a-z-]*)\s+var\(/);
+    const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
+    expect(reduced).toMatch(/\.glow,[^}]*transition: none/);
+  });
+
+  it('follows the active entry without drawing the entries of the rail again', () => {
+    // While "Show labels" slides the rail open, the browser reports a new size on every frame.
+    const sizeChanged: (() => void)[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          sizeChanged.push(callback);
+        }
+
+        observe() {}
+
+        unobserve() {}
+
+        disconnect() {}
+      }
+    );
+    let draws = 0;
+    const Counted = () => {
+      draws += 1;
+      return <svg />;
+    };
+    let moved = 0;
+    mockLayout(() => moved);
+    renderRail({ items: items.map((item) => ({ ...item, icon: Counted })) });
+    const glow = screen.getByTestId('rail-glow');
+    expect(glow).toHaveStyle({ transform: 'translate(12px, 102px)' });
+    expect(sizeChanged.length).toBeGreaterThan(0);
+
+    const before = draws;
+    for (const frame of [3, 6, 9]) {
+      moved = frame;
+      act(() => {
+        for (const callback of sizeChanged) {
+          callback();
+        }
+      });
+    }
+    // The shape followed, and it is still the same element.
+    expect(screen.getByTestId('rail-glow')).toBe(glow);
+    expect(glow).toHaveStyle({ transform: 'translate(12px, 111px)' });
+    // Not one entry was drawn again for it: three frames cost three small updates, no more.
+    expect(draws).toBe(before);
+    vi.unstubAllGlobals();
+  });
+
+  it('draws an entry again only when something it shows has changed', () => {
+    let draws = 0;
+    const Counted = () => {
+      draws += 1;
+      return <svg />;
+    };
+    const counted = () => items.map((item) => ({ ...item, icon: Counted }));
+    const { rerender } = renderRail({ items: counted() });
+    const first = draws;
+    expect(first).toBe(items.length);
+
+    // An app that builds the same list again (new objects, same content) costs nothing.
+    rerender({ items: counted() });
+    rerender({ items: counted(), labelsNotSaved: true });
+    expect(draws).toBe(first);
+
+    // A page change draws the two entries it touches: the old current page and the new one.
+    rerender({ items: counted(), pathname: `${base}/suppliers` });
+    expect(draws).toBe(first + 2);
+
+    // A new name or a new count draws that entry.
+    rerender({
+      items: counted().map((item) => (item.key === 'reports' ? { ...item, count: 3 } : item)),
+      pathname: `${base}/suppliers`,
+    });
+    expect(draws).toBe(first + 3);
+    expect(screen.getByTestId('nav-reports')).toHaveTextContent('التقارير3');
+  });
+
+  it('tells its own styles that the glow shape is there', () => {
+    mockLayout();
+    const { rerender } = renderRail();
+    expect(screen.getByRole('navigation')).toHaveAttribute('data-glow');
+    rerender({ pathname: '/account' });
+    expect(screen.getByRole('navigation')).not.toHaveAttribute('data-glow');
+  });
+
+  it('shows a tooltip for the time the motion token gives', () => {
+    expect(motionMs('tooltip')).toBe(120);
   });
 
   it('has no glow shape when no entry is the current page', () => {

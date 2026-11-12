@@ -27,6 +27,21 @@ function sized(prefix: string, values: Record<(typeof SIZES)[number], string>): 
   return Object.fromEntries(SIZES.map((size) => [`${prefix}-${size}`, values[size]]));
 }
 
+const kebab = (name: string) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+
+/**
+ * Every motion token under its CSS name, so a new token can never be left out: `riseStagger` is
+ * `--app-motion-rise-stagger`, `easeOut` is `--app-ease-out`.
+ */
+export function motionVariables(): CssVariables {
+  return Object.fromEntries(
+    Object.entries(motion).map(([name, value]) => [
+      /^ease/.test(name) ? `--app-${kebab(name)}` : `--app-motion-${kebab(name)}`,
+      value,
+    ])
+  );
+}
+
 /** The same for every look: text colours, shadows, shell sizes, rounding, type sizes, motion. */
 export function staticVariables(): CssVariables {
   const { main } = textColors;
@@ -54,23 +69,8 @@ export function staticVariables(): CssVariables {
     '--app-radius-pill': PILL_RADIUS,
     ...sized('--app-font-size', fontSizes),
     '--app-font-mono': fonts.mono,
-    '--app-motion-fast': motion.fast,
-    '--app-motion-base': motion.base,
-    '--app-motion-rise': motion.rise,
-    '--app-motion-rise-stagger': motion.riseStagger,
-    '--app-motion-rise-distance': motion.riseDistance,
-    '--app-motion-roll': motion.roll,
-    '--app-motion-roll-stagger': motion.rollStagger,
-    '--app-motion-intro': motion.intro,
-    '--app-motion-intro-mark': motion.introMark,
-    '--app-motion-drawer': motion.drawer,
-    '--app-motion-grow': motion.grow,
-    '--app-motion-grow-stagger': motion.growStagger,
-    '--app-motion-skeleton-delay': motion.skeletonDelay,
-    '--app-motion-skeleton-pulse': motion.skeletonPulse,
+    ...motionVariables(),
     '--app-motion-max-stagger': String(MAX_STAGGER),
-    '--app-ease-out': motion.easeOut,
-    '--app-ease-in-out': motion.easeInOut,
     ...kpiVariables(),
   };
 }

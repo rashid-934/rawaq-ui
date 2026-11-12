@@ -1,0 +1,110 @@
+/*
+ * The empty state (docs/DESIGN_THEME.md section 5): an icon tile, a one-line title, one line of
+ * help, one button. The error and the "page not found" screens are the same shape; only the icon,
+ * its colour and the words change.
+ */
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  min-inline-size: 0;
+  padding: var(--mantine-spacing-xl) var(--mantine-spacing-md);
+  text-align: center;
+
+  /* The whole page: in the middle of the window, with a page-size title. */
+  &[data-full-page] {
+    justify-content: center;
+    min-block-size: 60dvh;
+  }
+}
+
+.tile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: rem(48px);
+  block-size: rem(48px);
+  margin-block-end: var(--mantine-spacing-xs);
+  border: rem(1px) solid var(--app-hairline);
+  border-radius: var(--mantine-radius-lg);
+  background-color: var(--app-raised);
+  color: var(--app-text-muted);
+
+  /* Colour never carries the meaning alone: the title says what happened. */
+  [data-variant='error'] > & {
+    color: var(--app-error);
+  }
+}
+
+.title {
+  margin: 0;
+  color: var(--app-text);
+  font-size: var(--mantine-font-size-lg);
+  font-weight: 600;
+  line-height: max(1.3, var(--app-line-height, 0));
+
+  [data-full-page] > & {
+    font-size: rem(20px);
+  }
+}
+
+.help {
+  max-inline-size: rem(440px);
+  margin: 0;
+  color: var(--app-text-muted);
+  font-size: var(--mantine-font-size-sm);
+}
+
+/* The reference code of an error: small, quiet, easy to select and to copy. */
+.reference {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: rem(6px);
+  margin: 0;
+  color: var(--app-text-muted);
+  font-size: var(--mantine-font-size-xs);
+}
+
+.code {
+  padding: rem(2px) rem(6px);
+  border-radius: var(--mantine-radius-sm);
+  background-color: var(--app-raised);
+  color: var(--app-text);
+  font-family: var(--app-font-mono);
+  font-size: inherit;
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+
+/* 28px: above the 24px smallest target of WCAG 2.5.8. */
+.copy {
+  display: inline-grid;
+  place-items: center;
+  inline-size: rem(28px);
+  block-size: rem(28px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--mantine-radius-sm);
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--app-motion-fast) var(--app-ease);
+
+  &:hover {
+    background-color: var(--app-raised);
+    color: var(--app-text);
+  }
+}
+
+.action {
+  margin-block-start: var(--mantine-spacing-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy {
+    transition: none;
+  }
+}

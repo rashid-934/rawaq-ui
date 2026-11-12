@@ -32,7 +32,7 @@
     padding-inline: var(--frame-start) var(--app-frame-margin);
     background-color: var(--app-surface);
     background-clip: content-box;
-    transition: padding-inline-start var(--app-motion-base) ease;
+    transition: padding-inline-start var(--app-motion-base) var(--app-ease);
 
     /* Overview pages show the haze fully; their cards carry the Card surface themselves. */
     .frame[data-page-kind='overview'] & {
@@ -114,7 +114,7 @@
     transparent calc(var(--app-frame-radius) - 0.5px),
     var(--mantine-color-text) var(--app-frame-radius)
   );
-  transition: inset-inline-start var(--app-motion-base) ease;
+  transition: inset-inline-start var(--app-motion-base) var(--app-ease);
 
   &[data-corner^='top'] {
     inset-block-start: var(--app-frame-margin);
@@ -154,7 +154,7 @@
   border: rem(1px) solid var(--app-hairline);
   border-radius: var(--app-frame-radius);
   box-shadow: var(--app-shadow-sm);
-  transition: inset-inline-start var(--app-motion-base) ease;
+  transition: inset-inline-start var(--app-motion-base) var(--app-ease);
 }
 
 /* Work pages use the full width of the frame; inner padding 12px, Overview 16px (section 4.1).
@@ -187,7 +187,7 @@
  * save bars and menus behave exactly as without it. The page takes clicks from its first frame.
  */
 .page {
-  animation: page-in var(--app-motion-base) ease backwards;
+  animation: page-in var(--app-motion-base) var(--app-ease) backwards;
 }
 
 .frame[data-page-kind='overview'] .page {
@@ -220,7 +220,7 @@
   background-color: var(--app-scrim);
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--app-motion-drawer) ease;
+  transition: opacity var(--app-motion-drawer) var(--app-ease);
 
   &[data-open] {
     opacity: 1;

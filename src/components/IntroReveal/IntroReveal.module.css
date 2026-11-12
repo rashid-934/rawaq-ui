@@ -34,7 +34,7 @@
   display: flex;
   align-items: center;
   gap: rem(14px);
-  animation: mark var(--app-motion-intro-mark) ease backwards;
+  animation: mark var(--app-motion-intro-mark) var(--app-ease) backwards;
 }
 
 .logo {

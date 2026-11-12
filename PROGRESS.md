@@ -21,7 +21,7 @@ branch `rawaq-hardening-2` is merged and deleted, and takes no more commits. The
 state of the branch's pull request is read with `gh`: a push goes out only while there is no pull
 request yet or its state is exactly OPEN.
 
-### Done (stage A, parts A0 to A7 and a part of A8)
+### Done (stage A, parts A0 to A9)
 
 - **Baseline (A0)**, taken from `main` before any change:
   - 448 pictures of the built Storybook (15 stories x 7 presets x 2 densities x English and
@@ -176,7 +176,7 @@ request yet or its state is exactly OPEN.
       slide and ends about 14 ms into it: the Overview's first layout, in the frame that starts
       the slide. To a light page (gallery Work to Empty) it passes 7 of 7 in both languages. The
       test needs most visits to pass on both. Each test writes its numbers to
-      `e2e-results/<test>/numbers.json`.
+      `e2e-results-perf/<test>/numbers.json`.
   - **Why the gallery's 404 HTML is `__next_error__`** (found with two throwaway routes, then
     deleted): React does not run error boundaries while it draws a page on the server, and a
     `not-found.tsx` is an error boundary. So when a page calls `notFound()` during a dynamic
@@ -237,6 +237,20 @@ request yet or its state is exactly OPEN.
     `rashid-934`, needed), the starter's `package.json` and `yarn.lock` (the same release
     address), `PROGRESS.md` (the plan's path on the owner's laptop, which holds his name, and
     "Built by Rashid Akbar").
+- **A9 (CI guard rails)**, `.github/workflows/ci.yml`, Linux runners only, every action pinned to
+  a full commit SHA (one new: `actions/upload-artifact` v7.0.2), permissions still read-only:
+  - `checks`: `yarn check:size` and `yarn scan:built dist` after the build.
+  - `storybook and accessibility`: `yarn comfort` after `yarn axe`, then
+    `yarn scan:built storybook-static`.
+  - `starter and browser tests`: after the starter is built against the packed package,
+    `yarn scan:built examples/starter/.next`, Playwright's Chromium, Firefox and WebKit, `yarn e2e`
+    on all three (the first-frame and CPU 4x tests are Chromium only), `yarn e2e:perf` alone, the
+    numbers printed in the log, and the results kept 14 days as the run's file `browser-tests`.
+  - `scripts/check-size.mjs` with `size-budget.json`, the sizes of this branch's build: JavaScript
+    42 files, 91,796 bytes (35,174 gzip, each file on its own); `styles.css` 45,342 (10,089
+    gzip); `tokens.css` 9,568 (2,136); `tokens.json` 11,368 (2,690). More than 10 percent above
+    any of them fails (seen failing at +13.4 percent on a lowered budget). `--write` sets a new
+    budget, only in a pull request that says why.
 
 ### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
 
@@ -265,9 +279,7 @@ carries the stage A report.
 
 1. ~~A7~~ done (above).
 2. ~~A8~~ done (above).
-3. **A9**: CI on Chromium, Firefox and WebKit on Linux runners only (`yarn comfort` and the A7
-   tests join the workflow; actions pinned to SHAs), `scripts/check-size.mjs` with
-   `size-budget.json` (the after numbers, +10 percent fails); the Actions minutes estimate.
+3. ~~A9~~ done (above); the Actions minutes come from the first CI run of the pull request.
 4. **A10**: the 448 pictures again (`scripts/hardening/shots.cjs`, compare with a baseline made
    from `v1.0.0`), the public surface against `surface-1.0.0.json`, version 1.1.0, the starter's
    address, `CHANGELOG.md`, Run 1 and Run 2 (Run 2 from a clean install), reviews

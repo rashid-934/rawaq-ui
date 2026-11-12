@@ -141,7 +141,7 @@ async function watchSlide(
   }, SLIDE_MS);
 }
 
-/** Keeps the numbers of a test next to its results (`e2e-results/<test>/numbers.json`). */
+/** Keeps the numbers of a test next to its results (`e2e-results-perf/<test>/numbers.json`). */
 function keep(info: TestInfo, numbers: unknown) {
   const text = JSON.stringify(numbers);
   info.annotations.push({ type: 'numbers', description: text });

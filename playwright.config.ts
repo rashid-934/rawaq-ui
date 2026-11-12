@@ -42,8 +42,11 @@ export default defineConfig({
   retries: 0,
   forbidOnly: ci,
   timeout: 60_000,
-  reporter: ci ? [['list'], ['html', { open: 'never', outputFolder: 'e2e-report' }]] : 'list',
-  outputDir: 'e2e-results',
+  // Each run has its own folders: a run empties its output folder when it starts.
+  reporter: ci
+    ? [['list'], ['html', { open: 'never', outputFolder: perf ? 'e2e-report-perf' : 'e2e-report' }]]
+    : 'list',
+  outputDir: perf ? 'e2e-results-perf' : 'e2e-results',
   use: {
     baseURL: `http://localhost:${PORT}`,
     // The desktop minimum of the design (docs/DESIGN_THEME.md); motion is off unless a test that

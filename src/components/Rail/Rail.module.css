@@ -359,9 +359,12 @@
   }
 }
 
-/* Windows high contrast replaces backgrounds, so the active page gets an outline instead. */
+/*
+ * Windows high contrast replaces backgrounds, so the active page gets an outline instead. While
+ * it has the keyboard focus, the focus ring (styles/global.css) shows, so focus stays visible.
+ */
 @media (forced-colors: active) {
-  .item[data-active] {
+  .item[data-active]:not(:focus-visible) {
     outline: rem(2px) solid currentcolor;
     outline-offset: rem(-2px);
   }

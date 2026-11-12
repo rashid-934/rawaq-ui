@@ -6,6 +6,8 @@ storybook-static
 *.tsbuildinfo
 .stylelintcache
 coverage
+e2e-results*
+e2e-report*
 
 # Yarn 4 (node_modules linker): keep the lockfile, ignore the caches
 .yarn/*

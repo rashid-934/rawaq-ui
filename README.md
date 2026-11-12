@@ -203,6 +203,10 @@ English and Arabic need nothing. For another language, four small things:
    <PageSkeleton locale="ur" labels={labels} ... />
    ```
 
+   Since 1.1.0 the state screens (`EmptyState`, `ErrorBoundary`) have words too: `emptyTitle`,
+   `errorTitle`, `errorHelp`, `notFoundTitle`, `notFoundHelp`, `tryAgain`, `reference`,
+   `copyReference` and `referenceCopied`. A word that is not given is shown in English.
+
 4. **The app's own words** (page names, button texts) come from the app's translations, as for
    any language.
 
@@ -234,6 +238,8 @@ Node.js 22 or newer and Yarn 4 through Corepack (`corepack yarn <script>`).
 | `yarn storybook` | Storybook on `http://localhost:6006` |
 | `yarn storybook:build`, then `yarn axe` | Runs axe on every story (WCAG 2.2 AA, both languages, seven presets, both densities) |
 | `yarn storybook:build`, then `yarn comfort` | Layout, target size, keyboard, 200 percent zoom, high contrast and right-to-left motion checks on every story |
+| `yarn e2e` | Browser tests on the starter, built against this package (steps at the top of `playwright.config.ts`): every page and every gallery page in English and Arabic, no console error, hydration warning or failed request, axe, and the first painted frame in the saved look |
+| `yarn e2e:perf` | The same starter with the processor slowed 4 times: long tasks of the load, and the smooth gate for "Show labels" and the glow slide (alone, one test at a time) |
 
 The rules for changes are in [CLAUDE.md](CLAUDE.md).
 

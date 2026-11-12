@@ -295,14 +295,16 @@ request yet or its state is exactly OPEN.
     in two of three runs (1.0.0 baseline: 100, 100, 0.67 s, 0.0002, 0). First-load bytes: JS
     221,818 (`/en`) and 222,456 (`/en/suppliers`), CSS 40,583, fonts unchanged; no console error,
     no failed request.
-  - The owner's "no long task over 200 ms on load" at CPU 4x: met for a load with the scripts in
-    the cache (53 to 184 ms; CI 58 to 77 ms), **missed for the first load with an empty cache,
-    before and after**: 1.0.0 against now, 5 cold visits each, alternating: median longest task
-    360 to 308 ms (`/en`), 239 to 257 (`/en/suppliers`), 317 to 253 (`/ar`), 378 to 365
-    (`/ar/suppliers`); median blocking 661 to 396, 437 to 430, 572 to 384, 738 to 719. The task is
-    Next.js starting and React taking over the whole page, not the theme. What it would take:
-    less JavaScript on the first visit of the app (more server-drawn parts, smaller client parts)
-    or streaming parts in, which is app work (stage B and later), not this package.
+  - The owner's "no long task over 200 ms on load" at CPU 4x: **met in CI** (Linux runner) for the
+    first load with an empty cache (longest task 118 to 129 ms) and for a load with the scripts
+    cached (0 to 100 ms). **On this laptop** it is met with the scripts cached (53 to 184 ms) and
+    **missed for the first load, before and after**: 1.0.0 against now, 5 cold visits each,
+    alternating: median longest task 360 to 308 ms (`/en`), 239 to 257 (`/en/suppliers`), 317 to
+    253 (`/ar`), 378 to 365 (`/ar/suppliers`); median blocking 661 to 396, 437 to 430, 572 to
+    384, 738 to 719. "4 times slower" is relative to the machine, and this laptop is slower than
+    the runner. The task is Next.js starting and React taking over the whole page, not the theme.
+    What it would take on a slow machine: less JavaScript on the first visit of the app (more
+    server-drawn parts, smaller client parts), which is app work (stage B and later).
   - Size budget from the final build: JavaScript 42 files, 93,453 bytes (35,832 gzip);
     `styles.css` 45,590 (10,194); `tokens.css` 9,568 (2,136); `tokens.json` 11,368 (2,690).
   - **Run 1** (12 Nov 2026, this laptop): `yarn test` (format, lint, types, 1,038 unit tests),
@@ -316,12 +318,14 @@ request yet or its state is exactly OPEN.
     no problems, every scan clean, `yarn e2e` 21 of 21, `yarn e2e:perf` 8 of 8. After Run 2 the
     load part of `e2e:perf` became "first load reported, cached load gated on the middle of
     three" (above) and ran again: 4 of 4. CI runs everything once more on the final commit.
-  - CI on Linux (pull request 7, before the review fixes): every job green; 60 browser tests (20
-    on each of Chromium, Firefox and WebKit, 4 skipped: the first-frame tests are Chromium only);
-    CPU 4x there: load 58 to 77 ms, the glow 7 of 7 everywhere, "Show labels" 7 of 7 in English
-    and 6 and 7 of 7 in Arabic. Actions time: before A9 about 5 runner minutes a run (3.8 minutes
-    end to end), now about 13.5 (6.9 minutes). The repository is public, so standard Linux runners
-    cost nothing.
+  - CI on Linux, final commit `67c569b` (run 43230884160): every job green; 63 browser tests (21
+    on each of Chromium, Firefox and WebKit; 59 passed, 4 skipped: the first-frame tests are
+    Chromium only); CPU 4x 8 of 8: the glow 7 of 7 everywhere (worst gap 16.8 to 33.4 ms), "Show
+    labels" 7 of 7 open and close in English and Arabic (worst gap 33.4 ms), loads as above. The
+    laptop's 4x numbers swing from run to run (the last full laptop run gave the glow to a light
+    page 6 and 4 of 7); CI's runner is steadier. Actions time: before A9 about 5 runner minutes a
+    run (3.8 minutes end to end), now about 15.8 (7.6 minutes). The repository is public, so
+    standard Linux runners cost nothing.
 
 ### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
 

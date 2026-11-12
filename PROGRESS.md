@@ -46,7 +46,11 @@ plan with its 14 additions is on the owner's laptop:
 - `scripts/hardening/` holds the measuring tools of this pass as they are (pictures, picture
   compare, public surface, starter measurements). They become proper scripts in A7 and A9.
 
-### Waiting for the owner: "Show labels" at 4x slower processor
+### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
+
+He chose "Keep the slide" after seeing the numbers below. It is the one accepted exception to
+"animate transform and opacity only", written into `docs/DESIGN_THEME.md` section 7. Do not
+change it, and do not treat the 4x gate as failed because of it; report the numbers as they are.
 
 His gate: during the 0.2 s slide, no long task over 50 ms and no gap between two frames over
 50 ms, on the table page, English and Arabic. Measured over 7 visits per page:
@@ -58,8 +62,8 @@ His gate: during the 0.2 s slide, no long task over 50 ms and no gap between two
   4x, and one or two frames drop while the page is laid out again on every frame of the push.
 - Moving the tooltip work out of the click was tried and taken out again: it moved the work into
   the slide and was no better.
-- So the choice is his: keep the slide as designed (the one exception to "transform and opacity
-  only"), or open and close the panel with no slide.
+- The choice was his: keep the slide as designed, or open and close the panel with no slide. He
+  kept the slide.
 
 ### Next, in this order
 

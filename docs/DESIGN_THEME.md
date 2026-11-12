@@ -201,7 +201,12 @@ Everywhere:
 Always: when the device asks for reduced motion (`prefers-reduced-motion: reduce`) there is no
 animation at all, and numbers show their final value at once.
 
-Built with CSS only. No animation library. The timings are tokens (`src/tokens/motion.ts`).
+Motion changes `transform` and `opacity` only, so nothing on the page is laid out again while it
+plays. One exception, kept by the owner on 12 Nov 2026: "Show labels" slides the rail open and
+pushes the page over (it changes widths for 0.2 s), because a push cannot be drawn any other way.
+
+Built with CSS, plus the browser's own animation call for the slide of the Glow circle. No
+animation library. The timings are tokens (`src/tokens/motion.ts`).
 
 ## 8. Screen sizes
 

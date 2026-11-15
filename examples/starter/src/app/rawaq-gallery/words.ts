@@ -18,6 +18,7 @@ export interface GalleryWords {
     language: string;
     openMenu: string;
     closeMenu: string;
+    apply: string;
   };
   presets: Record<PresetKey, string>;
   sidebars: Record<SidebarChoice, string>;
@@ -85,6 +86,7 @@ const en: GalleryWords = {
     language: 'Language',
     openMenu: 'Open the menu',
     closeMenu: 'Close the menu',
+    apply: 'Apply',
   },
   presets: {
     'sand-forest': 'Sand and Forest',
@@ -186,6 +188,7 @@ const ar: GalleryWords = {
     language: 'اللغة',
     openMenu: 'افتح القائمة',
     closeMenu: 'أغلق القائمة',
+    apply: 'تطبيق',
   },
   presets: {
     'sand-forest': 'رمل وغابة',

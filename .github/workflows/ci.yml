@@ -51,6 +51,10 @@ jobs:
         run: yarn build
       - name: Check the built package
         run: yarn check:dist
+      - name: The package stays within its size budget (+10 percent fails)
+        run: yarn check:size
+      - name: Nothing secret or private in the built package
+        run: yarn scan:built dist
       - name: The starter installs this version
         run: yarn check:starter
       - name: The package can be packed
@@ -74,9 +78,14 @@ jobs:
       # the WCAG 2.2 AA rules. It uses the Chrome that is already on the runner.
       - name: axe on every story
         run: yarn axe
+      # Layout, target size, keyboard, 200 percent zoom, high contrast and right-to-left motion.
+      - name: Comfort checks on every story
+        run: yarn comfort
+      - name: Nothing secret or private in the Storybook
+        run: yarn scan:built storybook-static
 
   starter:
-    name: starter
+    name: starter and browser tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,3 +109,32 @@ jobs:
       - name: Build the starter
         working-directory: examples/starter
         run: yarn build
+      - name: Nothing secret or private in the starter's build
+        run: yarn scan:built examples/starter/.next
+      # Linux runners only, never macOS. The browsers come from Playwright's own download.
+      - name: Install the test browsers
+        run: yarn playwright install --with-deps chromium firefox webkit
+      # Every page and every gallery page in English and Arabic: console, hydration, requests,
+      # axe; the first painted frame in the saved look (Chromium). The tests start the starter.
+      - name: Browser tests on Chromium, Firefox and WebKit
+        env:
+          E2E_BROWSERS: chromium,firefox,webkit
+        run: yarn e2e
+      # The processor slowed 4 times: load long tasks and the smooth gate, alone on the runner.
+      - name: CPU 4x checks (Chromium)
+        run: yarn e2e:perf
+      - name: The numbers of the CPU 4x checks
+        if: always()
+        run: find e2e-results-perf -name numbers.json -exec cat {} + 2>/dev/null || true
+      - name: Keep the test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: browser-tests
+          path: |
+            e2e-results
+            e2e-results-perf
+            e2e-report
+            e2e-report-perf
+          retention-days: 14
+          if-no-files-found: ignore

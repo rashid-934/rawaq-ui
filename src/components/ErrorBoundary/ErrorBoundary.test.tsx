@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { render, renderRtl, screen, userEvent } from '../../test-utils';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -163,5 +164,72 @@ describe('ErrorBoundary', () => {
     broken = false;
     await userEvent.click(screen.getByRole('button', { name: /^Retry [2-9A-HJ-NP-Z]{8}$/ }));
     expect(screen.getByText('Orders')).toBeInTheDocument();
+  });
+
+  it('gives the focus to the error when the broken part had it, also when a retry fails', async () => {
+    function LoadButton() {
+      const [broken, setBroken] = useState(false);
+      if (broken) {
+        throw new Error(SECRET);
+      }
+      return (
+        <button type="button" onClick={() => setBroken(true)}>
+          Load orders
+        </button>
+      );
+    }
+    render(
+      <ErrorBoundary>
+        <LoadButton />
+      </ErrorBoundary>
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Load orders' }));
+    const heading = screen.getByRole('heading', { name: 'Something went wrong' });
+    expect(heading).toHaveFocus();
+
+    // "Try again" draws the button again; pressed, it fails again: the new error takes the focus.
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Load orders' }));
+    expect(screen.getByRole('heading', { name: 'Something went wrong' })).toHaveFocus();
+  });
+
+  it('never takes the focus from somewhere else', () => {
+    const view = render(<input aria-label="Search" />);
+    const search = screen.getByRole('textbox', { name: 'Search' });
+    search.focus();
+    view.rerender(
+      <>
+        <input aria-label="Search" />
+        <ErrorBoundary>
+          <Broken fail={() => true} />
+        </ErrorBoundary>
+      </>
+    );
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(search).toHaveFocus();
+  });
+
+  it('takes the heading level of its place on the page', () => {
+    render(
+      <ErrorBoundary titleOrder={3}>
+        <Broken fail={() => true} />
+      </ErrorBoundary>
+    );
+    expect(screen.getByRole('heading', { level: 3, name: 'Something went wrong' })).toBeVisible();
+  });
+
+  it('tells the app when the part is drawn again, so the app can move the focus', async () => {
+    let broken = true;
+    const onReset = vi.fn();
+    render(
+      <ErrorBoundary onReset={onReset}>
+        <Broken fail={() => broken} />
+      </ErrorBoundary>
+    );
+    expect(onReset).not.toHaveBeenCalled();
+    broken = false;
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(screen.getByText('Orders')).toBeInTheDocument();
+    expect(onReset).toHaveBeenCalledTimes(1);
   });
 });

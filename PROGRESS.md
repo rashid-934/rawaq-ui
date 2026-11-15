@@ -1,6 +1,6 @@
 # Progress
 
-## Status note, 12 Nov 2026 (hardening pass, branch `rawaq-hardening-2`, not finished)
+## Status note, 12 Nov 2026 (hardening pass, stage A done: pull request 7, version 1.1.0)
 
 The owner approved a hardening pass on 12 Nov 2026 (no change to colours, layout, spacing, fonts
 or shapes; smoother motion, less weight, fewer bugs, safety, everything tested twice). It has two
@@ -12,9 +12,16 @@ plan with its 14 additions is on the owner's laptop:
 merged from the owner's account 12 seconds apart; CI on `main` passed). It holds everything under
 "Done" below up to the glow's CSS transition (`4274f2b`). No release was made: the latest release
 is still 1.0.0, so Hub-P- is not affected. The branch `rawaq-hardening` is merged and takes no
-more commits; the rest of stage A continues on `rawaq-hardening-2`, made from `main`.
+more commits.
 
-### Done (stage A, parts A0 to A6 and a part of A8)
+**Pull request 6 merged the second part into `main`** on 12 Nov 2026 at 11:32 UTC (opened at
+11:31 and merged from the owner's account; head `0813018`: A3, A4, A6 and the status note). Its
+branch `rawaq-hardening-2` is merged and deleted, and takes no more commits. The rest of stage A
+(A7 to A10) continues on `rawaq-hardening-3`, made from `main` (`45763d8`). Before every push the
+state of the branch's pull request is read with `gh`: a push goes out only while there is no pull
+request yet or its state is exactly OPEN.
+
+### Done (stage A, parts A0 to A10)
 
 - **Baseline (A0)**, taken from `main` before any change:
   - 448 pictures of the built Storybook (15 stories x 7 presets x 2 densities x English and
@@ -133,10 +140,194 @@ more commits; the rest of stage A continues on `rawaq-hardening-2`, made from `m
   branch package: every page 200 (the missing one 404), no console error, no hydration warning,
   and with Onyx Black, Comfortable, Arabic the server's HTML already has `dir="rtl"` and the Onyx
   rail colour. In production it answers 404 unless `RAWAQ_GALLERY=1` (checked both ways).
-  **Open:** the 404 page's first HTML is Next.js's error document (`<html id="__next_error__">`),
-  and the not-found state appears once the scripts run. Moving `not-found.tsx` below the root
-  layout (the route group `(pages)`) did not change it. Find the cause in A7 with the first-frame
-  test (it matters for the Hub-P- not-found pages in stage B too).
+  The 404 page's first HTML is Next.js's error document (`<html id="__next_error__">`), and the
+  not-found state appears once the scripts run: explained in A7 below.
+- **A7 (browser tests)**: `@playwright/test` 1.65.0 (the same version as the `playwright-core`
+  already there), `playwright.config.ts` and `e2e/`. The tests start `next start` on the starter,
+  which is built against this branch's packed package first (steps at the top of the config; the
+  `file:` address is never committed). On this laptop they use the installed Chrome, started with
+  `--disable-partial-raster`; in CI `E2E_BROWSERS` picks Chromium, Firefox and WebKit (A9).
+  - `yarn e2e` (20 tests, all green on 12 Nov 2026): `e2e/smoke.spec.ts` opens the 4 starter pages
+    and the 6 gallery pages plus the missing one in English and Arabic; each fails on a console
+    error, a hydration warning, a script error, an answer of 400 or more (only the missing page's
+    own 404 is expected) or a failed request, checks `lang` and `dir`, and runs axe (WCAG 2.2 AA).
+    The error page shows a reference code and no message or stack. `e2e/first-frame.spec.ts`
+    (Chromium) saves Onyx Black, Comfortable, Arabic in the gallery's cookie and opens the Work
+    page: the first painted frame of Chrome's own screen recording already has the rail on the
+    right in Onyx colours (pixels read on a canvas, the rail's colour taken from the installed
+    package's `tokens.json`); with scripts off, the server's HTML alone has `lang="ar"`,
+    `dir="rtl"`, the same rail place, the Onyx variables and the Comfortable spacing, and is
+    painted the same way.
+  - Each check was proven to catch a planted problem first (pages made for it and deleted again):
+    a console error, a failed request, a hydration mismatch (React error 418), an image without a
+    name (axe `image-alt`), and a theme that waits for the scripts (the first frame showed the
+    default rail colour `rgb(23, 59, 48)`, and the server's HTML had the default variables).
+  - `yarn e2e:perf` (Chromium, processor slowed 4 times, run alone; 8 tests, all green):
+    - Load, longest task: `/en` 160 ms, `/ar` 104 ms, `/en/suppliers` 60 ms, `/ar/suppliers`
+      68 ms. Limit 200 ms.
+    - "Show labels" (reported only, the owner kept it): open passes 3 of 7 (English) and 1 of 7
+      (Arabic), close 1 of 7 and 1 of 7; worst gap 117 ms, longest task 86 ms. The same picture
+      as before the changes.
+    - The glow: its window starts at the glow's own `transitionstart`, because the glow moves
+      only once the click's new page is in place (Rail.tsx follows the address): 0.2 to 0.4 s after
+      the press at 4x, after the page change's own work (51 to 74 ms for the click, 99 to 160 ms
+      for the new page). From the table page to the Overview it passes 6 of 7 in both languages
+      (worst gap 33 ms); the misses are a task of 54 to 73 ms that starts 48 to 59 ms before the
+      slide and ends about 14 ms into it: the Overview's first layout, in the frame that starts
+      the slide. To a light page (gallery Work to Empty) it passes 7 of 7 in both languages. The
+      test needs most visits to pass on both. Each test writes its numbers to
+      `e2e-results-perf/<test>/numbers.json`.
+  - **Why the gallery's 404 HTML is `__next_error__`** (found with two throwaway routes, then
+    deleted): React does not run error boundaries while it draws a page on the server, and a
+    `not-found.tsx` is an error boundary. So when a page calls `notFound()` during a dynamic
+    render, the error leaves the server's first draw, and Next.js 16 answers 404 with its empty
+    error document plus the page data; the browser then draws the nearest `not-found.tsx`. A probe
+    with a plain server-only not-found file did the same (404, `__next_error__`). With a
+    `<Suspense>` around the page, the shell was drawn by the server, but the answer became 200 and
+    the not-found text was still drawn by the browser. Only addresses that match no route are drawn
+    by the server (Next.js's own `_not-found`; one in the gallery's layout would need
+    `global-not-found`, still experimental in Next.js 16, so not used). The gallery keeps its real
+    404 status; the test waits for the not-found state. For stage B: Hub-P-'s `notFound()` pages
+    behave the same (a white first frame, then the not-found state), and the first-frame test
+    there applies to normal pages.
+  - Starter on Next.js 16.3.8: `yarn npm audit` lists two critical and one high advisory (fixed
+    after 16.4.0); the starter's upgrade is in A8. Hub-P- has the same version: proposed to the
+    owner as its own task on 12 Nov 2026, not part of this pass.
+- **A8 (security), the rest**:
+  - `yarn npm audit --all --recursive`. Starter: `next` 16.3.8 had two critical advisories
+    (GHSA-2464-fhr4-w9xw, remote code execution in image resizing with SVG files;
+    GHSA-673q-mjm6-r5xr, remote code execution in `use cache` functions) and one high
+    (GHSA-p3m5-59mp-jv5r, Server Actions denial of service), all for 16.0.0 to 16.4.0. The starter
+    now pins `next` 16.4.6 (a minor upgrade; its lockfile made by a real install from the 1.0.0
+    address): no audit finding left. The starter uses none of the three features, but it is the
+    example apps copy. Package (development tools only, nothing ships): `tldts-core` 7.4.20 (a
+    partial release) is now 7.4.22 inside its range. Left, reported: `glob` 13.0.7 and `minimatch`
+    10.2.6 (moderate, inside Storybook's docgen plugin, which asks for `glob` ^13). They are fixed
+    only in new majors (`glob` after 14.0.1, `minimatch` 11.0.1 and up) that the plugin does not
+    accept: forcing them is a major upgrade (ask first). Only our own fixed patterns reach them, at build
+    time on this laptop and in CI.
+  - secretlint 11.7.1 with the recommended rules (through `yarn dlx`, nothing installed): every
+    tracked file and the whole history (`git log -p --all`, 1.08 MB, every commit) are clean. It
+    was seen to catch a planted GitHub token first.
+  - `src/code-safety.test.ts` reads every code file of `src`, `.storybook`, `scripts`, `e2e`, the
+    starter's `src` and the config files, and fails on `dangerouslySetInnerHTML`, `eval`,
+    `new Function`, writing `innerHTML` or `outerHTML`, `insertAdjacentHTML`, `document.write` and
+    a timer that runs a string (with cases that it catches and cases it lets through). None is
+    used today.
+  - `THIRD_PARTY_LICENSES.md`: the package ships no third-party code and no font; peers are MIT;
+    the fonts are SIL OFL 1.1 (flagged, with what that allows); the starter's and the
+    development lists, with `axe-core` (MPL-2.0), sharp's `libvips` (LGPL-3.0-or-later, not used)
+    and `caniuse-lite` (CC-BY-4.0, build data) named.
+  - `yarn scan:built` (`scripts/scan-built.mjs`) searches `dist`, `storybook-static` and the
+    starter's `.next` for private keys, Supabase keys and project addresses, signed tokens,
+    GitHub tokens, cloud and Stripe keys, the values of secret environment variables, and in what
+    a browser can get also email addresses, the client's name, folder paths of a computer, private
+    network addresses and browser source maps. It prints file, kind and count, never the text.
+    469 files, clean. Proven on planted problems (5 of 5 caught). One address in the Storybook is
+    a library's own maintainer data (bundled `package.json` of a parser), public and not ours: such
+    package data is let through, any other address fails. The Pages workflow now runs it on the
+    Storybook before anything is uploaded; CI runs it in A9.
+  - What a public Storybook would show (Pages stays off, the owner's call): the built code of
+    every part (the package's own JavaScript and CSS, minified but readable with some effort), the
+    tokens, the words in English and Arabic, the invented sample content, and the stories' code.
+    Nothing of an app, no client data, no key. The package is `UNLICENSED`: a public Storybook
+    lets anyone read the theme's code, but grants no right to use it.
+  - Report only, files that name the owner or the repository (no file names Woqoof, no email
+    address, no key): `README.md` and `scripts/check-starter.mjs` (the release address on GitHub,
+    `rashid-934`, needed), the starter's `package.json` and `yarn.lock` (the same release
+    address), `PROGRESS.md` (the plan's path on the owner's laptop, which holds his name, and
+    "Built by Rashid Akbar").
+- **A9 (CI guard rails)**, `.github/workflows/ci.yml`, Linux runners only, every action pinned to
+  a full commit SHA (one new: `actions/upload-artifact` v7.0.2), permissions still read-only:
+  - `checks`: `yarn check:size` and `yarn scan:built dist` after the build.
+  - `storybook and accessibility`: `yarn comfort` after `yarn axe`, then
+    `yarn scan:built storybook-static`.
+  - `starter and browser tests`: after the starter is built against the packed package,
+    `yarn scan:built examples/starter/.next`, Playwright's Chromium, Firefox and WebKit, `yarn e2e`
+    on all three (the first-frame and CPU 4x tests are Chromium only), `yarn e2e:perf` alone, the
+    numbers printed in the log, and the results kept 14 days as the run's file `browser-tests`.
+  - `scripts/check-size.mjs` with `size-budget.json`, the sizes of this branch's build: JavaScript
+    42 files, 91,796 bytes (35,174 gzip, each file on its own); `styles.css` 45,342 (10,089
+    gzip); `tokens.css` 9,568 (2,136); `tokens.json` 11,368 (2,690). More than 10 percent above
+    any of them fails (seen failing at +13.4 percent on a lowered budget). `--write` sets a new
+    budget, only in a pull request that says why. A10 wrote it again from the final build (below)
+    and added a floor: more than 30 percent under a budget fails too (a part missing).
+- **A10 (pictures, surface, reviews, version 1.1.0, two runs)**:
+  - Pictures: 1.0.0's Storybook built from the tag `v1.0.0` in a scratch folder, 448 pictures;
+    this branch with every change of stage A, the review fixes included: **448 of 448 identical**
+    (pixel for pixel; the 28 pictures of the new story are new). Also identical to the pictures
+    taken before the review fixes (476 of 476).
+  - Public surface against `scripts/hardening/surface-1.0.0.json`: nothing removed or renamed;
+    added 11 exports, 35 interface members, 5 `--app-*` variables, 3 test ids. One thing to
+    know (in `CHANGELOG.md` and the README): `RawaqLabels` has 9 new words, so code that typed a
+    complete object as `RawaqLabels` is asked by TypeScript for them; `labels` passed as the README
+    shows needs no change.
+  - Version 1.1.0 in `package.json`, the starter's address `v1.1.0` (its lockfile follows after
+    the release, as for 1.0.0), `CHANGELOG.md` section 1.1.0.
+  - Reviews (`code-reviewer`, `security-reviewer`, `a11y-architect`): nothing critical or high.
+    Fixed: the glow also measures again when a block inside the rail changes size or a late font
+    arrives (`Rail.test.tsx`); `ErrorBoundary` gives the focus to the error's heading when the
+    broken part had it (never otherwise), takes `titleOrder` and tells the app `onReset`
+    (`ErrorBoundary.test.tsx`); the focused active rail entry keeps its focus ring in Windows high
+    contrast; a long reference code wraps; the gallery's look bar changes nothing until "Apply"
+    (WCAG 3.2.2, e2e test); the timing guard finds a time inside a style text, `${n}ms` and long
+    timers; the code guard finds `Function(`, `window['eval']`, `(0, eval)`, `setHTMLUnsafe`,
+    `createContextualFragment`, `srcdoc`, `javascript:` and `import('data:...')`, and reads the
+    starter's `next.config.mjs`; the scan flags any source map, an empty build and two more secret
+    names, and its patterns (`scripts/lib/private-patterns.mjs`) also check the HTML of every page
+    the starter serves, also pages drawn per request; the size check has its floor; the release
+    workflow refuses a tag whose commit is not on `main`; the test server is never reused.
+    Checked and not changed: the copy status is a `span` already (the reviewer's "div in p" was
+    wrong); CSP keeps `'unsafe-inline'` (nonces make every page dynamic: ask first); the `alert`
+    covers the whole error card (moving it needs an extra element in the card, a layout risk, for
+    a minor gain), the rail's count has no unit word (a change to a part released in 1.0.0), the
+    reference code has no `lang` (a code is in no language; a screen reader spells it); Mantine
+    closes tooltips on Esc.
+  - Found while testing: the comfort motion checks sampled once, 90 ms after the click, and failed
+    when a busy laptop started a slide late. They now follow each slide on every frame: some
+    frame must be on the way and the way must go one direction (glow, "Show labels" push,
+    drawer). The glow's own code was then measured during its slide at 4x: one resize callback per
+    visit, 230 to 313 ms before the slide, 0.2 to 0.6 ms long, and no font event; the misses on
+    the starter are the Overview's first layout (a 50 to 57 ms task that starts 38 to 49 ms before
+    the slide). So the CPU 4x glow gate is the glow to a light page; the table-to-Overview slide
+    is reported.
+  - Speed after (laptop, starter built against the branch, Next.js 16.4.6): Lighthouse desktop
+    `/en` Performance 100, Accessibility 100, LCP 0.67 s, CLS 0, blocking 0 ms; `/en/suppliers`
+    Performance 95 (runs 95, 100, 95), Accessibility 100, LCP 0.65 s, CLS 0.0001, blocking 165 ms
+    in two of three runs (1.0.0 baseline: 100, 100, 0.67 s, 0.0002, 0). First-load bytes: JS
+    221,818 (`/en`) and 222,456 (`/en/suppliers`), CSS 40,583, fonts unchanged; no console error,
+    no failed request.
+  - The owner's "no long task over 200 ms on load" at CPU 4x: **met in CI** (Linux runner) for the
+    first load with an empty cache (longest task 118 to 129 ms) and for a load with the scripts
+    cached (0 to 100 ms). **On this laptop** it is met with the scripts cached (53 to 184 ms) and
+    **missed for the first load, before and after**: 1.0.0 against now, 5 cold visits each,
+    alternating: median longest task 360 to 308 ms (`/en`), 239 to 257 (`/en/suppliers`), 317 to
+    253 (`/ar`), 378 to 365 (`/ar/suppliers`); median blocking 661 to 396, 437 to 430, 572 to
+    384, 738 to 719. "4 times slower" is relative to the machine, and this laptop is slower than
+    the runner. The task is Next.js starting and React taking over the whole page, not the theme.
+    What it would take on a slow machine: less JavaScript on the first visit of the app (more
+    server-drawn parts, smaller client parts), which is app work (stage B and later).
+  - Size budget from the final build: JavaScript 42 files, 93,453 bytes (35,832 gzip);
+    `styles.css` 45,590 (10,194); `tokens.css` 9,568 (2,136); `tokens.json` 11,368 (2,690).
+  - **Run 1** (12 Nov 2026, this laptop): `yarn test` (format, lint, types, 1,038 unit tests),
+    build, `check:dist`, `check:size`, `check:starter`, pack, `scan:built`, Storybook, axe (448
+    checks, no violations), comfort (the motion part flaky as above, then reworked, then 3 runs
+    with 2 clean and one honest skip report), starter built against the packed package, `yarn e2e`
+    21 of 21, `yarn e2e:perf` 8 of 8 (after the gate changes above), pictures 448 of 448.
+  - **Run 2** (12 Nov 2026, after deleting both `node_modules`, `dist`, `storybook-static`, the
+    starter's `.next`, `tsconfig.tsbuildinfo` and the test results; `yarn install --immutable`):
+    all of the above again, all green: 1,038 unit tests, axe 448 with no violations, comfort with
+    no problems, every scan clean, `yarn e2e` 21 of 21, `yarn e2e:perf` 8 of 8. After Run 2 the
+    load part of `e2e:perf` became "first load reported, cached load gated on the middle of
+    three" (above) and ran again: 4 of 4. CI runs everything once more on the final commit.
+  - CI on Linux, final commit `67c569b` (run 43230884160): every job green; 63 browser tests (21
+    on each of Chromium, Firefox and WebKit; 59 passed, 4 skipped: the first-frame tests are
+    Chromium only); CPU 4x 8 of 8: the glow 7 of 7 everywhere (worst gap 16.8 to 33.4 ms), "Show
+    labels" 7 of 7 open and close in English and Arabic (worst gap 33.4 ms), loads as above. The
+    laptop's 4x numbers swing from run to run (the last full laptop run gave the glow to a light
+    page 6 and 4 of 7); CI's runner is steadier. Actions time: before A9 about 5 runner minutes a
+    run (3.8 minutes end to end), now about 15.8 (7.6 minutes). The repository is public, so
+    standard Linux runners cost nothing.
 
 ### Decided by the owner on 12 Nov 2026: "Show labels" keeps its slide
 
@@ -159,32 +350,21 @@ His gate: during the 0.2 s slide, no long task over 50 ms and no gap between two
 
 ### Next, in this order
 
-The owner answered on 12 Nov 2026 "Yes, continue": the rest of stage A goes on
-`rawaq-hardening-2`, and its pull request carries the stage A report.
+Stage A (A0 to A10) is done on `rawaq-hardening-3`; pull request 7 carries the stage A report.
 
-1. **A7**: `@playwright/test` as a development dependency (approved with the plan). Smoke test on
-   the starter, built against the packed branch package (as the CI starter job does; never commit
-   the `file:` address): every starter page and every gallery page, English and Arabic, fails on a
-   console error, a hydration warning or a failed request; axe on each; at CPU 4x no long task
-   over 200 ms on load, and the smooth gate for the slides (report "Show labels" as it is, see
-   above); the first-frame test: a gallery cookie with Onyx Black, Comfortable, Arabic, the first
-   painted frame captured (the browser's screen recording, and once with scripts off) must show
-   the rail on the right in Onyx colours. Then the open 404 question above. Start Chrome with
-   `--disable-partial-raster` for any picture.
-2. The rest of **A8**: `yarn npm audit` (root and starter; a major upgrade = ask first), secretlint
-   on the files and the whole history, a guard test against `dangerouslySetInnerHTML`, `eval` and
-   `new Function`, `THIRD_PARTY_LICENSES.md` (runtime and development lists; the OFL fonts
-   flagged), `scripts/scan-built.mjs` on `dist`, `storybook-static` and the starter's `.next`,
-   and the report-only list of files that name Woqoof, the owner's GitHub name, addresses or keys.
-3. **A9**: CI on Chromium, Firefox and WebKit on Linux runners only (`yarn comfort` and the A7
-   tests join the workflow; actions pinned to SHAs), `scripts/check-size.mjs` with
-   `size-budget.json` (the after numbers, +10 percent fails); the Actions minutes estimate.
-4. **A10**: the 448 pictures again (`scripts/hardening/shots.cjs`, compare with a baseline made
-   from `v1.0.0`), the public surface against `surface-1.0.0.json`, version 1.1.0, the starter's
-   address, `CHANGELOG.md`, Run 1 and Run 2 (Run 2 from a clean install), reviews
-   (`code-reviewer`, `security-reviewer`, `a11y-architect`), the pull request with the stage A
-   report (sections 1 to 9 for rawaq-ui), ending "Built by Rashid Akbar".
-5. Then stage B in Hub-P- (branch `rawaq-hardening` there), after 1.1.0 is released.
+1. The owner reviews and merges pull request 7 (his click; nothing is merged by me).
+2. After the merge: push the tag `v1.1.0` on the merge commit (the release workflow now refuses a
+   tag that is not on `main`), check the Release (file `rawaq-ui-1.1.0.tgz`, notes from the
+   changelog, the job "verify the release"), then the small pull request with the starter's
+   lockfile made by a real install from the 1.1.0 address (as for 1.0.0). 1.0.0 is never touched.
+3. Then stage B in Hub-P- (branch `rawaq-hardening` there, from `master`), as in the plan: B0
+   measuring tools first, rollback steps in Hub-P-'s `PROGRESS.md` before the address changes.
+   From A7: Hub-P-'s pages that call `notFound()` answer with Next.js's empty error document
+   first, like the gallery; the first-frame test there applies to normal pages.
+4. The owner's own clicks (unchanged): a ruleset on `main` and one for tags `v*` (only he may
+   create them), GitHub Pages stays off until he decides.
+5. Separate from this pass: Hub-P- runs Next.js 16.3.8 with two critical advisories; its own
+   session (started by the owner on 12 Nov 2026) has a plan waiting for his approval.
 
 ## Status note, 11 Nov 2026 (version 1.0.0 is released)
 

@@ -77,6 +77,9 @@
   font-size: inherit;
   font-variant-numeric: tabular-nums;
   user-select: all;
+
+  /* A long code given by the app wraps instead of running out of a narrow or zoomed page. */
+  overflow-wrap: anywhere;
 }
 
 /* 28px: above the 24px smallest target of WCAG 2.5.8. */

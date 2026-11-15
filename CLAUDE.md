@@ -60,7 +60,7 @@ where things stand is in `PROGRESS.md`.
   SHA, read from GitHub, with the version in a comment.
 - Before saying done: `yarn test` (format, lint, types, unit tests), `yarn build`,
   `yarn check:dist`, `yarn check:starter`, `yarn storybook:build`, `yarn axe`,
-  `yarn comfort`. Look at the
+  `yarn comfort`, `yarn e2e` (and `yarn e2e:perf` when motion changed). Look at the
   stories in English, Arabic and Urdu at 1280 x 720 and 1920 x 1080. Then read the CI result.
 - The linter and formatter configs are not edited to make a finding go away: fix the code.
 - Text the package writes (errors, labels) has no em dashes. Plain words.
@@ -76,3 +76,5 @@ where things stand is in `PROGRESS.md`.
 | `yarn storybook` | Storybook on port 6006 |
 | `yarn storybook:build` then `yarn axe` | axe on every story (WCAG 2.2 AA) |
 | `yarn storybook:build` then `yarn comfort` | Layout, target size, keyboard, zoom, high contrast and right-to-left motion checks |
+| `yarn e2e` | Browser tests on the starter built against this package (`playwright.config.ts` says how) |
+| `yarn e2e:perf` | CPU 4x: load long tasks and the smooth gate for the slides, run alone |

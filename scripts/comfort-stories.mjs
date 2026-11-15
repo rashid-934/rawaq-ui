@@ -474,7 +474,41 @@ if (only.includes('motion')) {
     r ? `${Math.round(r.left)}..${Math.round(r.right)} x ${Math.round(r.top)}` : 'none';
   const measured = [];
   const settle = () => page.waitForTimeout(600);
-  const half = () => page.waitForTimeout(90);
+  // A slide is followed on every frame from the click until it has settled, so it does not matter
+  // when the browser starts it (a busy machine starts later): some frame must be on the way, and
+  // the way must go in one direction only.
+  const during = async (selector, action) => {
+    await page.evaluate((s) => {
+      window.__track = [];
+      window.__tracking = true;
+      const tick = () => {
+        const element = document.querySelector(s);
+        if (element) {
+          const r = element.getBoundingClientRect();
+          window.__track.push({ left: r.left, right: r.right, top: r.top, bottom: r.bottom });
+        }
+        if (window.__tracking) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, selector);
+    await action();
+    await settle();
+    return page.evaluate(() => {
+      window.__tracking = false;
+      return window.__track;
+    });
+  };
+  const between = (value, a, b) => value > Math.min(a, b) + 0.5 && value < Math.max(a, b) - 0.5;
+  const oneWay = (values) => {
+    const rising = values.at(-1) >= values[0];
+    return values.every((value, index) =>
+      index === 0
+        ? true
+        : rising
+          ? value >= values[index - 1] - 0.5
+          : value <= values[index - 1] + 0.5
+    );
+  };
 
   for (const locale of LOCALES) {
     const rtl = locale !== 'en';
@@ -486,20 +520,25 @@ if (only.includes('motion')) {
     const rail = await rect('nav[id]');
     const start = await rect('[data-testid=rail-glow]');
     const target = await rect('[data-testid=nav-reports]');
-    await page.getByTestId('nav-reports').click();
-    await half();
-    const mid = await rect('[data-testid=rail-glow]');
-    await settle();
+    const glowFrames = await during('[data-testid=rail-glow]', () =>
+      page.getByTestId('nav-reports').click()
+    );
     const end = await rect('[data-testid=rail-glow]');
-    measured.push(tag(`glow ${round(start)} -> ${round(mid)} -> ${round(end)}`));
-    if (!start || !mid || !end || !target || !rail) {
+    const mid =
+      start && end ? (glowFrames.find((r) => between(r.top, start.top, end.top)) ?? null) : null;
+    measured.push(
+      tag(`glow ${round(start)} -> ${round(mid)} -> ${round(end)} (${glowFrames.length} frames)`)
+    );
+    if (!start || !end || !target || !rail) {
       failures.push(`[motion] ${tag('the glow or the rail is missing')}`);
     } else {
-      if (Math.abs(mid.left - start.left) > 1) {
+      if (glowFrames.some((r) => Math.abs(r.left - start.left) > 1)) {
         failures.push(`[motion] ${tag('the glow moves sideways while it slides')}`);
       }
-      if (!(mid.top > Math.min(start.top, end.top) && mid.top < Math.max(start.top, end.top))) {
-        failures.push(`[motion] ${tag('the glow is not between its start and its end half way')}`);
+      if (!mid || !oneWay(glowFrames.map((r) => r.top))) {
+        failures.push(
+          `[motion] ${tag('the glow does not slide straight from its start to its end')}`
+        );
       }
       if (Math.abs((end.top + end.bottom) / 2 - (target.top + target.bottom) / 2) > 1) {
         failures.push(`[motion] ${tag('the glow does not end on the entry that was clicked')}`);
@@ -524,12 +563,15 @@ if (only.includes('motion')) {
     // "Show labels" widens the rail from its outer side and pushes the frame toward the end.
     const railBefore = await rect('nav[id]');
     const frameBefore = await rect('[data-testid=frame-ring]');
-    await page.getByTestId('rail-labels').click();
-    await half();
-    const frameMid = await rect('[data-testid=frame-ring]');
-    await settle();
+    const frameFrames = await during('[data-testid=frame-ring]', () =>
+      page.getByTestId('rail-labels').click()
+    );
     const railAfter = await rect('nav[id]');
     const frameAfter = await rect('[data-testid=frame-ring]');
+    const pushEdge = (r) => (rtl ? r.right : r.left);
+    const frameMid =
+      frameFrames.find((r) => between(pushEdge(r), pushEdge(frameBefore), pushEdge(frameAfter))) ??
+      null;
     measured.push(
       tag(
         `show labels: rail ${round(railBefore)} -> ${round(railAfter)}, frame ${round(frameBefore)} -> ${round(frameMid)} -> ${round(frameAfter)}`
@@ -538,13 +580,10 @@ if (only.includes('motion')) {
     const outer = rtl ? 'right' : 'left';
     const inner = rtl ? 'left' : 'right';
     const grows = rtl ? railAfter.left < railBefore.left : railAfter.right > railBefore.right;
-    const pushed = rtl
-      ? frameAfter.right < frameBefore.right &&
-        frameMid.right < frameBefore.right &&
-        frameMid.right > frameAfter.right
-      : frameAfter.left > frameBefore.left &&
-        frameMid.left > frameBefore.left &&
-        frameMid.left < frameAfter.left;
+    const pushed =
+      (rtl ? frameAfter.right < frameBefore.right : frameAfter.left > frameBefore.left) &&
+      frameMid !== null &&
+      oneWay(frameFrames.map(pushEdge));
     if (Math.abs(railAfter[outer] - railBefore[outer]) > 1 || !grows) {
       failures.push(`[motion] ${tag(`the rail does not widen from its ${inner} side`)}`);
     }
@@ -586,23 +625,22 @@ if (only.includes('motion')) {
     await openStory(page, storyUrl(origin, 'screens--work-page-with-table', { locale }));
     await settle();
     const closed = await rect('nav[id]');
-    await page.getByTestId('menu-button').click();
-    await half();
-    const mid = await rect('nav[id]');
-    await settle();
+    const drawerFrames = await during('nav[id]', () => page.getByTestId('menu-button').click());
     const open = await rect('nav[id]');
-    measured.push(tag(`drawer ${round(closed)} -> ${round(mid)} -> ${round(open)}`));
-    const ok = rtl
-      ? closed.left >= 699 &&
-        open.right <= 701 &&
-        open.right >= 690 &&
-        mid.left < closed.left &&
-        mid.left > open.left
-      : closed.right <= 1 &&
-        open.left >= -1 &&
-        open.left <= 10 &&
-        mid.right > closed.right &&
-        mid.right < open.right;
+    // The edge that comes in first: the right edge from the left, the left edge from the right.
+    const edge = (r) => (rtl ? r.left : r.right);
+    const mid = drawerFrames.find((r) => between(edge(r), edge(closed), edge(open))) ?? null;
+    measured.push(
+      tag(
+        `drawer ${round(closed)} -> ${round(mid)} -> ${round(open)} (${drawerFrames.length} frames)`
+      )
+    );
+    const ok =
+      (rtl
+        ? closed.left >= 699 && open.right <= 701 && open.right >= 690
+        : closed.right <= 1 && open.left >= -1 && open.left <= 10) &&
+      mid !== null &&
+      oneWay(drawerFrames.map(edge));
     if (!ok) failures.push(`[motion] ${tag('the drawer does not slide in from the start side')}`);
   }
   await context.close();

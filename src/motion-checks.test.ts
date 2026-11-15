@@ -54,17 +54,54 @@ function cssProblems(text: string): string[] {
 
 const forbiddenInCode: [what: string, pattern: RegExp][] = [
   ['a duration or delay given as a number', /\b\w*(?:duration|delay)\w*\s*[:=]\s*\{?\s*\d/i],
-  ['a timer with a number', /\bset(?:Timeout|Interval)\([^;]*,\s*\d[\d_]*\s*\)/],
   ['a time constant given as a number', /_MS\s*=\s*\d/],
   ['a time written as text', /['"`]\d*\.?\d+m?s['"`]/],
+  // 'opacity 0.2s ease' in a style: a time among other words of one text.
+  ['a time inside a text', /['"`][^'"`\n]*(?<![\w.-])\d*\.?\d+m?s\b[^'"`\n]*['"`]/],
+  ['a time unit put after a number', /\$\{[^}]+\}m?s\b/],
   [
     'an easing written as text',
     /['"`](?:ease(?:-in|-out|-in-out)?|linear|cubic-bezier\([^'"`]*\))['"`]/,
   ],
+  // Not a variable's name such as `--app-ease-out`.
+  [
+    'an easing inside a text',
+    /['"`][^'"`\n]*(?<![\w-])(?:ease-(?:in|out|in-out)\b|cubic-bezier\()/,
+  ],
 ];
 
+/** The last argument of every `setTimeout(...)` and `setInterval(...)` call, however long. */
+function timerDelays(text: string): string[] {
+  const delays: string[] = [];
+  for (const start of text.matchAll(/\bset(?:Timeout|Interval)\s*\(/g)) {
+    let depth = 1;
+    let index = (start.index ?? 0) + start[0].length;
+    let lastComma = -1;
+    for (; index < text.length && depth > 0; index += 1) {
+      const character = text[index];
+      if (character === '(' || character === '{' || character === '[') {
+        depth += 1;
+      } else if (character === ')' || character === '}' || character === ']') {
+        depth -= 1;
+      } else if (character === ',' && depth === 1) {
+        lastComma = index;
+      }
+    }
+    if (lastComma >= 0) {
+      delays.push(text.slice(lastComma + 1, index - 1).trim());
+    }
+  }
+  return delays;
+}
+
 function codeProblems(text: string): string[] {
-  return forbiddenInCode.filter(([, pattern]) => pattern.test(text)).map(([what]) => what);
+  const problems = forbiddenInCode
+    .filter(([, pattern]) => pattern.test(text))
+    .map(([what]) => what);
+  if (timerDelays(text).some((delay) => /^\d[\d_.]*$/.test(delay))) {
+    problems.push('a timer with a number');
+  }
+  return problems;
 }
 
 const problemsIn = (file: string, text: string) =>
@@ -109,6 +146,12 @@ describe('no timing written by hand', () => {
     "const style = { transitionDuration: '0.2s' };",
     "element.animate(frames, { easing: 'ease-out' });",
     "const curve = 'cubic-bezier(0.2, 0.7, 0.2, 1)';",
+    "style={{ transition: 'opacity 0.2s ease' }}",
+    "const fade = 'opacity 1s ease-out';",
+    // A template literal with a time unit after its placeholder, written as plain text here.
+    ['const delay = `$', '{seconds}s`;'].join(''),
+    'setTimeout(() => {\n  a();\n  b();\n}, 1500);',
+    'window.setInterval(tick, 16);',
   ])('catches in a component: %s', (line) => {
     expect(codeProblems(line)).not.toEqual([]);
   });
@@ -120,6 +163,9 @@ describe('no timing written by hand', () => {
     "style={{ '--digit': Number(part.text), '--order': order[index] } as CSSProperties}",
     "frameRadius: '24px',",
     "const sizes = ['xs', 'sm', 'md', 'lg', 'xl'];",
+    'setTimeout(() => {\n  a();\n  b();\n}, INTRO_SAFETY_MS);',
+    "const grid = 'repeat(3, 1fr)';",
+    "const hint = 'Press Esc to close';",
   ])('allows in a component: %s', (line) => {
     expect(codeProblems(line)).toEqual([]);
   });

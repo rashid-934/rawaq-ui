@@ -1,5 +1,24 @@
 # Progress
 
+## Status note, 15 Nov 2026 (version 1.1.0 is released)
+
+- The owner merged pull request 7 (stage A of the hardening pass) on 15 Nov 2026 at 06:34 UTC:
+  merge commit `aea0624` on `main`. CI on `main` for that commit was green (checks, storybook and
+  accessibility, starter and browser tests).
+- The tag `v1.1.0` was pushed on `aea0624` the same day. The Release run was green on all five
+  jobs: the three checks before the release, `release`, and `verify the release` (the starter
+  installed and built from the released file).
+- The Release "Rawaq UI 1.1.0" (15 Nov 2026, 06:51 UTC) holds `rawaq-ui-1.1.0.tgz` (62,180
+  bytes). Its notes are the changelog's 1.1.0 section; it is a full release and the latest one.
+  The file downloads without sign-in and says version 1.1.0, `private` and `UNLICENSED`. The tag
+  and the Release of 1.0.0 were not touched.
+- The starter's lockfile names the 1.1.0 address with the checksum of the released file, made by
+  a real install from that address. In `examples/starter`, `yarn install --immutable` and
+  `yarn build` pass with it, and `yarn check:starter` passes.
+- Next: stage B, the same pass in the app Hub-P- (its own `PROGRESS.md` tracks it); its last
+  part moves the app to this version. The owner's own clicks are unchanged: a ruleset on `main`
+  and one for tags `v*`; GitHub Pages stays off until he decides.
+
 ## Status note, 12 Nov 2026 (hardening pass, stage A done: pull request 7, version 1.1.0)
 
 The owner approved a hardening pass on 12 Nov 2026 (no change to colours, layout, spacing, fonts
@@ -352,19 +371,19 @@ His gate: during the 0.2 s slide, no long task over 50 ms and no gap between two
 
 Stage A (A0 to A10) is done on `rawaq-hardening-3`; pull request 7 carries the stage A report.
 
-1. The owner reviews and merges pull request 7 (his click; nothing is merged by me).
-2. After the merge: push the tag `v1.1.0` on the merge commit (the release workflow now refuses a
-   tag that is not on `main`), check the Release (file `rawaq-ui-1.1.0.tgz`, notes from the
-   changelog, the job "verify the release"), then the small pull request with the starter's
-   lockfile made by a real install from the 1.1.0 address (as for 1.0.0). 1.0.0 is never touched.
-3. Then stage B in Hub-P- (branch `rawaq-hardening` there, from `master`), as in the plan: B0
+1. Done on 15 Nov 2026: the owner merged pull request 7.
+2. Done on 15 Nov 2026 (the note at the top): the tag `v1.1.0` on the merge commit, the Release
+   checked (file `rawaq-ui-1.1.0.tgz`, notes from the changelog, the job "verify the release"),
+   and the small pull request with the starter's lockfile made by a real install from the 1.1.0
+   address (as for 1.0.0). 1.0.0 was not touched.
+3. Now: stage B in Hub-P- (branch `rawaq-hardening` there, from `master`), as in the plan: B0
    measuring tools first, rollback steps in Hub-P-'s `PROGRESS.md` before the address changes.
    From A7: Hub-P-'s pages that call `notFound()` answer with Next.js's empty error document
    first, like the gallery; the first-frame test there applies to normal pages.
 4. The owner's own clicks (unchanged): a ruleset on `main` and one for tags `v*` (only he may
    create them), GitHub Pages stays off until he decides.
-5. Separate from this pass: Hub-P- runs Next.js 16.3.8 with two critical advisories; its own
-   session (started by the owner on 12 Nov 2026) has a plan waiting for his approval.
+5. Separate from this pass, done: Hub-P- ran Next.js 16.3.8 with two critical advisories; the
+   owner merged its upgrade to 16.4.6 on 15 Nov 2026 (Hub-P- pull request 17).
 
 ## Status note, 11 Nov 2026 (version 1.0.0 is released)
 

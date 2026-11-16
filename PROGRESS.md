@@ -1,5 +1,39 @@
 # Progress
 
+## Status note, 16 Nov 2026 (version 1.1.1: two fixes, waits for the owner's merge)
+
+- The app's hardening pass (Hub-P- pull request 18) found two faults that are theme code. Both
+  are fixed on the branch `fix/password-ring-table-header` as version 1.1.1, a patch: no colour,
+  layout, spacing, font or shape changed, nothing was renamed or removed.
+  - **Password field**: it showed the keyboard focus only as a darker border. Mantine keeps the
+    focus on an input inside the field's box with its outline off, and the theme's ring rule did
+    not name that box (measured: outline `none` on both). One rule of its own in
+    `src/styles/global.css` draws the same ring on the box (measured: `solid 3px`, 2 px offset,
+    the 2 px dark inner ring; in forced colours the outline stays).
+  - **Table header in a narrow window**: below 768 px (also a 1280 px window zoomed to 200
+    percent) `.table-wrap` scrolls sideways, and the sticky header sat 68 px down inside it, over
+    the first rows (the rows start 36 and 74 px down). Inside that block
+    `--app-table-sticky-top` is now 0 and the header is at 0 px. At 768 px and at 1280 px the
+    offset is 68 px, before and after.
+- Tests first. Two new stories: "Password field" and "Work page, short table" (two rows, each
+  name a link). `yarn comfort` learned three things: the ring may sit on the control or on the
+  box of its field, and a box that hides what sticks out must not cut it off; at the top of the
+  page a table header sits in its own place; in a wide window it still sticks under the app
+  header. Before the fix the keyboard, zoom and forced-colours checks gave 18 problems (10 on the
+  password field, 8 on the table) and nothing else; after it, none. The unit test
+  `src/styles/global.test.ts` has 7 cases (5 failed before the fix).
+- Pictures against 1.1.0 (`main`, the same source): 476 of 476 identical, 56 new ones (the two
+  new stories).
+- Checks on the laptop: `yarn test` (1,046 unit tests in 25 files), `yarn build`,
+  `yarn check:dist`, `yarn check:size` (`styles.css` 46,516 bytes, 2.0 percent over the budget's
+  number; the budget file stays at the sizes of 1.1.0), `yarn check:starter`,
+  `yarn storybook:build`, `yarn axe`, `yarn comfort` (all six checks) and both scans. The
+  starter's browser tests on Chromium, Firefox and WebKit run in CI.
+- Next, after the owner's merge: tag `v1.1.1` on the merge commit and check the Release; a small
+  pull request for the starter's lockfile (as pull request 8 did for 1.1.0); then in Hub-P-,
+  after its pull request 18 is merged, a small pull request that moves the address to 1.1.1 and
+  takes the `KNOWN` line out of `tests/e2e/wcag.spec.ts`.
+
 ## Status note, 15 Nov 2026 (version 1.1.0 is released)
 
 - The owner merged pull request 7 (stage A of the hardening pass) on 15 Nov 2026 at 06:34 UTC:

@@ -70,8 +70,9 @@ export function FormGridItem({ wide = false, children }: FormGridItemProps) {
 }
 
 /**
- * Wraps the main table of a Work page: on a narrow window the table scrolls sideways on its own,
- * so its header row can still stick. Give the table `{...pageTableProps}`.
+ * Wraps the main table of a Work page. Give the table `{...pageTableProps}`: its header row
+ * sticks under the app header. On a narrow window the table scrolls sideways on its own, and
+ * its header row stays above its rows.
  */
 export function TableWrap({ children }: { children: ReactNode }) {
   return <div className="table-wrap">{children}</div>;

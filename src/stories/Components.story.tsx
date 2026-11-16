@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { IconFileDescription } from '@tabler/icons-react';
-import { Button, Text, TextInput } from '@mantine/core';
+import { Button, PasswordInput, Text, TextInput } from '@mantine/core';
 import {
   BentoCard,
   EmptyState,
@@ -135,6 +135,30 @@ function Form() {
   );
 }
 
+function Password() {
+  const words = useWords();
+  return (
+    <div className={classes.padded}>
+      <WorkCard>
+        <FormGrid>
+          <FormGridItem>
+            <TextInput label={words.fields.company} />
+          </FormGridItem>
+          <FormGridItem>
+            <PasswordInput
+              label={words.fields.password}
+              visibilityToggleButtonProps={{ 'aria-label': words.showPassword, tabIndex: 0 }}
+            />
+          </FormGridItem>
+        </FormGrid>
+      </WorkCard>
+      <div>
+        <Button>{words.save}</Button>
+      </div>
+    </div>
+  );
+}
+
 const SAMPLE_REFERENCE = 'K7QM2XWD';
 const SAMPLE_FAILURE = 'A sample failure. This text must never reach the screen.';
 
@@ -216,6 +240,12 @@ export const LoadingSkeletons: Story = { name: 'Loading skeleton', render: () =>
 
 /** A Work card with fields in two columns and one wide field. */
 export const FormGridInCard: Story = { name: 'Form grid', render: () => <Form /> };
+
+/**
+ * A password field keeps the keyboard focus on an input inside its box. The box shows the same
+ * focus ring as every other field.
+ */
+export const PasswordField: Story = { name: 'Password field', render: () => <Password /> };
 
 /**
  * One shape for three moments: nothing to show yet, something went wrong (with a reference code,

@@ -2,6 +2,26 @@
 
 Every release has a section here. Its text becomes the notes of the GitHub Release.
 
+## 1.1.1
+
+Two fixes for the keyboard and for narrow windows. The look does not change: 476 of 476 pictures
+of 1.1.0 are drawn the same. Nothing was renamed or removed: an app moves to it by changing the
+address only.
+
+- **Password field**: with the keyboard on it, a password field now shows the same focus ring as
+  every other field (a 3 px outline, so it also shows in Windows high contrast). Before, only its
+  border got darker: Mantine keeps the focus on an input inside the field's box, and no rule drew
+  a ring for it (WCAG 2.4.7).
+- **Table header in a narrow window**: below 768 px wide, which is also a 1280 px window zoomed
+  to 200 percent, a table inside `TableWrap` (`.table-wrap`) scrolls sideways on its own. Its
+  sticky header then sat 68 px down inside it, over the first rows. It now stays above its rows.
+  At 768 px and wider nothing changes: the header sticks under the app header as before
+  (WCAG 1.4.4 and 2.4.11).
+- **Checks**: two new stories ("Password field" and "Work page, short table"). The comfort checks
+  walk them with the keyboard, at 200 percent zoom and in forced colours, and now fail when a
+  focus ring is missing or cut off by the box around it, when a table header lies over its rows,
+  or when it no longer sticks under the app header in a wide window.
+
 ## 1.1.0
 
 A hardening release: the same look (448 of 448 pictures of 1.0.0 drawn the same), smoother

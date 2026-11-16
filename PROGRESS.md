@@ -1,6 +1,24 @@
 # Progress
 
-## Status note, 16 Nov 2026 (version 1.1.1: two fixes, waits for the owner's merge)
+## Status note, 16 Nov 2026 (version 1.1.1 is released)
+
+- The owner merged pull request 9 (the two fixes of the note below) on 16 Nov 2026 at 06:40 UTC:
+  merge commit `569acbe` on `main`. CI on `main` for that commit was green (checks, storybook and
+  accessibility, starter and browser tests).
+- The tag `v1.1.1` was pushed on `569acbe` the same day. The Release run was green on all five
+  jobs: the three checks before the release, `release`, and `verify the release` (the starter
+  installed and built from the released file).
+- The Release "Rawaq UI 1.1.1" (16 Nov 2026, 06:56 UTC) holds `rawaq-ui-1.1.1.tgz` (62,924
+  bytes). Its notes are the changelog's 1.1.1 section; it is a full release and the latest one.
+  The file downloads without sign-in, says version 1.1.1, `private` and `UNLICENSED`, and holds
+  both new rules. The tags and the Releases of 1.0.0 and 1.1.0 were not touched.
+- The starter's lockfile names the 1.1.1 address with the checksum of the released file, made by
+  a real install from that address. In `examples/starter`, `yarn install --immutable` and
+  `yarn build` pass with it, and `yarn check:starter` passes.
+- Next: in the app Hub-P-, after its pull request 18 is merged, a small pull request that moves
+  the package address to 1.1.1 and takes the `KNOWN` line out of `tests/e2e/wcag.spec.ts`.
+
+## Status note, 16 Nov 2026 (version 1.1.1: the two fixes, pull request 9)
 
 - The app's hardening pass (Hub-P- pull request 18) found two faults that are theme code. Both
   are fixed on the branch `fix/password-ring-table-header` as version 1.1.1, a patch: no colour,
@@ -29,10 +47,7 @@
   number; the budget file stays at the sizes of 1.1.0), `yarn check:starter`,
   `yarn storybook:build`, `yarn axe`, `yarn comfort` (all six checks) and both scans. The
   starter's browser tests on Chromium, Firefox and WebKit run in CI.
-- Next, after the owner's merge: tag `v1.1.1` on the merge commit and check the Release; a small
-  pull request for the starter's lockfile (as pull request 8 did for 1.1.0); then in Hub-P-,
-  after its pull request 18 is merged, a small pull request that moves the address to 1.1.1 and
-  takes the `KNOWN` line out of `tests/e2e/wcag.spec.ts`.
+- Pull request 9 held this work. What came after its merge is in the note above.
 
 ## Status note, 15 Nov 2026 (version 1.1.0 is released)
 

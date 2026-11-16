@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { IconCoins, IconFileDescription, IconReceipt, IconScale } from '@tabler/icons-react';
 import {
+  Anchor,
   Badge,
   Button,
   Table,
@@ -97,10 +98,11 @@ function OverviewContent() {
   );
 }
 
-function SuppliersContent() {
+/** `count` rows; with `links` each name is a link, so the keyboard has a stop in every row. */
+function SuppliersContent({ count = 16, links = false }: { count?: number; links?: boolean }) {
   const words = useWords();
   const locale = useStoryLocale();
-  const rows = Array.from({ length: 16 }, (_, index) => ({
+  const rows = Array.from({ length: count }, (_, index) => ({
     id: index + 1,
     name: `${words.supplier} ${index + 1}`,
     category: words.categories[index % words.categories.length]?.name,
@@ -138,7 +140,15 @@ function SuppliersContent() {
           <TableTbody>
             {rows.map((row) => (
               <TableTr key={row.id}>
-                <TableTd>{row.name}</TableTd>
+                <TableTd>
+                  {links ? (
+                    <Anchor component={StoryLink} href={`/app/suppliers/${row.id}`} inherit>
+                      {row.name}
+                    </Anchor>
+                  ) : (
+                    row.name
+                  )}
+                </TableTd>
                 <TableTd>{row.category}</TableTd>
                 <TableTd>{row.city}</TableTd>
                 <TableTd className="num">{row.orders}</TableTd>
@@ -234,6 +244,20 @@ export const WorkPageWithTable: Story = {
   render: () => (
     <AppShell pageKind="work" path="/app/suppliers">
       <SuppliersContent />
+    </AppShell>
+  ),
+};
+
+/**
+ * A Work page whose table has two rows, each with a link. In a narrow window (also a 1280 px
+ * window zoomed to 200 percent) the table scrolls sideways on its own, and its header row stays
+ * above its rows.
+ */
+export const WorkPageShortTable: Story = {
+  name: 'Work page, short table',
+  render: () => (
+    <AppShell pageKind="work" path="/app/suppliers">
+      <SuppliersContent count={2} links />
     </AppShell>
   ),
 };

@@ -145,7 +145,8 @@ The tint is decoration only: every card says what it counts in words.
   decorative cards.
 - A filters bar under the header: search, two to four quick filters, the rest behind "Advanced".
 - Tables: full width, sticky header row, compact rows, tabular numbers aligned to the end side,
-  row hover tint, selected row in the Glow tint.
+  row hover tint, selected row in the Glow tint. In a narrow window a table scrolls sideways on
+  its own, and there its header row does not stick: it stays above its rows.
 - Detail views open in a side drawer (about 480 px) or their own page, never a pop-up for long
   forms.
 - Forms: two columns where it fits, labels above inputs.
@@ -158,7 +159,7 @@ The tint is decoration only: every card says what it counts in words.
 - **Cards**: Card fill, 1 px Border, radius 16 px on Overview pages and 12 px on Work pages, a
   soft shadow on Overview pages only.
 - **Inputs**: radius 10 px, 1 px border that reaches 3:1, focus ring 3 px in the Highlight colour
-  with a dark inner ring.
+  with a dark inner ring. A password field shows the same ring, on its box.
 - **Tabs**: underline tabs on Work pages; pill tabs on Overview pages.
 - **Badges and counts**: the Glow tint with Sidebar-colour text for counts; the error colour for
   alerts.

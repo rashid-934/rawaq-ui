@@ -8,9 +8,12 @@
 //           1920 x 1080: no sideways scroll, no cut text, no scroll area inside the scrolling page
 // targets   WCAG 2.5.8: every control is at least 24 x 24 px, or has room around it
 // keyboard  Tab through the screens: the focus never hides under something (WCAG 2.4.11), it is
-//           always visible, it never gets stuck, and a rail entry shows its name on focus
+//           always visible with a whole ring (on the control or on the box of its field), it
+//           never gets stuck, a rail entry shows its name on focus, and a table's header sticks
+//           right under the app header
 // zoom      WCAG 1.4.4: a 1280 x 720 window zoomed to 200 percent (640 x 360): no cut text, all
-//           text within reach, and the menu opens, takes the focus and closes with the keyboard
+//           text within reach, a table's header stays above its rows, and the menu opens, takes
+//           the focus and closes with the keyboard
 // forced    Windows high contrast: the focus ring and the active rail entry stay visible
 // motion    right to left: every moving part is measured at its start, half way and its end, in
 //           English and in Arabic (motion on)
@@ -37,9 +40,13 @@ const presets = quick ? PRESETS.slice(0, 1) : PRESETS;
 const SCREENS = [
   'screens--overview',
   'screens--work-page-with-table',
+  'screens--work-page-short-table',
   'screens--form-page',
   'screens--with-labels',
 ];
+
+/** Parts on their own that the keyboard walks as well. */
+const PARTS = ['components--empty-states', 'components--password-field'];
 
 // Helpers that run inside the page. Kept in one string so every page gets the same ones.
 const HELPERS = `
@@ -78,8 +85,62 @@ window.__rq = (() => {
     return out;
   };
   const clipsOnPurpose = (box) => box.width <= 1 || box.height <= 1;
+  // An outline is drawn outside its element, and a box around it that hides what sticks out
+  // (overflow hidden or clip) cuts it off. Returns that box, or null when the ring has its room.
+  const cutRing = (holder) => {
+    const style = getComputedStyle(holder);
+    if (style.outlineStyle === 'none') return null;
+    const reach = parseFloat(style.outlineWidth) + Math.max(parseFloat(style.outlineOffset) || 0, 0);
+    const r = holder.getBoundingClientRect();
+    let position = style.position;
+    for (let a = holder.parentElement; a && a !== document.documentElement; a = a.parentElement) {
+      if (position === 'fixed') return null;
+      const s = getComputedStyle(a);
+      // A box that is not the containing block of an absolutely placed part does not clip it.
+      if (position === 'absolute' && s.position === 'static') continue;
+      position = s.position;
+      const clipX = /hidden|clip/.test(s.overflowX);
+      const clipY = /hidden|clip/.test(s.overflowY);
+      if (!clipX && !clipY) continue;
+      const b = a.getBoundingClientRect();
+      const left = b.left + a.clientLeft;
+      const top = b.top + a.clientTop;
+      const short = (gap) => gap < reach - 0.5;
+      const cutX = clipX && (short(r.left - left) || short(left + a.clientWidth - r.right));
+      const cutY = clipY && (short(r.top - top) || short(top + a.clientHeight - r.bottom));
+      if (cutX || cutY) return a;
+    }
+    return null;
+  };
   return {
     describe,
+    // A sticky table header: at the top of the page it sits in its own place, above the first
+    // row. A table that scrolls sideways on its own (a narrow window) must not push it down over
+    // its rows; in a wide window it still sticks right under the app header.
+    tableHeader() {
+      const found = [];
+      const probe = document.createElement('div');
+      probe.style.cssText = 'position:absolute;visibility:hidden;top:var(--app-table-sticky-top, 0px)';
+      document.body.append(probe);
+      const under = parseFloat(getComputedStyle(probe).top) || 0;
+      probe.remove();
+      const narrow = matchMedia('(max-width: 47.99375em)').matches;
+      for (const head of document.querySelectorAll('thead[data-sticky]')) {
+        const table = head.closest('table');
+        const cell = head.querySelector('th');
+        if (!table || !cell || hidden(head)) continue;
+        const down = Math.round(cell.getBoundingClientRect().top - table.getBoundingClientRect().top);
+        if (scrollY === 0 && down > 1) {
+          found.push('the table header sits ' + down + ' px below its place, over the rows: ' + describe(table));
+        }
+        const offset = parseFloat(getComputedStyle(head).top) || 0;
+        if (!narrow && (under < 1 || Math.abs(offset - under) > 0.5)) {
+          found.push('the table header does not stick under the app header (' + offset +
+            ' px, the app header ends at ' + under + ' px): ' + describe(table));
+        }
+      }
+      return found;
+    },
     sideways() {
       const d = document.scrollingElement;
       return d.scrollWidth > d.clientWidth + 1
@@ -186,10 +247,22 @@ window.__rq = (() => {
         try { animation.finish(); } catch {}
       }
       const found = [];
-      const s = getComputedStyle(el);
-      const ring = (s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) >= 1) ||
-        (s.boxShadow && s.boxShadow !== 'none');
-      if (!ring) found.push('no visible focus ring on ' + describe(el));
+      const ringOn = (node) => {
+        const style = getComputedStyle(node);
+        return (style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) >= 1) ||
+          (style.boxShadow && style.boxShadow !== 'none');
+      };
+      // The ring is on the control itself, or on the box of its field when the control is an
+      // input inside that box (a password field keeps the focus on an inner input).
+      const box = el.closest('.mantine-Input-input');
+      const holder = ringOn(el) ? el : box && ringOn(box) ? box : null;
+      if (!holder) {
+        found.push('no visible focus ring on ' + describe(el));
+      } else {
+        const cut = cutRing(holder);
+        if (cut) found.push('the focus ring of ' + describe(el) + ' is cut off by ' + describe(cut));
+      }
+      const s = getComputedStyle(holder || el);
       const r = el.getBoundingClientRect();
       const x0 = Math.max(r.left + 2, 0);
       const x1 = Math.min(r.right - 2, innerWidth - 1);
@@ -360,7 +433,7 @@ async function walk(page, { tooltips = false, max = 120 } = {}) {
 // keyboard
 await run(
   'keyboard',
-  [...SCREENS, 'components--empty-states'].flatMap((id) =>
+  [...SCREENS, ...PARTS].flatMap((id) =>
     DENSITIES.flatMap((density) =>
       LOCALES.map((locale) => ({
         name: `${id} ${density} ${locale}`,
@@ -370,9 +443,11 @@ await run(
   ),
   async (page, job) => {
     await openStory(page, job.url);
+    // In a wide window a page's table header still sticks right under the app header.
+    const header = await page.evaluate(() => window.__rq.tableHeader());
     const { found, count } = await walk(page, { tooltips: true });
     if (count < 3) found.push(`only ${count} focusable element(s) reached`);
-    return found;
+    return [...header, ...found];
   },
   {}
 );
@@ -380,7 +455,7 @@ await run(
 // zoom: 200 percent of a 1280 x 720 window
 await run(
   'zoom',
-  [...SCREENS, 'components--empty-states'].flatMap((id) =>
+  [...SCREENS, ...PARTS].flatMap((id) =>
     LOCALES.map((locale) => ({
       name: `${id} ${locale} 200%`,
       url: storyUrl(origin, id, { locale }),
@@ -389,7 +464,12 @@ await run(
   ),
   async (page, job) => {
     await openStory(page, job.url);
-    const found = await page.evaluate(() => [...window.__rq.cutText(), ...window.__rq.reachable()]);
+    // A table scrolls sideways on its own here: its header row stays above its first row.
+    const found = await page.evaluate(() => [
+      ...window.__rq.cutText(),
+      ...window.__rq.reachable(),
+      ...window.__rq.tableHeader(),
+    ]);
     // Every control the keyboard reaches comes into view and stays visible.
     found.push(...(await walk(page)).found);
     if (!job.menu) {
@@ -430,30 +510,37 @@ await run(
 // forced colours
 await run(
   'forced',
-  ['screens--work-page-with-table', 'screens--with-labels'].flatMap((id) =>
+  ['screens--work-page-with-table', 'screens--with-labels', ...PARTS].flatMap((id) =>
     LOCALES.map((locale) => ({
       name: `${id} ${locale} forced colours`,
       url: storyUrl(origin, id, { locale }),
+      rail: SCREENS.includes(id),
     }))
   ),
   async (page, job) => {
     await openStory(page, job.url);
-    const found = await page.evaluate(() => {
-      const active = document.querySelector('[data-rail-item][aria-current="page"]');
-      if (!active) return ['no active rail entry'];
-      const s = getComputedStyle(active);
-      return s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) >= 1
-        ? []
-        : [`the active rail entry has no outline (${s.outlineStyle} ${s.outlineWidth})`];
-    });
+    const found = job.rail
+      ? await page.evaluate(() => {
+          const active = document.querySelector('[data-rail-item][aria-current="page"]');
+          if (!active) return ['no active rail entry'];
+          const s = getComputedStyle(active);
+          return s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) >= 1
+            ? []
+            : [`the active rail entry has no outline (${s.outlineStyle} ${s.outlineWidth})`];
+        })
+      : [];
+    let stops = 0;
     for (let step = 0; step < 8; step += 1) {
       await page.keyboard.press('Tab');
       const focus = await page.evaluate(() => window.__rq.focus());
-      // Box shadows are not drawn in forced colours: the ring must be an outline.
+      stops += focus ? 1 : 0;
+      // Box shadows are not drawn in forced colours: the ring must be an outline, on the
+      // control or on the box of its field.
       if (focus && !/^(solid|auto|dotted|dashed|double)/.test(focus.outline)) {
         found.push(`no outline focus ring on ${focus.name} (${focus.outline})`);
       }
     }
+    if (stops === 0) found.push('the keyboard reached nothing');
     return found;
   },
   { forcedColors: 'active' }

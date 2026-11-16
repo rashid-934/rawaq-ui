@@ -79,7 +79,8 @@ export interface Words {
   approved: string;
   underReview: string;
   newSupplier: string;
-  fields: Record<'company' | 'registration' | 'city' | 'notes', string>;
+  fields: Record<'company' | 'registration' | 'city' | 'notes' | 'password', string>;
+  showPassword: string;
   save: string;
   replay: string;
   sampleButton: string;
@@ -156,7 +157,9 @@ const dictionary = {
       registration: 'Registration number',
       city: 'City',
       notes: 'Notes',
+      password: 'Password',
     },
+    showPassword: 'Show or hide the password',
     save: 'Save',
     replay: 'Play again',
     sampleButton: 'Button',
@@ -229,7 +232,9 @@ const dictionary = {
       registration: 'رقم السجل التجاري',
       city: 'المدينة',
       notes: 'ملاحظات',
+      password: 'كلمة المرور',
     },
+    showPassword: 'إظهار كلمة المرور أو إخفاؤها',
     save: 'حفظ',
     replay: 'تشغيل مرة أخرى',
     sampleButton: 'زر',
@@ -296,7 +301,9 @@ const dictionary = {
       registration: 'رجسٹریشن نمبر',
       city: 'شہر',
       notes: 'نوٹس',
+      password: 'پاس ورڈ',
     },
+    showPassword: 'پاس ورڈ دکھائیں یا چھپائیں',
     save: 'محفوظ کریں',
     replay: 'دوبارہ چلائیں',
     sampleButton: 'بٹن',

@@ -55,6 +55,19 @@ body {
   box-shadow: 0 0 0 rem(2px) var(--app-focus-inner);
 }
 
+/*
+ * A password field keeps the keyboard focus on an input inside its box, and the box hides what
+ * sticks out of it: the same ring is drawn on the box. A rule of its own, so a browser that does
+ * not know `:has()` drops only this one and keeps every other ring.
+ */
+.mantine-PasswordInput-input.mantine-PasswordInput-input:has(
+    .mantine-PasswordInput-innerInput:focus-visible
+  ) {
+  outline: rem(3px) solid var(--app-highlight);
+  outline-offset: rem(2px);
+  box-shadow: 0 0 0 rem(2px) var(--app-focus-inner);
+}
+
 /* Icons that point "forward" (chevrons, arrows) flip in right-to-left layouts. */
 [dir='rtl'] .mirror-rtl {
   transform: scaleX(-1);
@@ -170,9 +183,16 @@ body {
   background-color: var(--app-row-selected);
 }
 
-/* A table scrolls sideways on its own only on narrow windows, so its header can stick. */
+/*
+ * A table scrolls sideways on its own only on narrow windows (also a desktop window zoomed to 200
+ * percent); at every other width its header sticks under the app header. A box that scrolls
+ * sideways is also what a sticky header measures from: the header would sit the app header's
+ * height down inside it, over its first rows. There it stays in its own place.
+ */
 .table-wrap {
   @mixin smaller-than $mantine-breakpoint-sm {
+    --app-table-sticky-top: 0px;
+
     overflow-x: auto;
 
     & > table {

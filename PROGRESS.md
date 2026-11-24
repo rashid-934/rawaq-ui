@@ -1,5 +1,53 @@
 # Progress
 
+## Status note, 24 Nov 2026 (1.2.0 part A, the phone layout: in progress, draft PR 11)
+
+The owner approved on 24 Nov 2026 the plan "Rawaq UI on phones, dark mode, and an Android APK"
+(on his laptop: `C:\Users\Rashid Akbar\.claude\plans\iridescent-nibbling-fox.md`). Part 0 (Hub-P-
+on 1.1.1) was already done by Hub-P- PR 20; CI on its merge commit `1f239e9` is green and the
+production deployment is READY with no runtime error.
+
+**Branch `feat/phone-layout`, draft pull request 11.** One commit per step:
+
+- Done: A0 (picture tool: `ALL_WIDE`, `EXTRA_GLOBALS`), A1 and A2 (breakpoints, safe areas,
+  `rawaqViewport`, `BottomBar`, `PhoneBar`, Frame `bottomBar` and `phoneHeader`), A3
+  (`BottomSheet`, `MoreSheet`, phone dialogs), A4 (Overview: `NeedsYouList`, `ActivityList`,
+  `StatCard currency`, tablet grid), A5 (Work: `CardList`, `WorkList`, sticky first column,
+  `FilterChips`, `SearchField`, `StickyActions`), A6 and A7 (phone opening, phone stories in
+  English, Arabic and Urdu, viewport toolbar), A8 (starter on phones, `runAfterClose`), A9 (Playwright
+  phone projects, CI phone step, CI job `desktop pixels`, version 1.2.0, changelog, size budget).
+- Proof so far: the BEFORE set (main, 1,008 pictures: 18 stories x 7 presets x 2 densities x en/ar
+  x 1280 and 1920) was taken twice, identical. After A4 the branch gave 1,008 of 1,008 identical.
+  After A9 (`1c6f0b0`) again 1,008 of 1,008 identical, plus 448 new pictures (the 8 phone stories).
+  1,151 unit tests, `yarn e2e` 21 of
+  21, phone tests green at 360, 390 and 430 after their fixes.
+- Found and fixed on the way: the language switch in the sheet changed the language under the
+  sheet's history step (now `runAfterClose`); Next.js drew each page once with the locale
+  "[locale]" and `Intl` threw (`currencySign` falls back); phone tables could not be scrolled with
+  the keyboard (axe); small targets (table links, language choices, Burger, copy button); number
+  cards scrolled sideways at 360 px.
+- DESIGN_THEME.md section 8 rewritten (desktop, tablet, phone) with 8.1 "Phone layout (approved by
+  owner, 24 Nov 2026)".
+- **Left for PR A** (next session): the README (the new parts, phones, `rawaqViewport`); phone
+  speed numbers before (1.1.1) and after (starter `/en` and
+  `/en/requests` at 390 x 844, CPU 4x: first load longest task, LCP, tap on More to next paint);
+  the PR pictures at 390 x 844 (Overview, Work cards and table, More sheet; 7 presets; en and ar)
+  attached to the PR; the four reviews as subagents (`code-reviewer`, `react-reviewer`,
+  `a11y-architect`, `security-reviewer`) with their fixes; read CI of PR 11 (new jobs: phone tests,
+  desktop pixels) and loop until green; then mark the PR ready and report to the owner.
+- Then PR B (dark mode, from `main` after A is merged), the 1.2.0 release, PR C (Android APK).
+
+**Open questions for the owner**
+
+1. Part 2 needs the starter on a public address: may I create a Vercel project `rawaq-starter` in
+   his team (invented data, `RAWAQ_GALLERY` never set), or does he create it?
+2. The online Storybook needs his click: Settings > Pages > Source "GitHub Actions".
+3. `styles.css` grows from 45.6 to 72.6 kB (+4.9 kB gzip), loaded by every page of every app; the
+   review looks for savings before the PR is ready.
+4. The starter's desktop look changed on purpose: the rail lists Requests, Quotes, Reports,
+   Settings and Customize, and the Overview hero shows "Needs you". Apps that move to 1.2.0 also
+   get the opening on phones.
+
 ## Status note, 16 Nov 2026 (version 1.1.1 is released)
 
 - The owner merged pull request 9 (the two fixes of the note below) on 16 Nov 2026 at 06:40 UTC:

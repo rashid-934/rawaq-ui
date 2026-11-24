@@ -50,6 +50,10 @@
   padding-inline: calc(var(--mantine-spacing-md) + var(--app-safe-left))
     calc(var(--mantine-spacing-md) + var(--app-safe-right));
   transition: transform var(--app-motion-fast) var(--app-ease-out);
+
+  &:focus {
+    outline: none;
+  }
 }
 
 /* The grab handle: a 48 x 48px target around a small bar. Tap closes, pull down closes. */

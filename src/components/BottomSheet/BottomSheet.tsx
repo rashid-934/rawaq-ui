@@ -176,7 +176,9 @@ export function BottomSheet({
       attributes={{ inner: { 'data-rawaq-sheet': '' }, content: { 'data-rawaq-sheet': '' } }}
       data-testid="bottom-sheet"
     >
-      <div ref={content} className={classes.sheet}>
+      {/* The sheet itself takes the focus when it opens, so no ring jumps onto the handle; the
+          next Tab reaches the first control. */}
+      <div ref={content} className={classes.sheet} tabIndex={-1} data-autofocus>
         <button
           type="button"
           className={classes.handle}

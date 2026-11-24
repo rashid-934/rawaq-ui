@@ -18,7 +18,12 @@
  * action, so they are not drawn twice here. The count and the description stay.
  */
 @mixin smaller-than $mantine-breakpoint-sm {
-  :global(html:has([data-phone-header])) :is(.title, .actions) {
+  :global(html:has([data-phone-header])) :is(.title, .actions, .count) {
+    display: none;
+  }
+
+  /* With nothing left to show (no description), the header takes no room at all. */
+  :global(html:has([data-phone-header])) .header:not(:has(.description)) {
     display: none;
   }
 }

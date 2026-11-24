@@ -469,7 +469,9 @@ function PhoneQuotes({ withInputs = false }: { withInputs?: boolean }) {
                 <TableTbody>
                   {suppliers.map((supplier, index) => (
                     <TableTr key={supplier}>
-                      <TableTd>{supplier}</TableTd>
+                      <TableTd>
+                        <bdi>{supplier}</bdi>
+                      </TableTd>
                       <TableTd className="num">
                         {withInputs ? (
                           <TextInput

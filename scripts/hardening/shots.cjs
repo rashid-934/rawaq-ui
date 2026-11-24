@@ -31,6 +31,10 @@ const DENSITIES = ['compact', 'comfortable'];
 const LOCALES = ['en', 'ar'];
 const WIDE_STORY = 'screens--overview';
 const ONLY_WIDE = process.env.ONLY_WIDE === '1';
+// ALL_WIDE=1 takes every story at 1920 x 1080 as well (the desktop proof of 1.2.0).
+const ALL_WIDE = process.env.ALL_WIDE === '1';
+// EXTRA_GLOBALS=scheme:dark adds Storybook globals to every picture, and to its file name.
+const EXTRA_GLOBALS = process.env.EXTRA_GLOBALS || '';
 // ONLY_STORIES=screens--loading,screens--overview takes those stories only (quick rounds).
 const ONLY_STORIES = (process.env.ONLY_STORIES || '').split(',').filter(Boolean);
 const WORKERS = 2;
@@ -76,7 +80,7 @@ const server = createServer((request, response) => {
           if (!ONLY_WIDE) {
             jobs.push({ id, preset, density, locale, width: 1280, height: 720 });
           }
-          if (id === WIDE_STORY) {
+          if (id === WIDE_STORY || ALL_WIDE) {
             jobs.push({ id, preset, density, locale, width: 1920, height: 1080 });
           }
         }
@@ -100,10 +104,12 @@ const server = createServer((request, response) => {
     while (next < jobs.length) {
       const job = jobs[next];
       next += 1;
-      const name = `${job.id}__${job.preset}__${job.density}__${job.locale}__${job.width}.png`;
+      const extra = EXTRA_GLOBALS ? `__${EXTRA_GLOBALS.replace(/[^a-z0-9]+/gi, '-')}` : '';
+      const name = `${job.id}__${job.preset}__${job.density}__${job.locale}__${job.width}${extra}.png`;
       try {
         await page.setViewportSize({ width: job.width, height: job.height });
-        const globals = `locale:${job.locale};preset:${job.preset};density:${job.density}`;
+        const extraGlobals = EXTRA_GLOBALS ? `;${EXTRA_GLOBALS}` : '';
+        const globals = `locale:${job.locale};preset:${job.preset};density:${job.density}${extraGlobals}`;
         await page.goto(`${origin}/iframe.html?id=${job.id}&viewMode=story&globals=${globals}`, {
           waitUntil: 'networkidle',
         });

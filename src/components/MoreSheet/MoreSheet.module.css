@@ -1,0 +1,151 @@
+/* The More sheet: rows of at least 56px, tiles of at least 72px, four per row. */
+.user {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  min-block-size: rem(56px);
+}
+
+.initials {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: rem(40px);
+  block-size: rem(40px);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-sidebar);
+  color: var(--app-sidebar-text);
+  font-weight: 700;
+  font-size: var(--app-font-size-sm);
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.name {
+  font-weight: 700;
+  font-size: var(--app-font-size-md);
+}
+
+.role {
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-sm);
+}
+
+/* The company row sits on the soft selection tint, like the selected row of a table. */
+.company {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  inline-size: 100%;
+  min-block-size: rem(56px);
+  margin-block: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  padding-inline: var(--mantine-spacing-md);
+  border: 0;
+  border-radius: var(--app-radius-lg);
+  background-color: var(--app-row-selected);
+  color: var(--app-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+p.company {
+  cursor: default;
+}
+
+.companyName {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--mantine-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: rem(4px);
+  min-block-size: rem(72px);
+  block-size: 100%;
+  padding: var(--mantine-spacing-xs) rem(4px);
+  border: rem(1px) solid var(--app-hairline);
+  border-radius: var(--app-radius-lg);
+  background-color: var(--app-surface);
+  color: var(--app-text);
+  text-decoration: none;
+
+  &[aria-current='page'] {
+    background-color: var(--app-row-selected);
+  }
+}
+
+.tileIcon {
+  display: grid;
+  place-items: center;
+  color: var(--app-accent);
+
+  .tile[data-highlight] & {
+    color: var(--app-highlight);
+  }
+}
+
+.tileLabel {
+  font-size: var(--app-font-size-xs);
+  font-weight: 600;
+  line-height: max(1.25, var(--app-line-height, 0));
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  min-block-size: rem(56px);
+  margin-block-start: var(--mantine-spacing-sm);
+  padding-block-start: var(--mantine-spacing-sm);
+  border-block-start: rem(1px) solid var(--app-hairline);
+}
+
+.rowLabel {
+  font-weight: 600;
+}
+
+/* Each choice is a 48px tap target. */
+.segments :global(.mantine-SegmentedControl-label) {
+  min-block-size: var(--app-touch-target);
+  display: grid;
+  place-items: center;
+}
+
+.signOut {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  inline-size: 100%;
+  min-block-size: rem(56px);
+  margin-block-start: var(--mantine-spacing-sm);
+  padding: 0;
+  border: 0;
+  border-block-start: rem(1px) solid var(--app-hairline);
+  background: none;
+  color: var(--app-error);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

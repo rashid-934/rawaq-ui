@@ -298,6 +298,28 @@ body {
     min-inline-size: var(--app-touch-target);
     min-block-size: var(--app-touch-target);
   }
+
+  /*
+   * Dialogs and drawers become full-screen bottom sheets: the whole width, from just under the
+   * safe area at the top to the bottom edge, top corners rounded, clear of the gesture bar.
+   * `BottomSheet` keeps its own shape (it is shorter and has a grab handle).
+   */
+  .mantine-Modal-inner.mantine-Modal-inner:not([data-rawaq-sheet]),
+  .mantine-Drawer-inner.mantine-Drawer-inner {
+    align-items: flex-end;
+    justify-content: stretch;
+    padding: 0;
+  }
+
+  .mantine-Modal-content.mantine-Modal-content:not([data-rawaq-sheet]),
+  .mantine-Drawer-content.mantine-Drawer-content {
+    flex: 0 0 100%;
+    max-inline-size: none;
+    block-size: calc(100dvh - var(--app-safe-top) - rem(8px));
+    max-block-size: none;
+    border-radius: var(--app-frame-radius) var(--app-frame-radius) 0 0;
+    padding-block-end: var(--app-safe-bottom);
+  }
 }
 
 /* Numbers in tables and totals: tabular digits, aligned to the end side (section 4.4). */

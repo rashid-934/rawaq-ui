@@ -40,6 +40,16 @@ export { RollingNumber } from './RollingNumber/RollingNumber';
 export type { RollingNumberProps } from './RollingNumber/RollingNumber';
 export { BOTTOM_BAR_MAX_ITEMS, BottomBar, bottomBarProblems } from './BottomBar/BottomBar';
 export type { BottomBarProps } from './BottomBar/BottomBar';
+export {
+  BottomSheet,
+  SHEET_CLOSE_DISTANCE,
+  SHEET_CLOSE_SPEED,
+  SHEET_FLICK_DISTANCE,
+  useBottomSheet,
+} from './BottomSheet/BottomSheet';
+export type { BottomSheetProps } from './BottomSheet/BottomSheet';
+export { MoreSheet } from './MoreSheet/MoreSheet';
+export type { MoreSheetLanguage, MoreSheetProps } from './MoreSheet/MoreSheet';
 export { PhoneBar } from './PhoneBar/PhoneBar';
 export type { PhoneBarProps } from './PhoneBar/PhoneBar';
 export { FormGrid, FormGridItem, TableWrap, WorkCard, WorkPage } from './WorkPage/WorkPage';

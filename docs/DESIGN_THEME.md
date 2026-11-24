@@ -228,29 +228,40 @@ From the owner's mockups (direction, not pixels). The real tokens are used.
   is the whole slot (never under 48 x 48 px): a 24 px icon over a 12 px label. The Glow pill (56 x
   32 px) sits behind the active icon and slides between entries; mirrored in RTL. Every entry has
   its own icon (`bottomBarProblems` checks). The page keeps `--app-bottom-space` free at its end.
+  A page is marked current (`aria-current`); More is a button, so while one of the sheet's pages is
+  open it only has the Glow. Before the script has measured the Glow, the active icon has the Glow
+  colour itself, so the first paint already shows where the person is.
 - **More sheet** (`MoreSheet` on `BottomSheet`): the person (initials, name, role), the company
   row on the selection tint, the other pages as tiles four per row (72 px; the highlight entry in
-  the highlight colour), the theme switch, the language switch (each name in its own language),
-  Sign out in the error colour. A 48 px grab handle, the dimmed page, and it closes on a swipe down
+  the highlight colour; the current page's tile has an accent ring too), the theme switch, the
+  language choice (buttons, each name in its own language; the chosen one filled and with a
+  check mark, and an arrow key only moves the focus), Sign out in the error colour. A 48 px grab handle, the dimmed page, and it closes on a swipe down
   (96 px, or a flick of 24 px or more), a tap outside, Esc and Back. Opening adds a history step,
-  so Back closes the sheet before it leaves the page; a link inside closes the sheet first.
+  so Back closes the sheet before it leaves the page; a link inside closes the sheet first. The
+  sheet takes its step out only while that step is still the current one (an address the app moved
+  to stays), one step per opening in React's strict mode too.
 - **Header** (`PhoneBar`): one line, 56 px: the logo tile (32 px, highlight), the page title (the
   page's `h1`; the `PageHeader` title, count and actions step aside), one action of 48 px. A strip
-  in the rail colour fills the safe area above it.
+  in the rail colour fills the safe area above it. A page keeps one `h1`: on the Overview the hero
+  stays the heading, so the bar's title is plain text there (`titleOrder="none"`).
 - **Frame and haze**: no frame margin and no frame edge on phones; the plain background.
 - **Overview**: one column. The hero banner holds the greeting and `NeedsYouList` (three rows at
-  most, 48 px each, the first marked "Do next"). Number cards two per row, the number from 22 to
+  most, 48 px each, the first marked "Do next"; a screen reader hears "Do next" first and a pause
+  between the parts). Number cards two per row, the number from 22 to
   30 px with the screen. Money shows its currency in the page's language (`StatCard currency`).
   `ActivityList`: the name, the reference under it, the status at the end (56 px rows).
 - **Work pages**: cards by default (`CardList` in `WorkList`): reference and status on top, the
   name in bold, the facts and the quantity in words, a chevron mirrored in RTL. A table that must
   stay a table (`WorkList phoneView="table"`, `TableWrap stickyFirstColumn`) keeps its first column
-  in place while it scrolls sideways, and a hint under it says so. A box that scrolls takes the
-  keyboard focus.
+  in place while it scrolls sideways, and a hint under it says so (only while the table is wider
+  than the phone). A box that scrolls takes the keyboard focus as a named region, and a focused
+  control stops beside the fixed column, not under it.
 - **Search and filters**: the search field is 48 px high with a search icon; filter chips 40 px high
-  with a 48 x 48 px touch area, in one row that scrolls.
+  with a 48 x 48 px touch area, in one row that scrolls. The chosen chip is filled and has a check
+  mark: colour is never the only sign of a choice (in forced colours an outline keeps it).
 - **Forms**: one column, full-width inputs (48 px). The save bar (`StickyActions`) sits above the
   bottom bar, and right above the keyboard while a text field has the focus (the bar steps aside).
+  A focused field stops above the save bar.
 - **Dialogs and drawers**: full-screen bottom sheets.
 - **Touch**: every tap target at least 48 x 48 px, at least 8 px apart.
 - **Safe areas**: `rawaqViewport()` gives `viewport-fit=cover` and the rail colour as

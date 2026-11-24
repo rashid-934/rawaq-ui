@@ -27,7 +27,12 @@ const PRESETS = [
   'slate-gray',
   'onyx-black',
 ];
-const DENSITIES = ['compact', 'comfortable'];
+// DENSITIES=compact takes one density only (the phone pictures of a pull request).
+const DENSITIES = (process.env.DENSITIES || 'compact,comfortable').split(',');
+// SIZE=390x844 takes every picture at that size instead (no 1920 x 1080 ones); SCALE=2 draws
+// them with 2 pixels per CSS pixel, as a phone does.
+const SIZE = process.env.SIZE ? process.env.SIZE.split('x').map(Number) : null;
+const SCALE = Number(process.env.SCALE || '1');
 const LOCALES = ['en', 'ar'];
 const WIDE_STORY = 'screens--overview';
 const ONLY_WIDE = process.env.ONLY_WIDE === '1';
@@ -77,6 +82,10 @@ const server = createServer((request, response) => {
     for (const preset of PRESETS) {
       for (const density of DENSITIES) {
         for (const locale of LOCALES) {
+          if (SIZE) {
+            jobs.push({ id, preset, density, locale, width: SIZE[0], height: SIZE[1] });
+            continue;
+          }
           if (!ONLY_WIDE) {
             jobs.push({ id, preset, density, locale, width: 1280, height: 720 });
           }
@@ -98,7 +107,7 @@ const server = createServer((request, response) => {
     const context = await browser.newContext({
       reducedMotion: 'reduce',
       viewport: { width: 1280, height: 720 },
-      deviceScaleFactor: 1,
+      deviceScaleFactor: SCALE,
     });
     const page = await context.newPage();
     while (next < jobs.length) {

@@ -19,15 +19,18 @@
   color: var(--app-sidebar-text);
   pointer-events: none;
   animation: reveal var(--app-motion-intro) var(--app-ease-in-out) forwards;
-
-  /* No opening below `sm`: a narrow window shows the app at once. */
-  @mixin smaller-than $mantine-breakpoint-sm {
-    display: none;
-  }
 }
 
 [dir='rtl'] .layer {
   --intro-corner: 0%;
+}
+
+/* Phones: the same opening, and the curved edge sweeps down into the bottom bar, in the middle
+   of the bottom edge in both directions. */
+@mixin smaller-than $mantine-breakpoint-sm {
+  .layer.layer {
+    --intro-corner: 50%;
+  }
 }
 
 .mark {

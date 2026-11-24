@@ -63,6 +63,37 @@ const preview: Preview = {
       storySort: { order: ['Screens', 'Components', 'Tokens'] },
     },
     backgrounds: { disable: true },
+    // Screen sizes (Storybook's own viewport toolbar): the three phones the layout is checked
+    // at, a tablet and the desktop. With none chosen the story fills the window.
+    viewport: {
+      options: {
+        phone360: {
+          name: 'Phone 360 x 800',
+          styles: { width: '360px', height: '800px' },
+          type: 'mobile',
+        },
+        phone390: {
+          name: 'Phone 390 x 844',
+          styles: { width: '390px', height: '844px' },
+          type: 'mobile',
+        },
+        phone430: {
+          name: 'Phone 430 x 932',
+          styles: { width: '430px', height: '932px' },
+          type: 'mobile',
+        },
+        tablet: {
+          name: 'Tablet 1024 x 768',
+          styles: { width: '1024px', height: '768px' },
+          type: 'tablet',
+        },
+        desktop: {
+          name: 'Desktop 1280 x 720',
+          styles: { width: '1280px', height: '720px' },
+          type: 'desktop',
+        },
+      },
+    },
   },
   globalTypes: {
     locale: {

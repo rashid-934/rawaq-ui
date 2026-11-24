@@ -1,7 +1,7 @@
 'use client';
 
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
-import { IconSearch } from '@tabler/icons-react';
+import { IconCheck, IconSearch } from '@tabler/icons-react';
 import { TextInput } from '@mantine/core';
 import classes from './Phone.module.css';
 
@@ -33,6 +33,8 @@ export function FilterChips({ label, options, value, onChange }: FilterChipsProp
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
         >
+          {/* The chosen chip has a check mark too: its fill is not the only sign. */}
+          {option.value === value ? <IconCheck size={16} stroke={2} aria-hidden /> : null}
           {option.label}
         </button>
       ))}
@@ -56,21 +58,5 @@ export function SearchField({ label, placeholder, ...rest }: SearchFieldProps) {
       className={classes.search}
       {...rest}
     />
-  );
-}
-
-export interface StickyActionsProps {
-  children: ReactNode;
-}
-
-/**
- * The save bar of a form: it sticks to the bottom of the window. On a phone it sits above the
- * bottom bar, and right above the keyboard while one is open (the bar steps aside then).
- */
-export function StickyActions({ children }: StickyActionsProps) {
-  return (
-    <div className={classes.stickyActions} data-testid="sticky-actions">
-      {children}
-    </div>
   );
 }

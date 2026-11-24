@@ -65,6 +65,23 @@ html:has([data-phone-nav]) {
   }
 }
 
+/*
+ * Phones with a form's save bar (`StickyActions`): it sits above the bottom bar, or right above
+ * the keyboard while one is open, so a focused field stops above it too (WCAG 2.4.11). The bar
+ * is a row of 48 px buttons with its padding: 72 px, and a little air.
+ */
+html:has([data-sticky-actions]) {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    scroll-padding-block-end: calc(var(--app-bottom-space) + rem(96px));
+  }
+}
+
+html[data-keyboard-open]:has([data-sticky-actions]) {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    scroll-padding-block-end: calc(var(--app-keyboard-inset, 0px) + rem(96px));
+  }
+}
+
 /* Tablets (768 to 1279 px): the rail stays, the frame sits closer to the window edge. */
 @media (min-width: $mantine-breakpoint-sm) and (max-width: 79.99em) {
   html:root {
@@ -266,6 +283,10 @@ body {
     & thead :where(th, td):first-child {
       z-index: 4;
     }
+
+    /* A control that takes the focus stops beside the fixed column, not under it (WCAG
+       2.4.11). TableOverflow measures the column. */
+    scroll-padding-inline-start: var(--app-sticky-column, 0px);
   }
 }
 

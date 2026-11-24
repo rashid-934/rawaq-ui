@@ -26,6 +26,12 @@ describe('PhoneBar', () => {
     expect(screen.getByText('LOGO')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Home' })).toBeInTheDocument();
   });
+
+  it('shows the title as plain text on a page that keeps its own heading', () => {
+    render(<PhoneBar appName="Procure" title="Overview" titleOrder="none" />);
+    expect(screen.queryByRole('heading')).toBeNull();
+    expect(screen.getByText('Overview').tagName).toBe('P');
+  });
 });
 
 describe('Frame on phones', () => {

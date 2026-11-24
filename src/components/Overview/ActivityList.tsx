@@ -27,7 +27,8 @@ export interface ActivityListProps {
 export function ActivityList({ items, linkComponent }: ActivityListProps) {
   const Link = linkComponent ?? 'a';
   return (
-    <ul className={classes.activity} data-testid="activity-list">
+    // oxlint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops the list role of a list drawn without bullets
+    <ul role="list" className={classes.activity} data-testid="activity-list">
       {items.map((item) => {
         const body = (
           <>

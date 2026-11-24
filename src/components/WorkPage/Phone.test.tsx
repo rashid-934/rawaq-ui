@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { render, renderRtl, screen, userEvent, within } from '../../test-utils';
+import { render, renderRtl, screen, userEvent, waitFor, within } from '../../test-utils';
 import { CardList, WorkList } from './CardList';
-import { FilterChips, SearchField, StickyActions } from './Controls';
+import { FilterChips, SearchField } from './Controls';
+import { StickyActions } from './StickyActions';
 import { TableWrap } from './WorkPage';
 
 const cards = [
@@ -102,6 +103,50 @@ describe('TableWrap on phones', () => {
     expect(screen.queryByTestId('swipe-hint')).toBeNull();
     expect(wrap.querySelector('span[hidden]')).not.toBeNull();
   });
+
+  it('becomes a named, focusable region only while a table, even one that comes late, scrolls', async () => {
+    // A box 360 px wide; a table 520 px wide inside it.
+    const width = vi
+      .spyOn(HTMLElement.prototype, 'scrollWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.querySelector('table') || this.tagName === 'TABLE' ? 520 : 0;
+      });
+    const box = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(360);
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(DOMRect.fromRect({ width: 120.4, height: 40 }));
+    const table = (
+      <table>
+        <tbody>
+          <tr>
+            <td>A</td>
+          </tr>
+        </tbody>
+      </table>
+    );
+    const view = render(<TableWrap stickyFirstColumn>{null}</TableWrap>);
+    const wrap = view.container.querySelector<HTMLElement>('.table-wrap')!;
+    wrap.style.overflowX = 'auto';
+    expect(wrap).not.toHaveAttribute('tabindex');
+    view.rerender(<TableWrap stickyFirstColumn>{table}</TableWrap>);
+    await waitFor(() => expect(wrap).toHaveAttribute('tabindex', '0'));
+    expect(screen.getByRole('region', { name: 'Table, scrolls sideways' })).toBe(wrap);
+    expect(wrap).toHaveAttribute('data-scrolls');
+    expect(wrap).not.toHaveAttribute('data-fits');
+    // The fixed column's width, so a focused control stops beside it.
+    expect(wrap.style.getPropertyValue('--app-sticky-column')).toBe('121px');
+
+    // The same table on a wider phone: it fits, so no region, no stop, and the hint hides.
+    box.mockReturnValue(600);
+    view.rerender(<TableWrap stickyFirstColumn>{null}</TableWrap>);
+    view.rerender(<TableWrap stickyFirstColumn>{table}</TableWrap>);
+    await waitFor(() => expect(wrap).toHaveAttribute('data-fits'));
+    expect(wrap).not.toHaveAttribute('tabindex');
+    expect(wrap).not.toHaveAttribute('role');
+    width.mockRestore();
+    box.mockRestore();
+    rect.mockRestore();
+  });
 });
 
 describe('FilterChips', () => {
@@ -165,7 +210,8 @@ describe('the keyboard on a touch screen', () => {
     const matchMedia = vi.spyOn(window, 'matchMedia').mockImplementation(
       (query: string) =>
         ({
-          matches: query === '(pointer: coarse)',
+          // A touch phone.
+          matches: query === '(pointer: coarse)' || query.includes('max-width'),
           media: query,
           addEventListener: () => {},
           removeEventListener: () => {},

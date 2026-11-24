@@ -36,7 +36,8 @@ export function CardList({ items, linkComponent, locale, labels }: CardListProps
   const words = labelsFor(locale, labels);
   const Link = linkComponent ?? 'a';
   return (
-    <ul className={classes.cards} data-testid="card-list">
+    // oxlint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops the list role of a list drawn without bullets
+    <ul role="list" className={classes.cards} data-testid="card-list">
       {items.map((item) => {
         const body = (
           <>

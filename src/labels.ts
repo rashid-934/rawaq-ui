@@ -42,8 +42,12 @@ export interface RawaqLabels {
   doNext: string;
   /** The name of the "Needs you" list for screen readers. */
   needsYou: string;
+  /** Said between the parts of a row's name by a screen reader, where the page shows a dot. A space follows it. */
+  separator: string;
   /** Under a table that scrolls sideways on a phone. */
   swipeHint: string;
+  /** The name of a table's box while it scrolls sideways, when the table has no name of its own. */
+  scrollingTable: string;
   /** The company row of the More sheet. */
   switchCompany: string;
   /** The language row of the More sheet. */
@@ -83,7 +87,9 @@ export const rawaqLabels = {
     close: 'Close',
     doNext: 'Do next',
     needsYou: 'Needs you',
+    separator: ',',
     swipeHint: 'Swipe sideways for more columns',
+    scrollingTable: 'Table, scrolls sideways',
     switchCompany: 'Switch company',
     language: 'Language',
     signOut: 'Sign out',
@@ -108,7 +114,9 @@ export const rawaqLabels = {
     close: 'إغلاق',
     doNext: 'ابدأ هنا',
     needsYou: 'بانتظارك',
+    separator: '،',
     swipeHint: 'اسحب جانبًا لرؤية المزيد من الأعمدة',
+    scrollingTable: 'جدول يمكن تمريره جانبًا',
     switchCompany: 'تبديل الشركة',
     language: 'اللغة',
     signOut: 'تسجيل الخروج',

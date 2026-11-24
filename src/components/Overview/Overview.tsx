@@ -159,8 +159,17 @@ export interface StatCardProps {
   locale?: string;
 }
 
+// Building a number format is slow: one per locale and currency is kept.
+const signs = new Map<string, { sign: string; before: boolean }>();
+
 /** The currency's sign for a locale, and whether it goes before the number. */
 export function currencySign(currency: string, locale = 'en') {
+  const key = `${locale}
+${currency}`;
+  const known = signs.get(key);
+  if (known) {
+    return known;
+  }
   const options = { style: 'currency', currency, currencyDisplay: 'symbol' } as const;
   let format: Intl.NumberFormat;
   try {
@@ -171,11 +180,13 @@ export function currencySign(currency: string, locale = 'en') {
   }
   const parts = format.formatToParts(1);
   const at = (type: string) => parts.findIndex((part) => part.type === type);
-  return {
+  const result = {
     // Without the invisible direction marks some languages wrap around it.
     sign: (parts[at('currency')]?.value ?? currency).replace(/[‎‏؜]/g, '').trim(),
     before: at('currency') < at('integer'),
   };
+  signs.set(key, result);
+  return result;
 }
 
 /** A number card: label, a big number whose digits roll into place once, a small hint. */

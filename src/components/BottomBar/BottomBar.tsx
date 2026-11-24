@@ -16,6 +16,9 @@ import classes from './BottomBar.module.css';
 /** The bottom bar has room for four pages and "More". */
 export const BOTTOM_BAR_MAX_ITEMS = 4;
 
+// Below the `sm` breakpoint (48em, docs/DESIGN_THEME.md section 8): a phone.
+const PHONE_MAX = '47.99em';
+
 export interface BottomBarProps {
   /** The four pages people open most, in the order of the rail. More than four are cut. */
   items: readonly RailItem[];
@@ -108,6 +111,10 @@ export function BottomBar({
     }
     const outer = list.getBoundingClientRect();
     const inner = icon.getBoundingClientRect();
+    // Hidden (from 768 px up) everything measures 0: keep the last place until the bar shows.
+    if (outer.width === 0 || inner.width === 0) {
+      return;
+    }
     const next = {
       left: inner.left - outer.left,
       top: inner.top - outer.top,
@@ -125,14 +132,17 @@ export function BottomBar({
     );
   }, [list]);
 
+  // Measured again when the active entry or the entries change (not on every new array).
+  const itemKeys = shown.map((item) => item.key).join('\n');
   useLayoutEffect(() => {
     measure();
-  }, [measure, pathname, moreActive, items]);
+  }, [measure, pathname, moreActive, itemKeys]);
 
-  // On a touch screen a focused text field means the keyboard is open: the bar steps aside and
+  // On a touch phone a focused text field means the keyboard is open: the bar steps aside and
   // a save bar sits right above the keyboard (`html[data-keyboard-open]`, the stylesheets).
   useEffect(() => {
     const touch = window.matchMedia?.('(pointer: coarse)');
+    const phone = window.matchMedia?.(`(max-width: ${PHONE_MAX})`);
     const root = document.documentElement;
     const update = () => {
       const field = document.activeElement;
@@ -142,16 +152,26 @@ export function BottomBar({
           field.matches(
             'textarea, select, input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"], [type="range"], [type="color"], [type="file"])'
           ));
-      root.toggleAttribute('data-keyboard-open', Boolean(touch?.matches) && typing);
+      root.toggleAttribute(
+        'data-keyboard-open',
+        Boolean(touch?.matches) && Boolean(phone?.matches) && typing
+      );
     };
-    // How much of the window the keyboard covers: the save bar sits right above it.
+    // How much of the window the keyboard covers: the save bar sits right above it. A pinch zoom
+    // also makes the visible part smaller; that is not a keyboard, so it is left out.
     const viewport = window.visualViewport;
     const inset = () => {
+      if (viewport && viewport.scale > 1) {
+        return;
+      }
       const covered = viewport
         ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
         : 0;
       root.style.setProperty('--app-keyboard-inset', `${Math.round(covered)}px`);
     };
+    // A field may already have the focus when the bar arrives.
+    update();
+    inset();
     document.addEventListener('focusin', update);
     document.addEventListener('focusout', update);
     viewport?.addEventListener('resize', inset);
@@ -204,7 +224,8 @@ export function BottomBar({
             }}
           />
         ) : null}
-        <ul className={classes.list}>
+        {/* oxlint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops the list role of a list drawn without bullets */}
+        <ul role="list" className={classes.list}>
           {shown.map((item) => {
             const active = !moreActive && isRailItemActive(item, pathname);
             const Icon = item.icon;
@@ -231,8 +252,9 @@ export function BottomBar({
               onClick={onMore}
               aria-haspopup="dialog"
               aria-expanded={moreOpen}
-              aria-controls={moreControls}
-              aria-current={moreActive ? 'page' : undefined}
+              // The sheet is in the page only while it is open. "More" is never the current
+              // page itself: while one of its pages is open it only shows the glow.
+              aria-controls={moreOpen ? moreControls : undefined}
               data-testid="bar-more"
             >
               <span className={classes.icon} data-bar-icon aria-hidden>

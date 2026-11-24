@@ -28,6 +28,11 @@ export const motion = {
   introMark: '0.3s',
   /** The opening is taken out of the page after this long, even if no event comes. */
   introSafety: '1.5s',
+  /**
+   * A link or a choice in a bottom sheet goes ahead after this long, even if the browser never
+   * reports the sheet's history step as gone.
+   */
+  sheetSafety: '0.6s',
   /** The rail's drawer on a narrow window, and its backdrop. */
   drawer: '0.24s',
   /** A bar of a chart grows once. */

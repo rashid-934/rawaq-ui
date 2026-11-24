@@ -73,7 +73,8 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 
-  &[aria-current='page'] {
+  /* The active entry: the current page, or "More" while the page is one of the sheet's. */
+  .item[data-bar-active] & {
     color: var(--app-sidebar-text);
   }
 }
@@ -85,8 +86,14 @@
   block-size: rem(32px);
   border-radius: var(--app-radius-pill);
 
-  .entry[aria-current='page'] & {
+  .item[data-bar-active] & {
     color: var(--app-glow-text);
+  }
+
+  /* Until the script has measured the glow (the server's page, before hydration), the active
+     icon has the glow colour itself, in the same place. */
+  .track:not(:has(.glow)) .item[data-bar-active] & {
+    background-color: var(--app-glow);
   }
 }
 
@@ -119,7 +126,7 @@
 }
 
 @media (forced-colors: active) {
-  .entry[aria-current='page'] {
+  .item[data-bar-active] .entry {
     outline: rem(2px) solid CanvasText;
     outline-offset: rem(-4px);
   }

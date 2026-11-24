@@ -87,8 +87,11 @@ p.company {
   color: var(--app-text);
   text-decoration: none;
 
+  /* The current page: the selection tint and a ring in the accent, not the tint alone. */
   &[aria-current='page'] {
+    border-color: var(--app-accent);
     background-color: var(--app-row-selected);
+    box-shadow: inset 0 0 0 rem(1px) var(--app-accent);
   }
 }
 
@@ -126,12 +129,49 @@ p.company {
   font-weight: 600;
 }
 
-/* Each choice is a 48px tap target. */
-.segments :global(.mantine-SegmentedControl-label) {
+/* The language choices: buttons drawn like the filter chips, each a 48px tap target. */
+.languages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mantine-spacing-xs);
+}
+
+.languageChoice {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(4px);
   min-inline-size: var(--app-touch-target);
   min-block-size: var(--app-touch-target);
-  display: grid;
-  place-items: center;
+  padding-inline: var(--mantine-spacing-md);
+  border: rem(1px) solid var(--app-control-border);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-surface);
+  color: var(--app-text);
+  font: inherit;
+  font-size: var(--app-font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+
+  /* The chosen one: the dark fill and a check mark, so colour is not the only sign. */
+  &[aria-pressed='true'] {
+    border-color: var(--app-sidebar);
+    background-color: var(--app-sidebar);
+    color: var(--app-sidebar-text);
+    cursor: default;
+  }
+}
+
+/* Forced colours drop fills: the current page's tile and the company row keep a border. */
+@media (forced-colors: active) {
+  .tile[aria-current='page'],
+  .languageChoice[aria-pressed='true'] {
+    outline: rem(2px) solid CanvasText;
+    outline-offset: rem(-4px);
+  }
+
+  .company {
+    border: rem(1px) solid CanvasText;
+  }
 }
 
 .signOut {

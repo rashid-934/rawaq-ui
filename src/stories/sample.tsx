@@ -483,7 +483,14 @@ export function AppShell({
   const moreItems = [...rest, ...bottomItems];
   const phoneParts = phone
     ? {
-        phoneHeader: <PhoneBar appName={words.appName} title={phone.title} action={phone.action} />,
+        phoneHeader: (
+          <PhoneBar
+            appName={words.appName}
+            title={phone.title}
+            titleOrder={pageKind === 'overview' ? 'none' : 1}
+            action={phone.action}
+          />
+        ),
         bottomBar: (
           <BottomBar
             items={barItems}

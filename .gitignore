@@ -20,3 +20,4 @@ e2e-report*
 .claude/settings.local.json
 .DS_Store
 Thumbs.db
+.scan-results

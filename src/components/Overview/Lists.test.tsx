@@ -17,8 +17,10 @@ describe('NeedsYouList', () => {
     const links = within(list).getAllByRole('link');
     expect(links).toHaveLength(3);
     expect(links[0]).toHaveAttribute('href', '/r/11');
-    expect(links[0]).toHaveTextContent('Approve request · Parking barrier repair');
-    expect(within(links[0]!).getByText('Do next')).toBeInTheDocument();
+    // A screen reader hears "Do next" first and a pause between the parts, not one long word.
+    expect(links[0]).toHaveAccessibleName('Do next, Approve request, Parking barrier repair');
+    expect(links[1]).toHaveAccessibleName(/^[^,]+, [^,]+$/);
+    expect(within(links[0]!).getByText('Do next')).toHaveAttribute('aria-hidden', 'true');
     expect(within(links[1]!).queryByText('Do next')).toBeNull();
     expect(screen.queryByText('Fourth')).toBeNull();
   });
@@ -26,7 +28,7 @@ describe('NeedsYouList', () => {
   it('speaks Arabic', () => {
     renderRtl(<NeedsYouList items={needs.slice(0, 1)} locale="ar" />);
     expect(screen.getByRole('list', { name: 'بانتظارك' })).toBeInTheDocument();
-    expect(screen.getByText('ابدأ هنا')).toBeInTheDocument();
+    expect(screen.getByRole('link')).toHaveAccessibleName(/^ابدأ هنا، /);
   });
 });
 
@@ -53,6 +55,14 @@ describe('money on a number card', () => {
     const arabic = currencySign('SAR', 'ar');
     expect(arabic.sign).toContain('ر.س');
     expect(arabic.before).toBe(false);
+  });
+
+  it('builds the number format once per locale and currency', () => {
+    const build = vi.spyOn(Intl, 'NumberFormat');
+    const first = currencySign('EUR', 'fr');
+    expect(currencySign('EUR', 'fr')).toBe(first);
+    expect(build).toHaveBeenCalledTimes(1);
+    build.mockRestore();
   });
 
   it('never breaks on a locale it cannot read', () => {

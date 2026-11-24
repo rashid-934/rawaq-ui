@@ -9,8 +9,12 @@ export interface PhoneBarProps {
   /** The page title, already in the person's language. */
   title: ReactNode;
   titleId?: string;
-  /** The title is the page's heading on phones: level 1 unless the app says otherwise. */
-  titleOrder?: 1 | 2;
+  /**
+   * The title is the page's heading on phones (`PageHeader` hides its own title there): level 1
+   * unless the app says otherwise. `'none'` on a page whose own heading stays on phones, such as
+   * the Overview with its hero, so the page keeps one `h1`.
+   */
+  titleOrder?: 1 | 2 | 'none';
   /** One main action at the end, such as "+ New request". */
   action?: ReactNode;
 }
@@ -21,7 +25,7 @@ export interface PhoneBarProps {
  * is not shown and the frame's own header is. No state, so it renders on the server.
  */
 export function PhoneBar({ appName, logo, title, titleId, titleOrder = 1, action }: PhoneBarProps) {
-  const Heading = titleOrder === 1 ? 'h1' : 'h2';
+  const Heading = titleOrder === 'none' ? 'p' : titleOrder === 1 ? 'h1' : 'h2';
   return (
     <div className={classes.bar} data-testid="phone-bar">
       <span className={classes.logo} aria-hidden>

@@ -1,8 +1,7 @@
 'use client';
 
 import type { ElementType, ReactNode } from 'react';
-import { IconArrowsUpDown, IconLogout } from '@tabler/icons-react';
-import { SegmentedControl } from '@mantine/core';
+import { IconArrowsUpDown, IconCheck, IconLogout } from '@tabler/icons-react';
 import { labelsFor, type RawaqLabels } from '../../labels';
 import { BottomSheet, useBottomSheet } from '../BottomSheet/BottomSheet';
 import { isRailItemActive, type RailItem, type RailUser } from '../Rail/rail-items';
@@ -46,7 +45,8 @@ function Tiles({
   const { followLink } = useBottomSheet();
   const Link = linkComponent ?? 'a';
   return (
-    <ul className={classes.tiles}>
+    // oxlint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops the list role of a list drawn without bullets
+    <ul role="list" className={classes.tiles}>
       {items.map((item) => {
         const Icon = item.icon;
         const active = isRailItemActive(item, pathname);
@@ -89,17 +89,30 @@ function LanguageSwitch({
   onChange: (value: string) => void;
 }) {
   const { runAfterClose } = useBottomSheet();
+  // Buttons, not a radio group: an arrow key only moves the focus, a press changes the language.
   return (
-    <SegmentedControl
-      className={classes.segments}
-      aria-label={label}
-      value={value}
-      onChange={(next) => runAfterClose(() => onChange(next))}
-      data={languages.map((entry) => ({
-        value: entry.value,
-        label: <span lang={entry.lang}>{entry.label}</span>,
-      }))}
-    />
+    <div className={classes.languages} role="group" aria-label={label}>
+      {languages.map((entry) => {
+        const current = entry.value === value;
+        return (
+          <button
+            key={entry.value}
+            type="button"
+            className={classes.languageChoice}
+            lang={entry.lang}
+            aria-pressed={current}
+            onClick={() => {
+              if (!current) {
+                runAfterClose(() => onChange(entry.value));
+              }
+            }}
+          >
+            {current ? <IconCheck size={16} stroke={2} aria-hidden /> : null}
+            {entry.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

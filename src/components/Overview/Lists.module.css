@@ -59,6 +59,13 @@
   font-weight: 700;
 }
 
+/* Forced colours drop the badge's fill: a border keeps its shape. */
+@media (forced-colors: active) {
+  .doNext {
+    border: rem(1px) solid CanvasText;
+  }
+}
+
 /* Recent activity: name, reference under it, status at the end; rows of 56px at least. */
 .activity {
   margin: 0;
@@ -95,6 +102,8 @@
 .activityReference {
   color: var(--mantine-color-dimmed);
   font-size: var(--app-font-size-xs);
+  /* A reference keeps its own direction inside a right-to-left page. */
+  unicode-bidi: plaintext;
 }
 
 .activityStatus {

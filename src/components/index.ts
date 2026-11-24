@@ -59,13 +59,10 @@ export { PhoneBar } from './PhoneBar/PhoneBar';
 export type { PhoneBarProps } from './PhoneBar/PhoneBar';
 export { CardList, WorkList } from './WorkPage/CardList';
 export type { CardListProps, WorkCardItem, WorkListProps } from './WorkPage/CardList';
-export { FilterChips, SearchField, StickyActions } from './WorkPage/Controls';
-export type {
-  FilterChip,
-  FilterChipsProps,
-  SearchFieldProps,
-  StickyActionsProps,
-} from './WorkPage/Controls';
+export { FilterChips, SearchField } from './WorkPage/Controls';
+export { StickyActions } from './WorkPage/StickyActions';
+export type { FilterChip, FilterChipsProps, SearchFieldProps } from './WorkPage/Controls';
+export type { StickyActionsProps } from './WorkPage/StickyActions';
 export { FormGrid, FormGridItem, TableWrap, WorkCard, WorkPage } from './WorkPage/WorkPage';
 export type {
   FormGridItemProps,

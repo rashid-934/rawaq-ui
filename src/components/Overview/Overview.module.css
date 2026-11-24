@@ -239,6 +239,11 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: rem(4px);
+
+  /* The sign and the amount each keep their own direction in a right-to-left page. */
+  & > * {
+    unicode-bidi: isolate;
+  }
 }
 
 .statCurrency {

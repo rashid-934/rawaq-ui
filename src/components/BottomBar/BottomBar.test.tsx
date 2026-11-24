@@ -38,16 +38,24 @@ describe('BottomBar', () => {
     );
     const more = screen.getByRole('button', { name: 'More' });
     expect(more).toHaveAttribute('aria-haspopup', 'dialog');
-    expect(more).toHaveAttribute('aria-controls', 'more-sheet');
+    // The sheet is not in the page yet: nothing to point at.
+    expect(more).not.toHaveAttribute('aria-controls');
     await userEvent.click(more);
     expect(onMore).toHaveBeenCalledTimes(1);
-    view.rerender(<BottomBar items={items} pathname="/" onMore={onMore} moreOpen />);
-    expect(screen.getByRole('button', { name: 'More' })).toHaveAttribute('aria-expanded', 'true');
+    view.rerender(
+      <BottomBar items={items} pathname="/" onMore={onMore} moreControls="more-sheet" moreOpen />
+    );
+    const open = screen.getByRole('button', { name: 'More' });
+    expect(open).toHaveAttribute('aria-expanded', 'true');
+    expect(open).toHaveAttribute('aria-controls', 'more-sheet');
   });
 
-  it('makes "More" the current entry for a page that lives in the More sheet', () => {
+  it('gives "More" the glow for a page that lives in the More sheet, but no current mark', () => {
     render(<BottomBar items={items} pathname="/reports" onMore={() => {}} moreActive />);
-    expect(screen.getByRole('button', { name: 'More' })).toHaveAttribute('aria-current', 'page');
+    const more = screen.getByRole('button', { name: 'More' });
+    // A button is not a page: the sheet's own row says which page is open.
+    expect(more).not.toHaveAttribute('aria-current');
+    expect(more.closest('li')).toHaveAttribute('data-bar-active');
     for (const link of screen.getAllByRole('link')) {
       expect(link).not.toHaveAttribute('aria-current');
     }
@@ -94,6 +102,61 @@ describe('BottomBar', () => {
     expect(glow).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByRole('button', { name: 'المزيد' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'القائمة الرئيسية' })).toBeInTheDocument();
+  });
+
+  it('keeps the last glow while the bar is hidden and measures 0', () => {
+    let hidden = false;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement
+    ) {
+      if (hidden) {
+        return DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 });
+      }
+      return this.hasAttribute('data-bar-icon')
+        ? DOMRect.fromRect({ x: 20, y: 8, width: 56, height: 32 })
+        : DOMRect.fromRect({ x: 10, y: 0, width: 360, height: 64 });
+    });
+    const view = render(<BottomBar items={items} pathname="/" onMore={() => {}} />);
+    expect(screen.getByTestId('bottom-bar-glow').style.width).toBe('56px');
+    hidden = true;
+    view.rerender(<BottomBar items={items} pathname="/requests" onMore={() => {}} />);
+    expect(screen.getByTestId('bottom-bar-glow').style.width).toBe('56px');
+  });
+
+  it('measures again when the entries change, not on every new list of the same entries', () => {
+    const spy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect');
+    const view = render(<BottomBar items={items} pathname="/" onMore={() => {}} />);
+    const after = spy.mock.calls.length;
+    view.rerender(<BottomBar items={[...items]} pathname="/" onMore={() => {}} />);
+    expect(spy.mock.calls.length).toBe(after);
+    view.rerender(<BottomBar items={items.slice(0, 3)} pathname="/" onMore={() => {}} />);
+    expect(spy.mock.calls.length).toBeGreaterThan(after);
+  });
+
+  it('marks the keyboard open only on a touch phone with a text field in focus', () => {
+    const media = (phone: boolean) =>
+      vi.spyOn(window, 'matchMedia').mockImplementation(
+        (query: string) =>
+          ({
+            matches: query.includes('pointer') || (phone && query.includes('max-width')),
+            media: query,
+            addEventListener: () => {},
+            removeEventListener: () => {},
+          }) as unknown as MediaQueryList
+      );
+    const field = document.createElement('input');
+    document.body.append(field);
+    field.focus();
+    media(false);
+    const view = render(<BottomBar items={items} pathname="/" onMore={() => {}} />);
+    // A tablet: the bar is not shown, nothing steps aside.
+    expect(document.documentElement).not.toHaveAttribute('data-keyboard-open');
+    view.unmount();
+    media(true);
+    // A phone, with the field already in focus when the bar arrives.
+    render(<BottomBar items={items} pathname="/" onMore={() => {}} />);
+    expect(document.documentElement).toHaveAttribute('data-keyboard-open');
+    field.remove();
   });
 
   it('draws no glow when no entry is current', () => {

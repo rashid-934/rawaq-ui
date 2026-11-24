@@ -82,7 +82,7 @@ export interface TableWrapProps {
   /** The hint under a phone table that scrolls sideways. Default: on with `stickyFirstColumn`. */
   hint?: boolean;
   locale?: string;
-  labels?: Partial<Pick<RawaqLabels, 'swipeHint'>>;
+  labels?: Partial<Pick<RawaqLabels, 'swipeHint' | 'scrollingTable'>>;
   children: ReactNode;
 }
 
@@ -104,7 +104,7 @@ export function TableWrap({
     <>
       <div className="table-wrap" data-sticky-first={stickyFirstColumn || undefined}>
         {children}
-        <TableOverflow />
+        <TableOverflow label={words.scrollingTable} />
       </div>
       {hint ? (
         <p className={phone.hint} data-testid="swipe-hint">

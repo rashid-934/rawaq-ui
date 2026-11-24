@@ -66,7 +66,13 @@ describe('MoreSheet', () => {
       await screen.findByRole('button', { name: 'Switch company: Sample Trading' })
     );
     expect(onSwitchCompany).toHaveBeenCalledTimes(1);
-    await userEvent.click(screen.getByRole('radio', { name: 'العربية' }));
+    // Buttons, so moving along them with the keyboard changes nothing.
+    const english = screen.getByRole('button', { name: 'English', pressed: true });
+    english.focus();
+    await userEvent.keyboard('{ArrowRight}');
+    await userEvent.click(english);
+    expect(onLanguage).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'العربية', pressed: false }));
     // The sheet closes and leaves the history first; then the language changes.
     await waitFor(() => expect(onLanguage).toHaveBeenCalledWith('ar'));
     await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
@@ -85,7 +91,7 @@ describe('MoreSheet', () => {
     const dialog = await screen.findByRole('dialog', { name: 'More' });
     expect(within(dialog).queryByTestId('more-user')).toBeNull();
     expect(within(dialog).queryByTestId('more-company')).toBeNull();
-    expect(within(dialog).queryByRole('radiogroup')).toBeNull();
+    expect(within(dialog).queryByRole('group', { name: 'Language' })).toBeNull();
     expect(within(dialog).queryByTestId('more-sign-out')).toBeNull();
   });
 

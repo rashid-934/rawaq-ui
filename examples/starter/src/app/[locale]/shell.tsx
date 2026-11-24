@@ -123,6 +123,8 @@ export function Shell({ children }: { children: ReactNode }) {
         <PhoneBar
           appName={t('app.name')}
           title={current?.label ?? t('app.name')}
+          // The Overview keeps its hero as the page's one h1 on phones too.
+          titleOrder={pathname === '/' ? 'none' : 1}
           action={
             pathname === '/requests' ? (
               <Button radius="xl" leftSection={<IconPlus size={18} aria-hidden />}>

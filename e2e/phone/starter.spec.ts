@@ -68,7 +68,11 @@ test('More opens the sheet; Back closes it and stays; a tile opens its page', as
   await page.getByTestId('bar-more').click();
   await page.getByTestId('more-reports').click();
   await expect(page).toHaveURL(/\/ar\/reports$/);
-  await expect(page.getByTestId('bar-more')).toHaveAttribute('aria-current', 'page');
+  // "More" has the glow for a page of the sheet; it is a button, so no current mark.
+  await expect(page.locator('li:has(> [data-testid="bar-more"])')).toHaveAttribute(
+    'data-bar-active'
+  );
+  await expect(page.getByTestId('bar-more')).not.toHaveAttribute('aria-current');
   await page.goBack();
   await expect(page).toHaveURL(/\/ar\/requests$/);
 });

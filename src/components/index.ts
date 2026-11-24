@@ -15,6 +15,7 @@ export { INTRO_SAFETY_MS, IntroLayer, IntroReveal } from './IntroReveal/IntroRev
 export type { IntroLayerProps, IntroRevealProps } from './IntroReveal/IntroReveal';
 export {
   BentoCard,
+  currencySign,
   Emphasis,
   HeroBanner,
   OverviewPage,
@@ -50,6 +51,10 @@ export {
 export type { BottomSheetProps } from './BottomSheet/BottomSheet';
 export { MoreSheet } from './MoreSheet/MoreSheet';
 export type { MoreSheetLanguage, MoreSheetProps } from './MoreSheet/MoreSheet';
+export { ActivityList } from './Overview/ActivityList';
+export type { ActivityItem, ActivityListProps } from './Overview/ActivityList';
+export { NEEDS_YOU_MAX, NeedsYouList } from './Overview/NeedsYouList';
+export type { NeedsYouItem, NeedsYouListProps } from './Overview/NeedsYouList';
 export { PhoneBar } from './PhoneBar/PhoneBar';
 export type { PhoneBarProps } from './PhoneBar/PhoneBar';
 export { FormGrid, FormGridItem, TableWrap, WorkCard, WorkPage } from './WorkPage/WorkPage';

@@ -45,10 +45,12 @@ export interface HeroBannerProps {
   /** One pill button on the end side. */
   action?: ReactNode;
   order?: number;
+  /** Under the headline, the full width of the banner: the "Needs you" list (`NeedsYouList`). */
+  children?: ReactNode;
 }
 
 /** The dark banner at the top: the rail colour, white text, one emphasised phrase, one button. */
-export function HeroBanner({ title, titleId, action, order }: HeroBannerProps) {
+export function HeroBanner({ title, titleId, action, order, children }: HeroBannerProps) {
   const fallbackId = useId();
   const id = titleId ?? fallbackId;
   return (
@@ -56,11 +58,13 @@ export function HeroBanner({ title, titleId, action, order }: HeroBannerProps) {
       className={riseClass(classes.hero, order)}
       style={vars({ '--stagger': order })}
       aria-labelledby={id}
+      data-extra={children ? true : undefined}
     >
       <Title order={1} id={id} className={classes.heroTitle}>
         {title}
       </Title>
       {action ? <div className={classes.heroAction}>{action}</div> : null}
+      {children ? <div className={classes.heroExtra}>{children}</div> : null}
     </section>
   );
 }
@@ -99,6 +103,7 @@ export function BentoCard({
     <section
       className={riseClass([classes.card, className].filter(Boolean).join(' '), order)}
       style={vars({ '--span': span, '--stagger': order })}
+      data-span={span}
       aria-labelledby={title ? id : undefined}
     >
       {title ? (
@@ -145,6 +150,28 @@ export interface StatCardProps {
   /** The app's link component (it receives `href`). Default: a plain `<a>`. */
   linkComponent?: ElementType;
   order?: number;
+  /**
+   * Money: the ISO code of the currency (`SAR`). It is shown beside the number, on the side and
+   * in the form the page's language uses: "SAR 48,250" in English, "48,250 ر.س." in Arabic.
+   */
+  currency?: string;
+  /** The page's locale, for the currency's form and side. */
+  locale?: string;
+}
+
+/** The currency's sign for a locale, and whether it goes before the number. */
+export function currencySign(currency: string, locale = 'en') {
+  const parts = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'symbol',
+  }).formatToParts(1);
+  const at = (type: string) => parts.findIndex((part) => part.type === type);
+  return {
+    // Without the invisible direction marks some languages wrap around it.
+    sign: (parts[at('currency')]?.value ?? currency).replace(/[‎‏؜]/g, '').trim(),
+    before: at('currency') < at('integer'),
+  };
 }
 
 /** A number card: label, a big number whose digits roll into place once, a small hint. */
@@ -158,8 +185,15 @@ export function StatCard({
   href,
   linkComponent = 'a',
   order,
+  currency,
+  locale,
 }: StatCardProps) {
   const Root: ElementType = href === undefined ? 'div' : linkComponent;
+  const number = (
+    <RollingNumber value={value} text={text} className={`${classes.statValue} tabular`} />
+  );
+  const money = currency ? currencySign(currency, locale) : undefined;
+  const sign = money ? <span className={classes.statCurrency}>{money.sign}</span> : null;
   return (
     <li className={riseClass(undefined, order)} style={vars({ '--stagger': order })}>
       <Root
@@ -176,7 +210,15 @@ export function StatCard({
             </span>
           ) : null}
         </span>
-        <RollingNumber value={value} text={text} className={`${classes.statValue} tabular`} />
+        {money ? (
+          <span className={classes.statMoney}>
+            {money.before ? sign : null}
+            {number}
+            {money.before ? null : sign}
+          </span>
+        ) : (
+          number
+        )}
         {hint ? <span className={classes.statHint}>{hint}</span> : null}
       </Root>
     </li>

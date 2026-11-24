@@ -1,0 +1,102 @@
+/* "Needs you", inside the hero banner (the rail colour, white text). Rows of 48px at least. */
+.needs {
+  display: flex;
+  flex-direction: column;
+  margin: var(--mantine-spacing-sm) 0 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--app-radius-lg);
+  list-style: none;
+}
+
+.needsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  min-block-size: var(--app-touch-target);
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  background-color: var(--app-sidebar-hover);
+  color: var(--app-sidebar-text);
+  font-size: var(--app-font-size-sm);
+  text-decoration: none;
+
+  li + li & {
+    border-block-start: rem(1px) solid var(--app-sidebar-line);
+  }
+}
+
+.dot {
+  flex: none;
+  inline-size: rem(8px);
+  block-size: rem(8px);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-highlight);
+}
+
+.needsText {
+  flex: 1;
+  min-inline-size: 0;
+  line-height: max(1.35, var(--app-line-height, 0));
+  overflow-wrap: anywhere;
+}
+
+.needsAction {
+  font-weight: 700;
+}
+
+.needsSubject {
+  color: var(--app-sidebar-text);
+}
+
+/* "Do next": the highlight pill (main text on the highlight passes 4.5:1). */
+.doNext {
+  flex: none;
+  padding: rem(2px) var(--mantine-spacing-xs);
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-highlight);
+  color: var(--app-highlight-text);
+  font-size: var(--app-font-size-xs);
+  font-weight: 700;
+}
+
+/* Recent activity: name, reference under it, status at the end; rows of 56px at least. */
+.activity {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  min-block-size: rem(56px);
+  padding-block: var(--mantine-spacing-xs);
+  color: var(--mantine-color-text);
+  text-decoration: none;
+
+  li + li & {
+    border-block-start: rem(1px) solid var(--app-hairline);
+  }
+}
+
+.activityText {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.activityTitle {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.activityReference {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--app-font-size-xs);
+}
+
+.activityStatus {
+  flex: none;
+}

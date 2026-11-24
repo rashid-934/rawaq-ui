@@ -24,7 +24,8 @@ renamed or removed; every new part is opt-in.
   sideways only while it is wider than the frame.
 - **Touch, safe areas, viewport**: every tap target on a phone is at least 48 x 48 px;
   `--app-safe-*` variables (also read from Capacitor's `--safe-area-inset-*`); `rawaqViewport()` and
-  `themeColorFor()` for the page's viewport and the browser bar colour.
+  `themeColorFor()` for the page's viewport and the browser bar colour; the save bar follows the
+  phone keyboard (`--app-keyboard-inset`).
 - **Motion**: the opening now also plays on phones (the edge sweeps into the bottom bar).
 - **Words**: `more`, `close`, `doNext`, `needsYou`, `swipeHint`, `switchCompany`, `language` and
   `signOut`, in English and Arabic. Code that typed a complete `RawaqLabels` object is asked for

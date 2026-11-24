@@ -14,16 +14,16 @@ export interface ViewportLook {
  *
  * - `viewportFit: 'cover'` lets the page reach under the notch and the gesture bar; the safe-area
  *   variables (`--app-safe-*`) keep the bars and sheets clear of them.
- * - `interactiveWidget: 'resizes-content'` makes the page shorter while the phone keyboard is
- *   open, so a save bar sits above the keyboard.
  * - `themeColor` is the rail colour: the browser's own bar matches the app's top strip.
+ *
+ * The phone keyboard is followed by the bottom bar (`--app-keyboard-inset`, from the browser's
+ * visual viewport), not by `interactive-widget`: Safari reports that key as an error.
  */
 export function rawaqViewport(look: ViewportLook = {}) {
   return {
     width: 'device-width',
     initialScale: 1,
     viewportFit: 'cover',
-    interactiveWidget: 'resizes-content',
     themeColor: themeColorFor(look),
   } as const;
 }

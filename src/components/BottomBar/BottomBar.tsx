@@ -144,12 +144,25 @@ export function BottomBar({
           ));
       root.toggleAttribute('data-keyboard-open', Boolean(touch?.matches) && typing);
     };
+    // How much of the window the keyboard covers: the save bar sits right above it.
+    const viewport = window.visualViewport;
+    const inset = () => {
+      const covered = viewport
+        ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+        : 0;
+      root.style.setProperty('--app-keyboard-inset', `${Math.round(covered)}px`);
+    };
     document.addEventListener('focusin', update);
     document.addEventListener('focusout', update);
+    viewport?.addEventListener('resize', inset);
+    viewport?.addEventListener('scroll', inset);
     return () => {
       document.removeEventListener('focusin', update);
       document.removeEventListener('focusout', update);
+      viewport?.removeEventListener('resize', inset);
+      viewport?.removeEventListener('scroll', inset);
       root.removeAttribute('data-keyboard-open');
+      root.style.removeProperty('--app-keyboard-inset');
     };
   }, []);
 

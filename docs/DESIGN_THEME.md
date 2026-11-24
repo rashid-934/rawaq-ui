@@ -253,8 +253,9 @@ From the owner's mockups (direction, not pixels). The real tokens are used.
   bottom bar, and right above the keyboard while a text field has the focus (the bar steps aside).
 - **Dialogs and drawers**: full-screen bottom sheets.
 - **Touch**: every tap target at least 48 x 48 px, at least 8 px apart.
-- **Safe areas**: `rawaqViewport()` gives `viewport-fit=cover`, `interactive-widget=resizes-content`
-  and the rail colour as `theme-color`; `--app-safe-*` take the larger of `env(safe-area-inset-*)`
+- **Safe areas**: `rawaqViewport()` gives `viewport-fit=cover` and the rail colour as
+  `theme-color` (no `interactive-widget`: Safari reports it as an error); the keyboard is followed
+  with `--app-keyboard-inset`; `--app-safe-*` take the larger of `env(safe-area-inset-*)`
   and Capacitor's `--safe-area-inset-*`.
 - **Motion**: the same tokens. The opening plays on phones too; its edge sweeps into the middle of
   the bottom edge. The bar's Glow slides; page fade, skeletons and rolling numbers as on desktop;

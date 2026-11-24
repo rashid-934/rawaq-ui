@@ -3,12 +3,11 @@ import { sidebarSwatches } from '../tokens/sidebar';
 import { rawaqViewport, themeColorFor } from './viewport';
 
 describe('rawaqViewport', () => {
-  it('asks for the whole screen, a page that makes room for the keyboard, and the rail colour', () => {
+  it('asks for the whole screen and the rail colour, and no key Safari reports as an error', () => {
     expect(rawaqViewport()).toEqual({
       width: 'device-width',
       initialScale: 1,
       viewportFit: 'cover',
-      interactiveWidget: 'resizes-content',
       themeColor: presets['sand-forest'].sidebar,
     });
   });

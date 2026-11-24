@@ -15,7 +15,8 @@
     z-index: 190;
     display: block;
     block-size: var(--app-bottom-bar-height);
-    padding-inline: rem(4px);
+    /* The entries keep clear of the bar's rounded ends. */
+    padding-inline: var(--mantine-spacing-sm);
     border-radius: var(--app-radius-pill);
     background-color: var(--app-sidebar);
     box-shadow: var(--app-shadow-lg);
@@ -97,14 +98,25 @@
   }
 }
 
-/* Labels are 12px at least, and wrap rather than being cut. */
+/*
+ * Labels are 12px at least, on one line. When one of them does not fit its slot with room to
+ * spare (BottomBar.tsx measures), the whole bar shows its icons only; the names stay for screen
+ * readers.
+ */
 .label {
-  max-inline-size: 100%;
   font-size: var(--app-font-size-xs);
   font-weight: 600;
   line-height: max(1.25, var(--app-line-height, 0));
   text-align: center;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+
+  .bar[data-icons-only] & {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
 }
 
 /* The Glow pill behind the active icon. BottomBar.tsx measures the icon; the pill slides there. */

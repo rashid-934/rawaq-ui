@@ -19,6 +19,12 @@ export const BOTTOM_BAR_MAX_ITEMS = 4;
 // Below the `sm` breakpoint (48em, docs/DESIGN_THEME.md section 8): a phone.
 const PHONE_MAX = '47.99em';
 
+/**
+ * A label shows only while every label has at least this much room on each side within its slot;
+ * otherwise the whole bar shows its icons only (the names stay for screen readers).
+ */
+export const BOTTOM_BAR_LABEL_SPACE = 4;
+
 export interface BottomBarProps {
   /** The four pages people open most, in the order of the rail. More than four are cut. */
   items: readonly RailItem[];
@@ -102,8 +108,19 @@ export function BottomBar({
   const shown = items.slice(0, BOTTOM_BAR_MAX_ITEMS);
   const [list, setList] = useState<HTMLDivElement | null>(null);
   const [box, setBox] = useState<Box | null>(null);
+  const [iconsOnly, setIconsOnly] = useState(false);
 
   const measure = useCallback(() => {
+    // Every label must fit its slot with room to spare, or none is shown: one long name (another
+    // language, a narrow phone) never runs into the bar's rounded end or its neighbour.
+    const entries = list ? [...list.querySelectorAll<HTMLElement>('[data-bar-entry]')] : [];
+    const widths = entries.map((entry) => ({
+      slot: entry.clientWidth,
+      label: entry.querySelector<HTMLElement>('[data-bar-label]')?.scrollWidth ?? 0,
+    }));
+    if (widths.length > 0 && widths.every(({ slot }) => slot > 0)) {
+      setIconsOnly(widths.some(({ slot, label }) => label + 2 * BOTTOM_BAR_LABEL_SPACE > slot));
+    }
     const icon = list?.querySelector<HTMLElement>('[data-bar-active] [data-bar-icon]');
     if (!list || !icon) {
       setBox(null);
@@ -136,7 +153,7 @@ export function BottomBar({
   const itemKeys = shown.map((item) => item.key).join('\n');
   useLayoutEffect(() => {
     measure();
-  }, [measure, pathname, moreActive, itemKeys]);
+  }, [measure, pathname, moreActive, itemKeys, iconsOnly]);
 
   // On a touch phone a focused text field means the keyboard is open: the bar steps aside and
   // a save bar sits right above the keyboard (`html[data-keyboard-open]`, the stylesheets).
@@ -206,6 +223,7 @@ export function BottomBar({
       ref={ref}
       id={id}
       className={classes.bar}
+      data-icons-only={iconsOnly || undefined}
       aria-label={words.mainNavigation}
       data-testid="bottom-bar"
     >
@@ -234,13 +252,16 @@ export function BottomBar({
                 <Link
                   href={item.href}
                   className={classes.entry}
+                  data-bar-entry
                   aria-current={active ? 'page' : undefined}
                   data-testid={`bar-${item.key}`}
                 >
                   <span className={classes.icon} data-bar-icon aria-hidden>
                     <Icon size={24} stroke={1.75} />
                   </span>
-                  <span className={classes.label}>{item.label}</span>
+                  <span className={classes.label} data-bar-label>
+                    {item.label}
+                  </span>
                 </Link>
               </li>
             );
@@ -249,6 +270,7 @@ export function BottomBar({
             <button
               type="button"
               className={classes.entry}
+              data-bar-entry
               onClick={onMore}
               aria-haspopup="dialog"
               aria-expanded={moreOpen}
@@ -260,7 +282,9 @@ export function BottomBar({
               <span className={classes.icon} data-bar-icon aria-hidden>
                 <MoreIcon size={24} stroke={1.75} />
               </span>
-              <span className={classes.label}>{words.more}</span>
+              <span className={classes.label} data-bar-label>
+                {words.more}
+              </span>
             </button>
           </li>
         </ul>

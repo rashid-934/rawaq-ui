@@ -159,6 +159,30 @@ describe('BottomBar', () => {
     field.remove();
   });
 
+  it('shows the labels while each fits its slot with room to spare, else icons only', () => {
+    let longest = 60;
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement
+    ) {
+      return this.hasAttribute('data-bar-entry') ? 68 : 0;
+    });
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (
+      this: HTMLElement
+    ) {
+      return this.textContent === 'Dashboard' ? longest : 30;
+    });
+    const view = render(<BottomBar items={items} pathname="/" onMore={() => {}} />);
+    const bar = screen.getByTestId('bottom-bar');
+    // 60 + 2 x BOTTOM_BAR_LABEL_SPACE fits in 68.
+    expect(bar).not.toHaveAttribute('data-icons-only');
+    longest = 64;
+    view.rerender(<BottomBar items={items.slice(0, 3)} pathname="/" onMore={() => {}} />);
+    expect(bar).toHaveAttribute('data-icons-only');
+    // The names stay: a screen reader still hears every entry.
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'More' })).toBeInTheDocument();
+  });
+
   it('draws no glow when no entry is current', () => {
     render(<BottomBar items={items} pathname="/nowhere" onMore={() => {}} />);
     expect(screen.queryByTestId('bottom-bar-glow')).toBeNull();

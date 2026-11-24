@@ -225,7 +225,10 @@ From the owner's mockups (direction, not pixels). The real tokens are used.
 
 - **Bottom bar** (`BottomBar`): a floating pill in the rail colour, 12 px from the window edges and
   above the gesture bar, 64 px high, `--app-shadow-lg`. Four pages at most, plus More. Each entry
-  is the whole slot (never under 48 x 48 px): a 24 px icon over a 12 px label. The Glow pill (56 x
+  is the whole slot (never under 48 x 48 px): a 24 px icon over a 12 px label on one line. The
+  entries keep 12 px clear of the bar's rounded ends. When one label does not fit its slot with
+  4 px to spare on each side (a long name, another language, a narrow phone), the whole bar shows
+  its icons only, all entries alike; the names stay for screen readers (owner, 24 Nov 2026). The Glow pill (56 x
   32 px) sits behind the active icon and slides between entries; mirrored in RTL. Every entry has
   its own icon (`bottomBarProblems` checks). The page keeps `--app-bottom-space` free at its end.
   A page is marked current (`aria-current`); More is a button, so while one of the sheet's pages is

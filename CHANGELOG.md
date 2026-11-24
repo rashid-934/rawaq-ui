@@ -10,7 +10,7 @@ nothing changes: every story in 7 presets, both densities, English and Arabic, a
 renamed or removed; every new part is opt-in.
 
 - **Phones (below 768 px)**: `BottomBar` (a floating pill in the rail colour with up to four pages
-  and More, the Glow pill behind the active icon), `PhoneBar` (logo tile, page title, one action),
+  and More, the Glow pill behind the active icon; icons only when a label does not fit its slot), `PhoneBar` (logo tile, page title, one action),
   `MoreSheet` (the person, the company, the other pages as tiles, the language switch, Sign out),
   `BottomSheet` (swipe down, tap outside, Esc and Back close it; one history step per opening, and
   a link inside closes the sheet before it is followed), and `Frame` props `bottomBar` and

@@ -1,6 +1,6 @@
 // Checks the size of the built package against `size-budget.json`: a size more than 10 percent
 // above its budget fails, and so does one more than 30 percent below it (a part left out of the
-// build). The budget holds the sizes of version 1.1.0 (the hardening pass).
+// build). The budget holds the sizes of version 1.2.0 (phones and tablets).
 //
 //   yarn build && yarn check:size            check
 //   yarn build && yarn check:size --write    write the current sizes as the new budget (only in

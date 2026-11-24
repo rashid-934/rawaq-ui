@@ -15,6 +15,7 @@ export { INTRO_SAFETY_MS, IntroLayer, IntroReveal } from './IntroReveal/IntroRev
 export type { IntroLayerProps, IntroRevealProps } from './IntroReveal/IntroReveal';
 export {
   BentoCard,
+  currencySign,
   Emphasis,
   HeroBanner,
   OverviewPage,
@@ -38,10 +39,35 @@ export { isRailItemActive } from './Rail/rail-items';
 export type { IconComponent, RailGroup, RailIcon, RailItem, RailUser } from './Rail/rail-items';
 export { RollingNumber } from './RollingNumber/RollingNumber';
 export type { RollingNumberProps } from './RollingNumber/RollingNumber';
+export { BOTTOM_BAR_MAX_ITEMS, BottomBar, bottomBarProblems } from './BottomBar/BottomBar';
+export type { BottomBarProps } from './BottomBar/BottomBar';
+export {
+  BottomSheet,
+  SHEET_CLOSE_DISTANCE,
+  SHEET_CLOSE_SPEED,
+  SHEET_FLICK_DISTANCE,
+  useBottomSheet,
+} from './BottomSheet/BottomSheet';
+export type { BottomSheetProps } from './BottomSheet/BottomSheet';
+export { MoreSheet } from './MoreSheet/MoreSheet';
+export type { MoreSheetLanguage, MoreSheetProps } from './MoreSheet/MoreSheet';
+export { ActivityList } from './Overview/ActivityList';
+export type { ActivityItem, ActivityListProps } from './Overview/ActivityList';
+export { NEEDS_YOU_MAX, NeedsYouList } from './Overview/NeedsYouList';
+export type { NeedsYouItem, NeedsYouListProps } from './Overview/NeedsYouList';
+export { PhoneBar } from './PhoneBar/PhoneBar';
+export type { PhoneBarProps } from './PhoneBar/PhoneBar';
+export { CardList, WorkList } from './WorkPage/CardList';
+export type { CardListProps, WorkCardItem, WorkListProps } from './WorkPage/CardList';
+export { FilterChips, SearchField } from './WorkPage/Controls';
+export { StickyActions } from './WorkPage/StickyActions';
+export type { FilterChip, FilterChipsProps, SearchFieldProps } from './WorkPage/Controls';
+export type { StickyActionsProps } from './WorkPage/StickyActions';
 export { FormGrid, FormGridItem, TableWrap, WorkCard, WorkPage } from './WorkPage/WorkPage';
 export type {
   FormGridItemProps,
   FormGridProps,
   WorkCardProps,
+  TableWrapProps,
   WorkPageProps,
 } from './WorkPage/WorkPage';

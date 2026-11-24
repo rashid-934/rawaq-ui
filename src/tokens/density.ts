@@ -36,6 +36,17 @@ export const layout = {
   frameRadius: '24px',
   framePadWork: '12px',
   framePadOverview: '16px',
+  /** The desktop layout starts at this width; nothing at it or wider changes for phones. */
+  desktopMin: '1280px',
+  /** Gap between the window edge and the frame on a tablet (768 to 1279 px). */
+  tabletFrameMargin: '8px',
+  /** Phones: the floating bottom bar, and its gap to the window edges. */
+  bottomBarHeight: '64px',
+  bottomBarInset: '12px',
+  /** Phones: the one-line bar at the top (logo, page title, one action). */
+  phoneBarHeight: '56px',
+  /** Phones: the smallest tap target (Android guidance). */
+  touchTarget: '48px',
 } as const;
 
 export const densities: Record<Density, DensityTokens> = {

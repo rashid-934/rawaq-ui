@@ -115,6 +115,82 @@ Everything that moves is off when the device asks for reduced motion.
 
 See every part, in three languages and seven presets, in the Storybook: `yarn storybook`.
 
+## On phones and tablets
+
+From version 1.2.0. At 1280 px and wider nothing changes. Below 768 px (a phone) the app gets a
+one-line bar at the top, a floating bar of four pages at the bottom and a "More" sheet for the
+rest; from 768 to 1279 px (a tablet) the rail stays and the pages use two columns. The design is
+in `docs/DESIGN_THEME.md`, section 8. The starter does all of it.
+
+1. **Let the page reach under the notch** and colour the browser's bar like the rail. In Next.js:
+
+   ```ts
+   import { rawaqViewport } from 'rawaq-ui';
+
+   export const viewport = rawaqViewport({ preset: 'sand-forest', sidebar: 'match' });
+   ```
+
+   Other stacks write the same values into `<meta name="viewport">` and
+   `<meta name="theme-color">`.
+
+2. **Give the frame its phone parts.** They show only below 768 px; the rail and the header stay
+   for wider windows:
+
+   ```tsx
+   <Frame
+     /* ...as above... */
+     phoneHeader={<PhoneBar appName="My app" title={pageTitle} action={<NewButton />} />}
+     bottomBar={
+       <BottomBar
+         items={firstFourPages}
+         pathname={pathname}
+         linkComponent={Link}
+         onMore={() => setMoreOpen(true)}
+         moreOpen={moreOpen}
+         moreControls="more-sheet"
+         moreActive={otherPages.some((item) => isRailItemActive(item, pathname))}
+         locale={locale}
+       />
+     }
+     after={
+       <MoreSheet
+         id="more-sheet"
+         opened={moreOpen}
+         onClose={() => setMoreOpen(false)}
+         items={otherPages}
+         pathname={pathname}
+         linkComponent={Link}
+         locale={locale}
+       />
+     }
+   >
+   ```
+
+   The bottom bar holds four pages and "More"; `bottomBarProblems(items)` in the app's own tests
+   says when a list is too long or two entries share an icon. On the Overview, whose hero keeps
+   the page's one `h1`, give the phone bar `titleOrder="none"`.
+
+3. **Pages.** A Work page shows cards on a phone and its table from 768 px up: put both in
+   `WorkList`. A table that must stay a table on a phone gets `TableWrap stickyFirstColumn`: its
+   first column stays while the rest scrolls sideways, with a hint under it.
+
+| Part | What it is |
+|---|---|
+| `rawaqViewport` | The page's viewport settings for phones (notch, bar colour) |
+| `PhoneBar` | The bar at the top of a phone page: logo, page title, one action |
+| `BottomBar`, `bottomBarProblems` | The floating bar of four pages and "More", with its sliding glow |
+| `MoreSheet` | The "More" sheet: the person, the company, the other pages, language, Sign out |
+| `BottomSheet`, `useBottomSheet` | A sheet from the bottom: swipe, Esc, a tap outside and Back close it |
+| `NeedsYouList`, `ActivityList` | The Overview's "Needs you" rows in the hero, and recent activity |
+| `StatCard currency` | A number card with its currency in the page language's form |
+| `CardList`, `WorkList` | A Work page's rows as cards on a phone, the table from 768 px up |
+| `FilterChips`, `SearchField` | Quick filters as chips, and the search field of a Work page |
+| `StickyActions` | A form's save bar: above the bottom bar, or right above the keyboard |
+
+Back (in the browser or on Android) closes an open sheet before it leaves the page. A link in a
+sheet goes through `useBottomSheet().followLink`, so Back from the new page returns to the page
+the sheet was opened on.
+
 ## Choose the look
 
 ```ts

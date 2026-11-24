@@ -210,10 +210,70 @@ Built with CSS only. No animation library. The timings are tokens (`src/tokens/m
 
 ## 8. Screen sizes
 
-- Designed for desktop and laptop browsers, **minimum width 1280 px**. Checked at 1280 x 720 and
-  1920 x 1080.
-- Below the `sm` width the rail becomes a drawer and the frame is not drawn. This narrow layout
-  exists so nothing breaks; it is not a designed phone experience.
+- **Desktop, 1280 px and wider**: the design of sections 1 to 7, checked at 1280 x 720 and
+  1920 x 1080. Nothing of the phone layout changes it: CI compares every story, pixel by pixel.
+- **Tablet, 768 to 1279 px**: the rail stays; the frame margin is 8 px; Overview cards in two
+  columns, number cards two per row, the side column under the main one; a table scrolls sideways
+  on its own only while it is wider than the frame. Never a sideways page scroll.
+- **Phone, below 768 px**: the phone layout below, checked at 360 x 800, 390 x 844 and 430 x 932.
+  An app that does not give the frame a bottom bar keeps the 1.1 narrow layout (the rail as a
+  drawer).
+
+### 8.1 Phone layout (approved by owner, 24 Nov 2026)
+
+From the owner's mockups (direction, not pixels). The real tokens are used.
+
+- **Bottom bar** (`BottomBar`): a floating pill in the rail colour, 12 px from the window edges and
+  above the gesture bar, 64 px high, `--app-shadow-lg`. Four pages at most, plus More. Each entry
+  is the whole slot (never under 48 x 48 px): a 24 px icon over a 12 px label on one line. The
+  entries keep 12 px clear of the bar's rounded ends. When one label does not fit its slot with
+  4 px to spare on each side (a long name, another language, a narrow phone), the whole bar shows
+  its icons only, all entries alike; the names stay for screen readers (owner, 24 Nov 2026). The Glow pill (56 x
+  32 px) sits behind the active icon and slides between entries; mirrored in RTL. Every entry has
+  its own icon (`bottomBarProblems` checks). The page keeps `--app-bottom-space` free at its end.
+  A page is marked current (`aria-current`); More is a button, so while one of the sheet's pages is
+  open it only has the Glow. Before the script has measured the Glow, the active icon has the Glow
+  colour itself, so the first paint already shows where the person is.
+- **More sheet** (`MoreSheet` on `BottomSheet`): the person (initials, name, role), the company
+  row on the selection tint, the other pages as tiles four per row (72 px; the highlight entry in
+  the highlight colour; the current page's tile has an accent ring too), the theme switch, the
+  language choice (buttons, each name in its own language; the chosen one filled and with a
+  check mark, and an arrow key only moves the focus), Sign out in the error colour. A 48 px grab handle, the dimmed page, and it closes on a swipe down
+  (96 px, or a flick of 24 px or more), a tap outside, Esc and Back. Opening adds a history step,
+  so Back closes the sheet before it leaves the page; a link inside closes the sheet first. The
+  sheet takes its step out only while that step is still the current one (an address the app moved
+  to stays), one step per opening in React's strict mode too.
+- **Header** (`PhoneBar`): one line, 56 px: the logo tile (32 px, highlight), the page title (the
+  page's `h1`; the `PageHeader` title, count and actions step aside), one action of 48 px. A strip
+  in the rail colour fills the safe area above it. A page keeps one `h1`: on the Overview the hero
+  stays the heading, so the bar's title is plain text there (`titleOrder="none"`).
+- **Frame and haze**: no frame margin and no frame edge on phones; the plain background.
+- **Overview**: one column. The hero banner holds the greeting and `NeedsYouList` (three rows at
+  most, 48 px each, the first marked "Do next"; a screen reader hears "Do next" first and a pause
+  between the parts). Number cards two per row, the number from 22 to
+  30 px with the screen. Money shows its currency in the page's language (`StatCard currency`).
+  `ActivityList`: the name, the reference under it, the status at the end (56 px rows).
+- **Work pages**: cards by default (`CardList` in `WorkList`): reference and status on top, the
+  name in bold, the facts and the quantity in words, a chevron mirrored in RTL. A table that must
+  stay a table (`WorkList phoneView="table"`, `TableWrap stickyFirstColumn`) keeps its first column
+  in place while it scrolls sideways, and a hint under it says so (only while the table is wider
+  than the phone). A box that scrolls takes the keyboard focus as a named region, and a focused
+  control stops beside the fixed column, not under it.
+- **Search and filters**: the search field is 48 px high with a search icon; filter chips 40 px high
+  with a 48 x 48 px touch area, in one row that scrolls. The chosen chip is filled and has a check
+  mark: colour is never the only sign of a choice (in forced colours an outline keeps it).
+- **Forms**: one column, full-width inputs (48 px). The save bar (`StickyActions`) sits above the
+  bottom bar, and right above the keyboard while a text field has the focus (the bar steps aside).
+  A focused field stops above the save bar.
+- **Dialogs and drawers**: full-screen bottom sheets.
+- **Touch**: every tap target at least 48 x 48 px, at least 8 px apart.
+- **Safe areas**: `rawaqViewport()` gives `viewport-fit=cover` and the rail colour as
+  `theme-color` (no `interactive-widget`: Safari reports it as an error); the keyboard is followed
+  with `--app-keyboard-inset`; `--app-safe-*` take the larger of `env(safe-area-inset-*)`
+  and Capacitor's `--safe-area-inset-*`.
+- **Motion**: the same tokens. The opening plays on phones too; its edge sweeps into the middle of
+  the bottom edge. The bar's Glow slides; page fade, skeletons and rolling numbers as on desktop;
+  all off with reduced motion.
 
 ## 9. Rules
 

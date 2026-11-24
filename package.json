@@ -1,6 +1,6 @@
 {
   "name": "rawaq-ui",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Rawaq UI: one theme (tokens, shell and motion) for React and Mantine apps. Layout style: Rail and Bento.",
   "private": true,
   "license": "UNLICENSED",
@@ -46,7 +46,8 @@
     "test:unit": "vitest run",
     "e2e": "playwright test",
     "e2e:perf": "E2E_PERF=1 playwright test",
-    "test": "yarn format:test && yarn lint && yarn typecheck && yarn test:unit"
+    "test": "yarn format:test && yarn lint && yarn typecheck && yarn test:unit",
+    "e2e:phone": "E2E_BROWSERS=phone-360,phone-390,phone-430 playwright test"
   },
   "peerDependencies": {
     "@mantine/core": "^9.6.0",

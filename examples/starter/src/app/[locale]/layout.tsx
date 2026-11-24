@@ -9,11 +9,12 @@ import 'rawaq-ui/styles.css';
 import '../starter.css';
 
 import type { ReactNode } from 'react';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
+import { rawaqViewport } from 'rawaq-ui';
 import { directionOf } from 'rawaq-ui/tokens';
 import { routing } from '@/i18n/routing';
 import { Providers } from './providers';
@@ -23,6 +24,10 @@ interface LayoutProps {
   children: ReactNode;
   params: Promise<{ locale: string }>;
 }
+
+// Phones: the page reaches under the notch and the gesture bar (the safe areas keep the bars clear
+// of them), makes room for the keyboard, and the browser's bar takes the rail colour.
+export const viewport: Viewport = rawaqViewport({ preset: 'sand-forest', sidebar: 'match' });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

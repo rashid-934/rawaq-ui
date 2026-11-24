@@ -33,6 +33,24 @@
   grid-template-columns: minmax(0, 1fr) rem(320px);
   gap: var(--app-bento-gap);
   align-items: start;
+
+  /* Like the Overview page: the side column moves under the main one below 1280px. */
+  @mixin smaller-than $rq-desktop {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Phones and tablets: number cards two per row, form fields in one column on a phone. */
+.kpis.kpis {
+  @mixin smaller-than $rq-desktop {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.fields.fields {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .column,

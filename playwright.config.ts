@@ -29,9 +29,34 @@ const browsers: Record<string, Project> = {
   webkit: { name: 'webkit', use: { ...devices['Desktop Safari'] } },
 };
 
+// Phones (docs/DESIGN_THEME.md, "Phone layout"): Chrome on Android, with touch, at the three sizes
+// the layout is checked at. They run the tests in e2e/phone only: `yarn e2e:phone`.
+const phone = (width: number, height: number): Project => ({
+  name: `phone-${width}`,
+  testMatch: /phone\/.*\.spec\.ts/,
+  use: {
+    ...devices['Pixel 7'],
+    viewport: { width, height },
+    channel: ci ? undefined : 'chrome',
+    launchOptions: { args: ['--disable-partial-raster'] },
+  },
+});
+const phones: Record<string, Project> = {
+  'phone-360': phone(360, 800),
+  'phone-390': phone(390, 844),
+  'phone-430': phone(430, 932),
+};
+for (const project of Object.values(browsers)) {
+  project.testIgnore = /phone\//;
+}
+
 // The perf tests (tagged @perf) measure frames: `yarn e2e:perf` runs them alone, one at a time,
 // with nothing else next to them. `yarn e2e` runs everything else.
 const perf = process.env.E2E_PERF === '1';
+// A phone run keeps its own result folders, so it never empties the desktop run's.
+const phoneRun = wanted.some((name) => name.startsWith('phone-'));
+const results = perf ? 'e2e-results-perf' : phoneRun ? 'e2e-results-phone' : 'e2e-results';
+const report = perf ? 'e2e-report-perf' : phoneRun ? 'e2e-report-phone' : 'e2e-report';
 
 export default defineConfig({
   testDir: 'e2e',
@@ -43,10 +68,8 @@ export default defineConfig({
   forbidOnly: ci,
   timeout: 60_000,
   // Each run has its own folders: a run empties its output folder when it starts.
-  reporter: ci
-    ? [['list'], ['html', { open: 'never', outputFolder: perf ? 'e2e-report-perf' : 'e2e-report' }]]
-    : 'list',
-  outputDir: perf ? 'e2e-results-perf' : 'e2e-results',
+  reporter: ci ? [['list'], ['html', { open: 'never', outputFolder: report }]] : 'list',
+  outputDir: results,
   use: {
     baseURL: `http://localhost:${PORT}`,
     // The desktop minimum of the design (docs/DESIGN_THEME.md); motion is off unless a test that
@@ -58,9 +81,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: wanted.map((name) => {
-    const project = browsers[name];
+    const project = browsers[name] ?? phones[name];
     if (!project) {
-      throw new Error(`Unknown browser "${name}" in E2E_BROWSERS (chromium, firefox, webkit).`);
+      throw new Error(
+        `Unknown browser "${name}" in E2E_BROWSERS (chromium, firefox, webkit, phone-360, phone-390, phone-430).`
+      );
     }
     return project;
   }),

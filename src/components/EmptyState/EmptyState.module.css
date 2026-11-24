@@ -111,3 +111,16 @@
     transition: none;
   }
 }
+
+/* Phones: the small copy button keeps its look, and a finger gets a 48 x 48px area around it. */
+@mixin smaller-than $mantine-breakpoint-sm {
+  .copy {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: rem(-10px);
+    }
+  }
+}

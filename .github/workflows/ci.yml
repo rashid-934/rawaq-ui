@@ -22,6 +22,8 @@ jobs:
       # Every action is pinned to a full commit SHA; the version is in the comment.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # No token stays in the checkout for the later steps.
+          persist-credentials: false
           # The pull request's own commits, not the merge commit GitHub prepares.
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
@@ -65,6 +67,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # No token stays in the checkout for the later steps.
+          persist-credentials: false
       - name: Enable Corepack
         run: corepack enable
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -89,6 +94,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # No token stays in the checkout for the later steps.
+          persist-credentials: false
       - name: Enable Corepack
         run: corepack enable
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -120,21 +128,95 @@ jobs:
         env:
           E2E_BROWSERS: chromium,firefox,webkit
         run: yarn e2e
+      # Phones (docs/DESIGN_THEME.md, "Phone layout"): the starter's pages and every story at
+      # 360, 390 and 430 px, Chrome on Android with touch: sideways scroll, 48 px targets, axe.
+      - name: Build the Storybook for the phone tests
+        run: yarn storybook:build
+      - name: Phone tests (360, 390 and 430 px)
+        run: yarn e2e:phone
       # The processor slowed 4 times: load long tasks and the smooth gate, alone on the runner.
       - name: CPU 4x checks (Chromium)
         run: yarn e2e:perf
       - name: The numbers of the CPU 4x checks
         if: always()
         run: find e2e-results-perf -name numbers.json -exec cat {} + 2>/dev/null || true
-      - name: Keep the test results
+      # The traces of failed tests hold the pages, the network and the cookies, and the run's
+      # files are public: they are searched for secrets first, and kept only when clean.
+      - name: Nothing secret in the test results
+        id: scan-results
         if: always()
+        run: |
+          find e2e-results e2e-results-perf e2e-results-phone e2e-report e2e-report-perf             e2e-report-phone -name '*.zip' 2>/dev/null | while read -r zip; do
+            unzip -q -o "$zip" -d ".scan-results/$zip"
+          done
+          node scripts/scan-built.mjs --results e2e-results e2e-results-perf e2e-results-phone             e2e-report e2e-report-perf e2e-report-phone .scan-results
+      - name: Keep the test results
+        if: always() && steps.scan-results.outcome == 'success'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-tests
           path: |
             e2e-results
             e2e-results-perf
+            e2e-results-phone
             e2e-report
             e2e-report-perf
+            e2e-report-phone
           retention-days: 14
+          if-no-files-found: ignore
+
+  # The owner's hard rule (docs/DESIGN_THEME.md, "Phone layout"): at 1280 px and wider, in light
+  # mode, nothing changes. Every story of the base branch and of this branch, 7 presets, both
+  # densities, English and Arabic, at 1280 x 720 and 1920 x 1080, compared pixel by pixel. A
+  # story that is new on this branch is listed, never failed; any other difference fails.
+  pixels:
+    name: desktop pixels
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # No token stays in the checkout for the later steps.
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Enable Corepack
+        run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --immutable
+      - name: Storybook of this branch
+        run: |
+          yarn storybook:build
+          mv storybook-static "$RUNNER_TEMP/sb-head"
+      - name: Storybook of the base branch
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git worktree add "$RUNNER_TEMP/base" "$BASE_SHA"
+          cd "$RUNNER_TEMP/base"
+          yarn install --immutable
+          yarn storybook:build
+          mv storybook-static "$RUNNER_TEMP/sb-base"
+      # The installed Chrome of the runner, with whole tiles (--disable-partial-raster).
+      - name: Pictures of both
+        env:
+          ALL_WIDE: '1'
+        run: |
+          node scripts/hardening/shots.cjs "$RUNNER_TEMP/sb-base" "$RUNNER_TEMP/shots-base"
+          node scripts/hardening/shots.cjs "$RUNNER_TEMP/sb-head" "$RUNNER_TEMP/shots-head"
+      - name: Compare pixel by pixel
+        env:
+          ALLOW_NEW: '1'
+        run: node scripts/hardening/compare.cjs "$RUNNER_TEMP/shots-base" "$RUNNER_TEMP/shots-head"
+      - name: Keep the pictures when they differ
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: desktop-pixels
+          path: |
+            ${{ runner.temp }}/shots-base
+            ${{ runner.temp }}/shots-head
+          retention-days: 7
           if-no-files-found: ignore

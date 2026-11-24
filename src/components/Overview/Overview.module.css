@@ -10,7 +10,8 @@
   gap: var(--app-bento-gap);
   align-items: start;
 
-  @mixin larger-than $mantine-breakpoint-lg {
+  /* The side column sits beside the main one from 1280px up; below, it moves under it. */
+  @mixin larger-than $rq-desktop {
     &[data-side] {
       grid-template-columns: minmax(0, 1fr) rem(320px);
     }
@@ -74,6 +75,34 @@
 
 .heroAction {
   flex: none;
+}
+
+/* A banner with a "Needs you" list: the list takes the full width under the headline. */
+.hero[data-extra] {
+  flex-wrap: wrap;
+}
+
+.heroExtra {
+  flex-basis: 100%;
+  min-inline-size: 0;
+}
+
+/* Phones: the banner's padding follows the narrow column. */
+.hero {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    padding: var(--mantine-spacing-md);
+  }
+}
+
+/* Tablets (768 to 1279px): the bento grid has two columns, number cards two per row. */
+@media (min-width: $mantine-breakpoint-sm) and (max-width: 79.99em) {
+  .card:not([data-span='12']) {
+    grid-column: span 6;
+  }
+
+  .stats.stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* Number cards: two per row on a narrow window, --columns per row from `md` up. */
@@ -191,6 +220,36 @@
   font-size: rem(30px);
   font-weight: 700;
   line-height: max(1.1, var(--app-line-height, 0));
+
+  /* Phones: two cards per row on a 360px screen; the number scales with the screen. */
+  @mixin smaller-than $mantine-breakpoint-sm {
+    font-size: clamp(rem(22px), 7vw, rem(30px));
+  }
+}
+
+.stat {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    min-inline-size: 0;
+  }
+}
+
+/* Money: the currency beside the number, smaller, on the side the language puts it. */
+.statMoney {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: rem(4px);
+
+  /* The sign and the amount each keep their own direction in a right-to-left page. */
+  & > * {
+    unicode-bidi: isolate;
+  }
+}
+
+.statCurrency {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--app-font-size-sm);
+  font-weight: 600;
 }
 
 .statHint {

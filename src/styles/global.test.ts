@@ -63,7 +63,18 @@ describe('the sticky table header', () => {
     expect(narrow?.[1]).toMatch(/--app-table-sticky-top:\s*0px;/);
   });
 
+  it('sticks under the phone header on a phone, which has no frame margin', () => {
+    const phone = /html\s*\{\s*@mixin smaller-than \$mantine-breakpoint-sm\s*\{([^{}]*)/.exec(css);
+    expect(phone?.[1]).toMatch(/--app-table-sticky-top:\s*var\(--app-phone-header\);/);
+  });
+
+  it('stays in its own place on a tablet only while the table is wider than the frame', () => {
+    const tablet = /\.table-wrap\[data-scrolls\]\s*\{([^{}]*)/.exec(css);
+    expect(tablet?.[1]).toMatch(/--app-table-sticky-top:\s*0px;/);
+    expect(tablet?.[1]).toMatch(/overflow-x:\s*auto;/);
+  });
+
   it('sets that offset nowhere else', () => {
-    expect(css.match(/--app-table-sticky-top:/g)).toHaveLength(2);
+    expect(css.match(/--app-table-sticky-top:/g)).toHaveLength(4);
   });
 });

@@ -25,6 +25,70 @@ html[dir='rtl'] {
   --app-haze: linear-gradient(225deg, var(--app-haze-from), var(--app-haze-to));
 }
 
+/*
+ * Safe areas (phones): the notch, the rounded corners and the gesture bar. The browser gives
+ * `env(safe-area-inset-*)` once the page asks for `viewport-fit=cover` (`rawaqViewport()`). A
+ * Capacitor app also writes `--safe-area-inset-*`, because some Android web views give 0 in
+ * `env()`. The larger of the two wins. Nothing reads these at 1280 px and wider.
+ */
+html {
+  --app-safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --app-safe-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  --app-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --app-safe-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+
+  /* Room the floating bottom bar takes at the bottom of a phone page (0 without one). */
+  --app-bottom-space: 0px;
+}
+
+/*
+ * Phones (below 768 px). The header of a narrow window sits at the top with no frame margin:
+ * 64 px, or the phone bar and the safe area above it when the app gives one. Sticky parts and
+ * the focus padding measure from it, not from the desktop frame.
+ */
+html {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    --app-phone-header: rem(64px);
+    --app-sticky-top: calc(var(--app-phone-header) + rem(12px));
+    --app-table-sticky-top: var(--app-phone-header);
+
+    scroll-padding-block-end: calc(var(--app-bottom-space) + rem(16px));
+  }
+}
+
+html:has([data-phone-nav]) {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    --app-phone-header: calc(var(--app-phone-bar-height) + var(--app-safe-top));
+    --app-bottom-space: calc(
+      var(--app-bottom-bar-height) + var(--app-bottom-bar-inset) * 2 + var(--app-safe-bottom)
+    );
+  }
+}
+
+/*
+ * Phones with a form's save bar (`StickyActions`): it sits above the bottom bar, or right above
+ * the keyboard while one is open, so a focused field stops above it too (WCAG 2.4.11). The bar
+ * is a row of 48 px buttons with its padding: 72 px, and a little air.
+ */
+html:has([data-sticky-actions]) {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    scroll-padding-block-end: calc(var(--app-bottom-space) + rem(96px));
+  }
+}
+
+html[data-keyboard-open]:has([data-sticky-actions]) {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    scroll-padding-block-end: calc(var(--app-keyboard-inset, 0px) + rem(96px));
+  }
+}
+
+/* Tablets (768 to 1279 px): the rail stays, the frame sits closer to the window edge. */
+@media (min-width: $mantine-breakpoint-sm) and (max-width: 79.99em) {
+  html:root {
+    --app-frame-margin: var(--app-tablet-frame-margin);
+  }
+}
+
 body {
   background-color: var(--mantine-color-body);
   color: var(--mantine-color-text);
@@ -202,6 +266,43 @@ body {
 }
 
 /*
+ * Phones: a table that must stay a table (`TableWrap stickyFirstColumn`) keeps its first column
+ * in place while the rest scrolls sideways under it. Logical properties, so it mirrors in a
+ * right-to-left page. The top start cell sits above both the sticky header and the column.
+ */
+.table-wrap[data-sticky-first] {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    & :where(th, td):first-child {
+      position: sticky;
+      inset-inline-start: 0;
+      z-index: 2;
+      background-color: var(--app-surface);
+      border-inline-end: rem(1px) solid var(--app-hairline);
+    }
+
+    & thead :where(th, td):first-child {
+      z-index: 4;
+    }
+
+    /* A control that takes the focus stops beside the fixed column, not under it (WCAG
+       2.4.11). TableOverflow measures the column. */
+    scroll-padding-inline-start: var(--app-sticky-column, 0px);
+  }
+}
+
+/*
+ * Tablets: a table scrolls sideways on its own only while it is wider than the frame
+ * (`data-scrolls`, set by TableWrap); its header then stays above its rows, as on a phone.
+ */
+@media (min-width: $mantine-breakpoint-sm) and (max-width: 79.99em) {
+  .table-wrap[data-scrolls] {
+    --app-table-sticky-top: 0px;
+
+    overflow-x: auto;
+  }
+}
+
+/*
  * A control in a table row that takes the keyboard focus must not hide under the sticky table
  * header: the header row (about 36px) sits below the app header that `scroll-padding` on <html>
  * already clears, so these controls ask for that much more room (WCAG 2.4.11).
@@ -222,6 +323,66 @@ body {
 .mantine-Input-wrapper.mantine-Input-wrapper,
 .mantine-InputWrapper-root .mantine-Input-wrapper {
   --input-height-md: var(--app-control-height-md, rem(42px));
+}
+
+/*
+ * Phones: every tap target is at least 48 x 48 px (Android guidance), whatever size the app asked
+ * for. Only the size variables change, so icons and text inside stay centred. Kept after the
+ * Comfortable rules above, which would otherwise win.
+ */
+@mixin smaller-than $mantine-breakpoint-sm {
+  .mantine-Input-wrapper.mantine-Input-wrapper,
+  .mantine-InputWrapper-root .mantine-Input-wrapper {
+    --input-height-xs: var(--app-touch-target);
+    --input-height-sm: var(--app-touch-target);
+    --input-height-md: var(--app-touch-target);
+  }
+
+  .mantine-Button-root.mantine-Button-root {
+    --button-height-xs: var(--app-touch-target);
+    --button-height-sm: var(--app-touch-target);
+    --button-height-md: var(--app-touch-target);
+    --button-height-compact-xs: var(--app-touch-target);
+    --button-height-compact-sm: var(--app-touch-target);
+    --button-height-compact-md: var(--app-touch-target);
+  }
+
+  .mantine-ActionIcon-root.mantine-ActionIcon-root,
+  .mantine-CloseButton-root.mantine-CloseButton-root,
+  .mantine-Burger-root.mantine-Burger-root {
+    min-inline-size: var(--app-touch-target);
+    min-block-size: var(--app-touch-target);
+  }
+
+  /* A link in a table cell (a name that opens the row) is a 48px tall tap target too. */
+  .mantine-Table-td a[href] {
+    display: inline-flex;
+    align-items: center;
+    min-inline-size: var(--app-touch-target);
+    min-block-size: var(--app-touch-target);
+  }
+
+  /*
+   * Dialogs and drawers become full-screen bottom sheets: the whole width, from just under the
+   * safe area at the top to the bottom edge, top corners rounded, clear of the gesture bar.
+   * `BottomSheet` keeps its own shape (it is shorter and has a grab handle).
+   */
+  .mantine-Modal-inner.mantine-Modal-inner:not([data-rawaq-sheet]),
+  .mantine-Drawer-inner.mantine-Drawer-inner {
+    align-items: flex-end;
+    justify-content: stretch;
+    padding: 0;
+  }
+
+  .mantine-Modal-content.mantine-Modal-content:not([data-rawaq-sheet]),
+  .mantine-Drawer-content.mantine-Drawer-content {
+    flex: 0 0 100%;
+    max-inline-size: none;
+    block-size: calc(100dvh - var(--app-safe-top) - rem(8px));
+    max-block-size: none;
+    border-radius: var(--app-frame-radius) var(--app-frame-radius) 0 0;
+    padding-block-end: var(--app-safe-bottom);
+  }
 }
 
 /* Numbers in tables and totals: tabular digits, aligned to the end side (section 4.4). */

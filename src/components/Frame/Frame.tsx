@@ -21,6 +21,16 @@ export interface FrameProps {
   footer?: ReactNode;
   /** Floating things after the frame: a help button, dialogs, the opening. */
   after?: ReactNode;
+  /**
+   * Phones (below 768 px): the floating bottom bar (`<BottomBar />`). With it, the rail's drawer
+   * is not used on phones and the page keeps room at the bottom so the bar never hides it.
+   */
+  bottomBar?: ReactNode;
+  /**
+   * Phones (below 768 px): what fills the header instead of `header`, usually `<PhoneBar />`.
+   * A strip in the rail colour fills the safe area above it.
+   */
+  phoneHeader?: ReactNode;
   /** Narrow windows only: the rail's drawer is open, so the page behind is out of reach. */
   drawerOpen?: boolean;
   /** The backdrop behind the open drawer was pressed. */
@@ -49,6 +59,8 @@ export function Frame({
   header,
   footer,
   after,
+  bottomBar,
+  phoneHeader,
   drawerOpen = false,
   onCloseDrawer,
   mainId = 'main',
@@ -89,6 +101,7 @@ export function Frame({
       className={classes.frame}
       data-page-kind={pageKind}
       data-labels={showLabels || undefined}
+      data-phone-nav={bottomBar ? '' : undefined}
       data-testid="app-frame"
     >
       <span ref={focusStart} tabIndex={-1} className={classes.focusStart} />
@@ -118,8 +131,13 @@ export function Frame({
 
       {/* Behind an open drawer nothing is reachable. */}
       <div className={classes.body} inert={drawerOpen}>
-        <header className={classes.header} data-testid="app-header">
+        <header
+          className={classes.header}
+          data-phone-header={phoneHeader ? '' : undefined}
+          data-testid="app-header"
+        >
           {header}
+          {phoneHeader ? <div className={classes.phoneHeader}>{phoneHeader}</div> : null}
         </header>
 
         <main id={mainId} tabIndex={-1} className={classes.main}>
@@ -133,6 +151,7 @@ export function Frame({
         {footer}
       </div>
 
+      {bottomBar}
       {after}
     </div>
   );

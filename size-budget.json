@@ -1,20 +1,20 @@
 {
   "note": "Sizes of the built package. +10 percent fails (scripts/check-size.mjs).",
   "javascript": {
-    "files": 42,
-    "bytes": 93453,
-    "gzip": 35832
+    "files": 59,
+    "bytes": 139097,
+    "gzip": 52549
   },
   "styles.css": {
-    "bytes": 45590,
-    "gzip": 10194
+    "bytes": 78190,
+    "gzip": 16194
   },
   "tokens.css": {
-    "bytes": 9568,
-    "gzip": 2136
+    "bytes": 9762,
+    "gzip": 2192
   },
   "tokens.json": {
-    "bytes": 11368,
-    "gzip": 2690
+    "bytes": 11573,
+    "gzip": 2758
   }
 }

@@ -1,5 +1,122 @@
 # Progress
 
+## Status note, 24 Nov 2026, afternoon (1.2.0 part A: the review fixes are in, PR 11 ready)
+
+- **CI** on `e117ec3` (round 1 of this session): all four jobs green; `desktop pixels` gave
+  1,008 of 1,008 identical and 448 new (the phone stories).
+- **The 13 review findings** below are fixed in `3b5a811`, with tests (1,171 unit tests). One more
+  bug, found while taking the PR pictures, is fixed in `226474e`: the More sheet's hidden title kept
+  a 60 px empty header (Mantine's rule won); the phone test now checks the grab handle's place.
+- **Laptop checks after the last fix:** `yarn test`, `yarn build`, `check:dist`, `check:size`,
+  `check:starter`, the starter built from the packed package (the `file:` address never
+  committed), `yarn e2e` 21 of 21, `yarn storybook:build`, `yarn e2e:phone` 39 of 39, `yarn axe`
+  (728 checks, no violation), `yarn comfort` (no problem).
+- **styles.css:** 46.5 to 77.8 kB as shipped (not minified, with comments); minified and gzipped,
+  what a page loads, 5.2 to 7.8 kB. Nothing could be cut without dropping a part.
+  `size-budget.json` holds the 1.2.0 sizes.
+- **Phone speed** (390 x 844, CPU 4x, median of 5; `scripts/hardening/phone-speed.cjs`): `/en`
+  longest task 217 to 167 ms, LCP 944 to 1,012 ms; Work page `/en/suppliers` 216 to 225 ms,
+  1,064 to 1,076 ms; `/en/requests` (new) 184 ms, 804 ms. Tap on More to next paint: 272 ms on
+  `/en`, 168 to 184 ms on Work pages (about 130 ms is Mantine's dialog). A later idea: keep the
+  sheet drawn but hidden.
+- **PR pictures:** 56 at 390 x 844 (`SIZE=390x844 SCALE=2 DENSITIES=compact` in `shots.cjs`) on a
+  private page of the owner's Claude account, linked in PR 11.
+- **Docs:** README "On phones and tablets"; DESIGN_THEME 8.1 and the changelog have the review
+  decisions.
+- **Next:** the owner looks at the pictures and merges PR 11. Then PR B (dark mode) from `main`,
+  the 1.2.0 release, then Part 2 (Android APK). Open questions 1, 2 and 4 below still stand (3,
+  the stylesheet's growth, is answered above).
+
+## Status note, 24 Nov 2026 (1.2.0 part A, the phone layout: in progress, draft PR 11)
+
+The owner approved on 24 Nov 2026 the plan "Rawaq UI on phones, dark mode, and an Android APK"
+(on his laptop: `C:\Users\Rashid Akbar\.claude\plans\iridescent-nibbling-fox.md`). Part 0 (Hub-P-
+on 1.1.1) was already done by Hub-P- PR 20; CI on its merge commit `1f239e9` is green and the
+production deployment is READY with no runtime error.
+
+**Branch `feat/phone-layout`, draft pull request 11.** One commit per step:
+
+- Done: A0 (picture tool: `ALL_WIDE`, `EXTRA_GLOBALS`), A1 and A2 (breakpoints, safe areas,
+  `rawaqViewport`, `BottomBar`, `PhoneBar`, Frame `bottomBar` and `phoneHeader`), A3
+  (`BottomSheet`, `MoreSheet`, phone dialogs), A4 (Overview: `NeedsYouList`, `ActivityList`,
+  `StatCard currency`, tablet grid), A5 (Work: `CardList`, `WorkList`, sticky first column,
+  `FilterChips`, `SearchField`, `StickyActions`), A6 and A7 (phone opening, phone stories in
+  English, Arabic and Urdu, viewport toolbar), A8 (starter on phones, `runAfterClose`), A9 (Playwright
+  phone projects, CI phone step, CI job `desktop pixels`, version 1.2.0, changelog, size budget).
+- Proof so far: the BEFORE set (main, 1,008 pictures: 18 stories x 7 presets x 2 densities x en/ar
+  x 1280 and 1920) was taken twice, identical. After A4 the branch gave 1,008 of 1,008 identical.
+  After A9 (`1c6f0b0`) again 1,008 of 1,008 identical, plus 448 new pictures (the 8 phone stories).
+  1,151 unit tests, `yarn e2e` 21 of
+  21, phone tests green at 360, 390 and 430 after their fixes.
+- Found and fixed on the way: the language switch in the sheet changed the language under the
+  sheet's history step (now `runAfterClose`); Next.js drew each page once with the locale
+  "[locale]" and `Intl` threw (`currencySign` falls back); phone tables could not be scrolled with
+  the keyboard (axe); small targets (table links, language choices, Burger, copy button); number
+  cards scrolled sideways at 360 px.
+- DESIGN_THEME.md section 8 rewritten (desktop, tablet, phone) with 8.1 "Phone layout (approved by
+  owner, 24 Nov 2026)".
+- **Left for PR A** (next session): the README (the new parts, phones, `rawaqViewport`); phone
+  speed numbers before (1.1.1) and after (starter `/en` and
+  `/en/requests` at 390 x 844, CPU 4x: first load longest task, LCP, tap on More to next paint);
+  the PR pictures at 390 x 844 (Overview, Work cards and table, More sheet; 7 presets; en and ar)
+  attached to the PR; the four reviews as subagents (`code-reviewer`, `react-reviewer`,
+  `a11y-architect`, `security-reviewer`) with their fixes; read CI of PR 11 (new jobs: phone tests,
+  desktop pixels) and loop until green; then mark the PR ready and report to the owner.
+- Then PR B (dark mode, from `main` after A is merged), the 1.2.0 release, PR C (Android APK).
+- CI round 1 (on `f3cfe9d`): WebKit logged `interactive-widget` as a console error on every starter
+  page; fixed in `c3d9236` (the key is gone, the save bar follows `--app-keyboard-inset`). CI on
+  `c3d9236` was still running at the end of the session: read it first (`gh pr checks 11`), also
+  the first result of the new jobs `desktop pixels` and the phone step.
+
+**The four reviews of 24 Nov 2026 (subagents, read-only), to fix next, most important first**
+
+1. BottomSheet history (code + React reviewers, HIGH): one step, one `back()`. Use a `leaving` ref
+   and an `expectedPops` counter, so the cleanup never calls `back()` twice (two backs leave the
+   page), a late popstate never closes a reopened sheet (StrictMode, fast close and reopen), and
+   the cleanup does not undo an app navigation (only `back()` while the sheet's entry is still the
+   current one). Push a minimal state? Check with the Next.js router first (it worked in the
+   browser with the spread state). `followLink`: let `target`, `download` and Alt-clicks through,
+   and add a fallback timer.
+2. Grab handle (code + React + a11y): a click follows a drag; ignore the click after a move of
+   8 px or more; `pointercancel` only resets.
+3. Two `h1` on the phone Overview (React): PhoneBar `titleOrder={2}` on Overview pages, or the
+   hero's title steps down; decide and document.
+4. NeedsYou link name runs together (a11y HIGH): a real separator for screen readers and "Do next"
+   said first.
+5. Focus hidden (a11y, 2.4.11): `scroll-padding-inline-start` for the sticky first column, and the
+   bottom focus clearance on phones must include the save bar.
+6. More button: drop `aria-current` (keep the glow), and drop `aria-controls` while the sheet is
+   unmounted (a11y + React).
+7. Selected state by colour only (a11y 1.4.1/forced colours): tiles, chips, company row, "Do next".
+8. Lists: `role="list"` on the `ul`s with `list-style: none` (Safari).
+9. Language switch changes the address on the first arrow key (a11y 3.2.2): buttons or links
+   instead of a segmented radio.
+10. BottomBar: Glow only after hydration (CSS highlight on `[data-bar-active]` first), measure while
+    hidden gives a 0 box (skip when width 0), re-measure keyed on item keys, keyboard effect only
+    on phones, run once at mount, ignore pinch zoom (`visualViewport.scale`).
+11. TableOverflow: watch a table that arrives later and font loads, batch reads then writes, a
+    name for the focusable scroller (`role="region"`, label), hint only when it overflows.
+12. `onCloseRef` written during render; `StickyActions` out of the `'use client'` file; cache the
+    `Intl.NumberFormat` of `currencySign`; references and amounts isolated in RTL (`bdi`).
+13. Security (nothing critical or high): scan the e2e result folders before the CI upload (traces
+    are public files), `persist-credentials: false` on the checkouts.
+- Reviewer notes that were wrong and need no fix: the CSP of the starter is not new (it is on
+  `main`); the password ring and the rail glow `transform` are 1.1.x code already on `main` (the
+  reviewer compared with a stale local `main`); the desktop pictures prove no desktop change.
+- Also noticed: one reviewer tried `git checkout` of the branch; the permission prompt refused it,
+  nothing changed.
+
+**Open questions for the owner**
+
+1. Part 2 needs the starter on a public address: may I create a Vercel project `rawaq-starter` in
+   his team (invented data, `RAWAQ_GALLERY` never set), or does he create it?
+2. The online Storybook needs his click: Settings > Pages > Source "GitHub Actions".
+3. `styles.css` grows from 45.6 to 72.6 kB (+4.9 kB gzip), loaded by every page of every app; the
+   review looks for savings before the PR is ready.
+4. The starter's desktop look changed on purpose: the rail lists Requests, Quotes, Reports,
+   Settings and Customize, and the Overview hero shows "Needs you". Apps that move to 1.2.0 also
+   get the opening on phones.
+
 ## Status note, 16 Nov 2026 (version 1.1.1 is released)
 
 - The owner merged pull request 9 (the two fixes of the note below) on 16 Nov 2026 at 06:40 UTC:

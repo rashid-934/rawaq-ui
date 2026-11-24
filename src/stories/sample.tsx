@@ -20,10 +20,14 @@ import {
 import { Avatar, Burger, CloseButton, em, TextInput } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import {
+  BottomBar,
   type FontMap,
   Frame,
+  isRailItemActive,
   languageOf,
+  MoreSheet,
   type PageKind,
+  PhoneBar,
   Rail,
   type RailItem,
   type RawaqLabels,
@@ -52,6 +56,8 @@ interface Stat {
 
 export interface Words {
   appName: string;
+  /** An invented company, for the More sheet's company row. */
+  companyName: string;
   nav: Record<
     'dashboard' | 'requests' | 'suppliers' | 'reports' | 'settings' | 'customize',
     string
@@ -99,6 +105,7 @@ export interface Words {
 const dictionary = {
   en: {
     appName: 'Rawaq',
+    companyName: 'Sample Trading Co.',
     nav: {
       dashboard: 'Dashboard',
       requests: 'Requests',
@@ -174,6 +181,7 @@ const dictionary = {
   },
   ar: {
     appName: 'رواق',
+    companyName: 'شركة نموذج التجارية',
     nav: {
       dashboard: 'لوحة التحكم',
       requests: 'الطلبات',
@@ -249,6 +257,7 @@ const dictionary = {
   },
   ur: {
     appName: 'رواق',
+    companyName: 'نمونہ ٹریڈنگ کمپنی',
     nav: {
       dashboard: 'ڈیش بورڈ',
       requests: 'درخواستیں',
@@ -330,7 +339,15 @@ const dictionary = {
       showLabels: 'نام دکھائیں',
       labelsNotSaved: 'یہ انتخاب محفوظ نہیں ہو سکا۔ اگلی بار یہ پہلے جیسا ہوگا۔',
       loading: 'لوڈ ہو رہا ہے',
-      itemCount: (count) => `${count} آئٹمز`,
+      itemCount: (count) => (count === 1 ? '1 آئٹم' : `${count} آئٹمز`),
+      more: 'مزید',
+      close: 'بند کریں',
+      doNext: 'پہلے یہ کریں',
+      needsYou: 'آپ کے منتظر',
+      swipeHint: 'مزید کالم دیکھنے کے لیے دائیں بائیں سوائپ کریں',
+      switchCompany: 'کمپنی بدلیں',
+      language: 'زبان',
+      signOut: 'سائن آؤٹ',
     },
   },
 } satisfies Record<string, Words>;
@@ -368,6 +385,11 @@ export interface AppShellProps {
   /** Start with "Show labels" on. */
   labelsOpen?: boolean;
   after?: ReactNode;
+  /**
+   * The phone layout: the bottom bar, the phone bar with this title and action, and the More
+   * sheet (open from the start with `moreOpen`). Below 768 px only; wider windows are unchanged.
+   */
+  phone?: { title: string; action?: ReactNode; moreOpen?: boolean };
   children: ReactNode;
 }
 
@@ -377,12 +399,14 @@ export function AppShell({
   path = BASE,
   labelsOpen = false,
   after,
+  phone,
   children,
 }: AppShellProps) {
   const words = useWords();
   const locale = useStoryLocale();
   const [pathname, setPathname] = useState(path);
   const [showLabels, setShowLabels] = useState(labelsOpen);
+  const [moreOpen, setMoreOpen] = useState(phone?.moreOpen ?? false);
 
   // Below the `sm` width (also a desktop window zoomed to 200 percent) the rail is a drawer that
   // the menu button in the header opens, as an app does it. Wider windows never show the button.
@@ -453,6 +477,59 @@ export function AppShell({
     },
   ];
 
+  // The phone layout: four pages in the bottom bar, the rest in the More sheet.
+  const [first, second, third, fourth, ...rest] = items;
+  const barItems = [first, second, third, fourth].filter((item) => item !== undefined);
+  const moreItems = [...rest, ...bottomItems];
+  const phoneParts = phone
+    ? {
+        phoneHeader: (
+          <PhoneBar
+            appName={words.appName}
+            title={phone.title}
+            titleOrder={pageKind === 'overview' ? 'none' : 1}
+            action={phone.action}
+          />
+        ),
+        bottomBar: (
+          <BottomBar
+            items={barItems}
+            pathname={pathname}
+            linkComponent={StoryLink}
+            onMore={() => setMoreOpen(true)}
+            moreOpen={moreOpen}
+            moreControls="story-more"
+            moreActive={moreItems.some((item) => isRailItemActive(item, pathname))}
+            locale={locale}
+            labels={words.labels}
+          />
+        ),
+        sheet: (
+          <MoreSheet
+            id="story-more"
+            opened={moreOpen}
+            onClose={() => setMoreOpen(false)}
+            user={words.person}
+            company={words.companyName}
+            onSwitchCompany={() => {}}
+            items={moreItems}
+            pathname={pathname}
+            linkComponent={StoryLink}
+            languages={[
+              { value: 'en', label: 'English', lang: 'en' },
+              { value: 'ar', label: 'العربية', lang: 'ar' },
+              { value: 'ur', label: 'اردو', lang: 'ur' },
+            ]}
+            language={languageOf(locale)}
+            onLanguage={() => {}}
+            onSignOut={() => {}}
+            locale={locale}
+            labels={words.labels}
+          />
+        ),
+      }
+    : undefined;
+
   return (
     <Go value={go}>
       <Frame
@@ -461,7 +538,18 @@ export function AppShell({
         showLabels={showLabels}
         locale={locale}
         labels={words.labels}
-        after={after}
+        after={
+          phoneParts ? (
+            <>
+              {after}
+              {phoneParts.sheet}
+            </>
+          ) : (
+            after
+          )
+        }
+        bottomBar={phoneParts?.bottomBar}
+        phoneHeader={phoneParts?.phoneHeader}
         drawerOpen={drawerOpen}
         onCloseDrawer={() => setMenuOpen(false)}
         rail={

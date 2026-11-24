@@ -5,6 +5,8 @@
 //
 //   yarn scan:built                    every folder below that exists (at least one must)
 //   yarn scan:built dist               one folder
+//   yarn scan:built --results a b      test results (CI, before they are kept): every file,
+//                                      secrets only, and a folder may be missing or empty
 //
 // Folders: `dist` (the package), `storybook-static` (what a public Storybook would serve) and
 // `examples/starter/.next` (the starter's build). In `.next` the files a browser can get are
@@ -43,10 +45,17 @@ function* walk(folder) {
 const servedByNext = (file) =>
   file.includes('/static/') || /\/server\/(?:app|pages)\/.*\.(?:html|rsc|body)$/.test(file);
 
-const asked = process.argv.slice(2);
+// Test results: traces (unzipped first) hold files with no extension; runner addresses and
+// paths are no secret there, keys and secret values are.
+const RESULTS = process.argv.includes('--results');
+const asked = process.argv.slice(2).filter((argument) => argument !== '--results');
 const folders = (asked.length > 0 ? asked : FOLDERS).filter((folder) =>
   existsSync(join(repo, folder))
 );
+if (folders.length === 0 && RESULTS) {
+  console.log('No test results to scan.');
+  process.exit(0);
+}
 if (folders.length === 0) {
   console.error('Nothing to scan: build the package, the Storybook or the starter first.');
   process.exit(1);
@@ -60,12 +69,12 @@ for (const folder of folders) {
   let inFolder = 0;
   for (const path of walk(join(repo, folder))) {
     const file = relative(repo, path).replaceAll('\\', '/');
-    const isPublic = !isNext || servedByNext(file);
+    const isPublic = !RESULTS && (!isNext || servedByNext(file));
     // A source map hands the original code to whoever opens the page or the package.
     if (isPublic && file.endsWith('.map')) {
       findings.push([file, 'a source map', 1]);
     }
-    if (!TEXT.test(file)) {
+    if (!RESULTS && !TEXT.test(file)) {
       continue;
     }
     if (statSync(path).size > MAX_BYTES) {
@@ -84,7 +93,7 @@ for (const folder of folders) {
       }
     }
   }
-  if (inFolder === 0) {
+  if (inFolder === 0 && !RESULTS) {
     findings.push([folder, 'no file to scan (an empty or broken build)', 1]);
   }
 }

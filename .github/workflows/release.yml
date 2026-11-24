@@ -33,6 +33,8 @@ jobs:
       # Every action is pinned to a full commit SHA; the version is in the comment.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # No token stays in the checkout for the later steps.
+          persist-credentials: false
           # The whole history, to check below that the tag is on main.
           fetch-depth: 0
       # Only a version that was merged into main through a pull request is released: a tag on
@@ -87,6 +89,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # No token stays in the checkout for the later steps.
+          persist-credentials: false
       - name: Enable Corepack
         run: corepack enable
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

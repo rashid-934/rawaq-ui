@@ -2,6 +2,35 @@
 
 Every release has a section here. Its text becomes the notes of the GitHub Release.
 
+## 1.2.0
+
+Phones and tablets (approved by the owner on 24 Nov 2026). At 1280 px and wider, in light mode,
+nothing changes: every story in 7 presets, both densities, English and Arabic, at 1280 x 720 and
+1920 x 1080 is drawn pixel for pixel as in 1.1.1 (checked in CI on every pull request). Nothing was
+renamed or removed; every new part is opt-in.
+
+- **Phones (below 768 px)**: `BottomBar` (a floating pill in the rail colour with up to four pages
+  and More, the Glow pill behind the active icon), `PhoneBar` (logo tile, page title, one action),
+  `MoreSheet` (the person, the company, the other pages as tiles, the language switch, Sign out),
+  `BottomSheet` (swipe down, tap outside, Esc and Back close it), and `Frame` props `bottomBar` and
+  `phoneHeader`. Mantine dialogs and drawers are full-screen bottom sheets on phones.
+- **Overview**: `NeedsYouList` inside `HeroBanner`, `ActivityList`, and `StatCard` `currency` (the
+  currency beside the number, in the page's language). Bento cards in one column on phones and in
+  two columns on tablets; the side column moves under the main one below 1280 px (it did below
+  1200 px).
+- **Work pages**: `CardList` and `WorkList` (cards on a phone, the table from 768 px up),
+  `TableWrap stickyFirstColumn` with a translated swipe hint, `FilterChips`, `SearchField` and
+  `StickyActions` (the save bar above the bottom bar and the keyboard). On tablets a table scrolls
+  sideways only while it is wider than the frame.
+- **Touch, safe areas, viewport**: every tap target on a phone is at least 48 x 48 px;
+  `--app-safe-*` variables (also read from Capacitor's `--safe-area-inset-*`); `rawaqViewport()` and
+  `themeColorFor()` for the page's viewport and the browser bar colour.
+- **Motion**: the opening now also plays on phones (the edge sweeps into the bottom bar).
+- **Words**: `more`, `close`, `doNext`, `needsYou`, `swipeHint`, `switchCompany`, `language` and
+  `signOut`, in English and Arabic. Code that typed a complete `RawaqLabels` object is asked for
+  them; `labels` passed as the README shows needs no change.
+- **Tests**: Playwright phone projects at 360, 390 and 430 px (`yarn e2e:phone`).
+
 ## 1.1.1
 
 Two fixes for the keyboard and for narrow windows. The look does not change: 476 of 476 pictures

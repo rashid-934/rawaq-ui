@@ -95,5 +95,7 @@ const hash = (file) => createHash('sha256').update(readFileSync(file)).digest('h
   for (const name of onlyB) {
     console.log(`- only in B: ${name}`);
   }
-  process.exit(different.length + onlyA.length + onlyB.length > 0 ? 1 : 0);
+  // ALLOW_NEW=1: pictures only in B (new stories) are listed but do not fail the comparison.
+  const newCount = process.env.ALLOW_NEW === '1' ? 0 : onlyB.length;
+  process.exit(different.length + onlyA.length + newCount > 0 ? 1 : 0);
 })();

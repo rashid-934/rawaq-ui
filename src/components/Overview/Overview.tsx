@@ -161,11 +161,15 @@ export interface StatCardProps {
 
 /** The currency's sign for a locale, and whether it goes before the number. */
 export function currencySign(currency: string, locale = 'en') {
-  const parts = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    currencyDisplay: 'symbol',
-  }).formatToParts(1);
+  const options = { style: 'currency', currency, currencyDisplay: 'symbol' } as const;
+  let format: Intl.NumberFormat;
+  try {
+    format = new Intl.NumberFormat(locale, options);
+  } catch {
+    // A locale the browser does not know (or no real one) must not break the page.
+    format = new Intl.NumberFormat(undefined, options);
+  }
+  const parts = format.formatToParts(1);
   const at = (type: string) => parts.findIndex((part) => part.type === type);
   return {
     // Without the invisible direction marks some languages wrap around it.

@@ -73,6 +73,37 @@ function Tiles({
 }
 
 /**
+ * The language choice. Another language is another address, so the sheet closes first and the
+ * new language replaces the page once the sheet's step is out of the history (Back still leaves
+ * the page, it does not reopen the sheet).
+ */
+function LanguageSwitch({
+  label,
+  languages,
+  value,
+  onChange,
+}: {
+  label: string;
+  languages: readonly MoreSheetLanguage[];
+  value: string | undefined;
+  onChange: (value: string) => void;
+}) {
+  const { runAfterClose } = useBottomSheet();
+  return (
+    <SegmentedControl
+      className={classes.segments}
+      aria-label={label}
+      value={value}
+      onChange={(next) => runAfterClose(() => onChange(next))}
+      data={languages.map((entry) => ({
+        value: entry.value,
+        label: <span lang={entry.lang}>{entry.label}</span>,
+      }))}
+    />
+  );
+}
+
+/**
  * The More sheet of a phone (docs/DESIGN_THEME.md, "Phone layout"), opened by "More" in the bottom
  * bar. Top to bottom: the person, the company switcher, the other pages as tiles (four per row),
  * the theme switch, the language switch and Sign out.
@@ -150,15 +181,11 @@ export function MoreSheet({
           <span className={classes.rowLabel} id={id ? `${id}-language` : undefined}>
             {words.language}
           </span>
-          <SegmentedControl
-            className={classes.segments}
-            aria-label={words.language}
+          <LanguageSwitch
+            label={words.language}
+            languages={languages}
             value={language ?? languages[0]?.value}
             onChange={onLanguage}
-            data={languages.map((entry) => ({
-              value: entry.value,
-              label: <span lang={entry.lang}>{entry.label}</span>,
-            }))}
           />
         </div>
       ) : null}

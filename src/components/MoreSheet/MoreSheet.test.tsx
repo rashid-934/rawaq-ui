@@ -1,5 +1,5 @@
 import { IconAdjustments, IconChartBar, IconPalette } from '@tabler/icons-react';
-import { render, renderRtl, screen, userEvent, within } from '../../test-utils';
+import { render, renderRtl, screen, userEvent, waitFor, within } from '../../test-utils';
 import type { RailItem } from '../Rail/rail-items';
 import { MoreSheet, type MoreSheetProps } from './MoreSheet';
 
@@ -67,7 +67,8 @@ describe('MoreSheet', () => {
     );
     expect(onSwitchCompany).toHaveBeenCalledTimes(1);
     await userEvent.click(screen.getByRole('radio', { name: 'العربية' }));
-    expect(onLanguage).toHaveBeenCalledWith('ar');
+    // The sheet closes and leaves the history first; then the language changes.
+    await waitFor(() => expect(onLanguage).toHaveBeenCalledWith('ar'));
     await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     expect(onSignOut).toHaveBeenCalledTimes(1);
   });

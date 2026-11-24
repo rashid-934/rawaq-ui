@@ -55,6 +55,10 @@ describe('money on a number card', () => {
     expect(arabic.before).toBe(false);
   });
 
+  it('never breaks on a locale it cannot read', () => {
+    expect(currencySign('SAR', '[locale]').sign).toBeTruthy();
+  });
+
   it('shows the currency beside the number, and nothing more without one', () => {
     const view = render(
       <StatGrid>

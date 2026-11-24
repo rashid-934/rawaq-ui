@@ -3,11 +3,18 @@
     "name": "Starter",
     "description": "A small app built with Rawaq UI",
     "search": "Search",
-    "role": "Buyer"
+    "role": "Buyer",
+    "company": "Sample Trading Co.",
+    "language": "Language"
   },
   "nav": {
     "overview": "Overview",
-    "suppliers": "Suppliers"
+    "suppliers": "Suppliers",
+    "requests": "Requests",
+    "quotes": "Quotes",
+    "reports": "Reports",
+    "settings": "Settings",
+    "customize": "Customize"
   },
   "overview": {
     "hero": "Good morning. <em>Three things</em> need you today.",
@@ -48,5 +55,55 @@
       "riyadh": "Riyadh",
       "dammam": "Dammam"
     }
+  },
+  "needs": {
+    "approve": "Approve request",
+    "approveSubject": "Parking barrier repair",
+    "compare": "Compare 3 quotes",
+    "send": "Send PO to supplier"
+  },
+  "activity": {
+    "title": "Recent activity"
+  },
+  "requests": {
+    "title": "Requests",
+    "new": "New request",
+    "search": "Search requests",
+    "filter": "Status",
+    "all": "All",
+    "statusNew": "New",
+    "waiting": "Waiting approval",
+    "number": "No.",
+    "item": "Item",
+    "department": "Department",
+    "quantity": "Quantity",
+    "status": "Status",
+    "rows": {
+      "chairs": "Office chairs",
+      "barrier": "Parking barrier repair",
+      "toner": "Printer toner",
+      "vests": "Safety vests",
+      "bags": "Laptop bags"
+    },
+    "departments": {
+      "it": "IT",
+      "maintenance": "Maintenance",
+      "office": "Office",
+      "operations": "Operations"
+    }
+  },
+  "quotes": {
+    "title": "Quotes",
+    "description": "Office chairs, 12 items",
+    "supplier": "Supplier",
+    "unitPrice": "Unit price",
+    "delivery": "Delivery (days)",
+    "payment": "Payment (days)",
+    "total": "Total"
+  },
+  "simple": {
+    "reports": "Reports of spend and savings will be here.",
+    "settings": "The app settings will be here.",
+    "customize": "Colours, density and the sidebar will be chosen here."
   }
 }

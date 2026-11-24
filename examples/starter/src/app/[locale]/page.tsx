@@ -1,11 +1,13 @@
 import type { CSSProperties } from 'react';
 import { IconCoins, IconFileDescription, IconReceipt, IconScale } from '@tabler/icons-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Text } from '@mantine/core';
+import { Badge, Text } from '@mantine/core';
 import {
+  ActivityList,
   BentoCard,
   Emphasis,
   HeroBanner,
+  NeedsYouList,
   OverviewPage,
   StatCard,
   StatGrid,
@@ -25,15 +27,36 @@ export default async function OverviewRoute({ params }: { params: Promise<{ loca
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('overview');
+  const all = await getTranslations();
 
   return (
     <OverviewPage
       side={
-        <BentoCard title={t('today')} order={6}>
-          <Text size="sm" c="dimmed">
-            {t('todayText')}
-          </Text>
-        </BentoCard>
+        <>
+          <BentoCard title={t('today')} order={6}>
+            <Text size="sm" c="dimmed">
+              {t('todayText')}
+            </Text>
+          </BentoCard>
+          <BentoCard title={all('activity.title')} order={7}>
+            <ActivityList
+              linkComponent={Link}
+              items={[
+                { key: 'chairs', title: all('requests.rows.chairs'), reference: 'REQ-2611-0012', status: 'new' },
+                { key: 'barrier', title: all('requests.rows.barrier'), reference: 'REQ-2611-0011', status: 'waiting' },
+                { key: 'vests', title: all('requests.rows.vests'), reference: 'REQ-2611-0009', status: 'new' },
+              ].map((row) => ({
+                ...row,
+                href: '/requests',
+                status: (
+                  <Badge variant={row.status === 'new' ? 'light' : 'outline'}>
+                    {row.status === 'new' ? all('requests.statusNew') : all('requests.waiting')}
+                  </Badge>
+                ),
+              }))}
+            />
+          </BentoCard>
+        </>
       }
     >
       <HeroBanner
@@ -44,7 +67,18 @@ export default async function OverviewRoute({ params }: { params: Promise<{ loca
             {t('action')}
           </Link>
         }
-      />
+      >
+        {/* Up to three things to do; the first is marked "Do next". */}
+        <NeedsYouList
+          linkComponent={Link}
+          locale={locale}
+          items={[
+            { key: 'approve', action: all('needs.approve'), subject: all('needs.approveSubject'), href: '/requests' },
+            { key: 'compare', action: all('needs.compare'), subject: 'RFQ-2611-0004', href: '/quotes' },
+            { key: 'send', action: all('needs.send'), subject: 'PO-2611-0009', href: '/requests' },
+          ]}
+        />
+      </HeroBanner>
       <StatGrid>
         <StatCard
           label={t('openRequests')}
@@ -73,7 +107,9 @@ export default async function OverviewRoute({ params }: { params: Promise<{ loca
         <StatCard
           label={t('spend')}
           value={12480}
-          text={t('spendText')}
+          text="12,480"
+          currency="SAR"
+          locale={locale}
           hint={t('spendHint')}
           icon={IconCoins}
           tint="clay"

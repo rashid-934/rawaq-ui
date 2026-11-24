@@ -45,9 +45,18 @@ interface SheetControls {
    * sheet was opened on.
    */
   followLink: (event: ReactMouseEvent<HTMLElement>) => void;
+  /**
+   * Closes the sheet, then runs `action` once the sheet's step is out of the browser's history:
+   * for a choice that moves to another address (another language), so it replaces the page and
+   * not the sheet's step.
+   */
+  runAfterClose: (action: () => void) => void;
 }
 
-const SheetContext = createContext<SheetControls>({ followLink: () => {} });
+const SheetContext = createContext<SheetControls>({
+  followLink: () => {},
+  runAfterClose: (action) => action(),
+});
 
 /** The controls of the sheet a part sits in. */
 export function useBottomSheet() {
@@ -76,8 +85,8 @@ export function BottomSheet({
   onCloseRef.current = onClose;
   // Our own step in the browser's history is there while the sheet is open.
   const stepAdded = useRef(false);
-  // A link to follow once the sheet's step is gone.
-  const pending = useRef<HTMLElement | null>(null);
+  // A link to follow, or an action to run, once the sheet's step is gone.
+  const pending = useRef<HTMLElement | (() => void) | null>(null);
 
   useEffect(() => {
     if (!opened) {
@@ -93,7 +102,9 @@ export function BottomSheet({
       onCloseRef.current();
       const link = pending.current;
       pending.current = null;
-      if (link) {
+      if (typeof link === 'function') {
+        link();
+      } else if (link) {
         // The link is followed from the page the sheet was opened on, as a click would.
         link.dataset.sheetFollow = '';
         link.click();
@@ -119,6 +130,15 @@ export function BottomSheet({
     }
     event.preventDefault();
     pending.current = link;
+    window.history.back();
+  }, []);
+
+  const runAfterClose = useCallback((action: () => void) => {
+    if (!stepAdded.current) {
+      action();
+      return;
+    }
+    pending.current = action;
     window.history.back();
   }, []);
 
@@ -192,7 +212,9 @@ export function BottomSheet({
         >
           <span className={classes.grip} aria-hidden />
         </button>
-        <SheetContext.Provider value={{ followLink }}>{children}</SheetContext.Provider>
+        <SheetContext.Provider value={{ followLink, runAfterClose }}>
+          {children}
+        </SheetContext.Provider>
       </div>
     </Modal>
   );

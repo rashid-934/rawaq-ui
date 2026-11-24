@@ -38,6 +38,10 @@ export { isRailItemActive } from './Rail/rail-items';
 export type { IconComponent, RailGroup, RailIcon, RailItem, RailUser } from './Rail/rail-items';
 export { RollingNumber } from './RollingNumber/RollingNumber';
 export type { RollingNumberProps } from './RollingNumber/RollingNumber';
+export { BOTTOM_BAR_MAX_ITEMS, BottomBar, bottomBarProblems } from './BottomBar/BottomBar';
+export type { BottomBarProps } from './BottomBar/BottomBar';
+export { PhoneBar } from './PhoneBar/PhoneBar';
+export type { PhoneBarProps } from './PhoneBar/PhoneBar';
 export { FormGrid, FormGridItem, TableWrap, WorkCard, WorkPage } from './WorkPage/WorkPage';
 export type {
   FormGridItemProps,

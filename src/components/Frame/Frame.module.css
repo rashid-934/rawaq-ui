@@ -69,6 +69,45 @@
   }
 }
 
+/*
+ * Phones with the app's phone bar (`phoneHeader`): the header is that bar on one line, and a strip
+ * in the rail colour fills the safe area above it (where the phone shows its clock). The app's
+ * desktop header controls step aside; from 768px up only they show.
+ */
+.phoneHeader {
+  display: none;
+}
+
+@mixin smaller-than $mantine-breakpoint-sm {
+  .header[data-phone-header] {
+    block-size: auto;
+    min-block-size: var(--app-phone-header);
+    padding-block-start: var(--app-safe-top);
+    padding-inline: calc(var(--mantine-spacing-md) + var(--app-safe-left))
+      calc(var(--mantine-spacing-md) + var(--app-safe-right));
+    background-image: linear-gradient(
+      to bottom,
+      var(--app-sidebar) var(--app-safe-top),
+      var(--app-surface) var(--app-safe-top)
+    );
+
+    & > :not(.phoneHeader) {
+      display: none;
+    }
+  }
+
+  .phoneHeader {
+    display: flex;
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  /* The floating bottom bar never hides the end of the page. */
+  .frame[data-phone-nav] .body {
+    padding-block-end: var(--app-bottom-space);
+  }
+}
+
 /* Nothing here takes clicks: it only draws the frame's edge over the scrolling page. */
 .edge {
   pointer-events: none;

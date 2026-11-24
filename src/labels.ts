@@ -34,6 +34,22 @@ export interface RawaqLabels {
   copyReference: string;
   /** Said once the reference code is copied. */
   referenceCopied: string;
+  /** Phones: the last entry of the bottom bar, and the title of its sheet. */
+  more: string;
+  /** Phones: the name of a sheet's close button and its grab handle. */
+  close: string;
+  /** The mark on the first row of the "Needs you" list. */
+  doNext: string;
+  /** The name of the "Needs you" list for screen readers. */
+  needsYou: string;
+  /** Under a table that scrolls sideways on a phone. */
+  swipeHint: string;
+  /** The company row of the More sheet. */
+  switchCompany: string;
+  /** The language row of the More sheet. */
+  language: string;
+  /** The last row of the More sheet. */
+  signOut: string;
 }
 
 const arabicPlurals = new Intl.PluralRules('ar');
@@ -63,6 +79,14 @@ export const rawaqLabels = {
     reference: 'Reference',
     copyReference: 'Copy the reference code',
     referenceCopied: 'Copied',
+    more: 'More',
+    close: 'Close',
+    doNext: 'Do next',
+    needsYou: 'Needs you',
+    swipeHint: 'Swipe sideways for more columns',
+    switchCompany: 'Switch company',
+    language: 'Language',
+    signOut: 'Sign out',
   },
   ar: {
     skipToContent: 'تخطَّ إلى المحتوى الرئيسي',
@@ -80,6 +104,14 @@ export const rawaqLabels = {
     reference: 'الرمز المرجعي',
     copyReference: 'نسخ الرمز المرجعي',
     referenceCopied: 'تم النسخ',
+    more: 'المزيد',
+    close: 'إغلاق',
+    doNext: 'ابدأ هنا',
+    needsYou: 'بانتظارك',
+    swipeHint: 'اسحب جانبًا لرؤية المزيد من الأعمدة',
+    switchCompany: 'تبديل الشركة',
+    language: 'اللغة',
+    signOut: 'تسجيل الخروج',
   },
 } satisfies Record<string, RawaqLabels>;
 

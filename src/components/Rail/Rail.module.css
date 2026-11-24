@@ -53,6 +53,11 @@
   [dir='rtl'] .rail:not([data-open]) {
     transform: translateX(100%);
   }
+
+  /* With a bottom bar (Frame `bottomBar`) phones use that bar and the More sheet, not a drawer. */
+  :global([data-phone-nav]) > .rail {
+    display: none;
+  }
 }
 
 /* The glow shape behind the active item. Rail.tsx measures the item; the shape slides there. */

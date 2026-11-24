@@ -14,6 +14,8 @@ export {
   TABLE_FONT_SIZE,
 } from './create-theme';
 export type { ThemeInput } from './create-theme';
+export { rawaqViewport, themeColorFor } from './viewport';
+export type { ViewportLook } from './viewport';
 
 interface SharedOptions {
   /** "Match theme" (the default) or one of the ten swatches. */

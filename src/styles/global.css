@@ -25,6 +25,53 @@ html[dir='rtl'] {
   --app-haze: linear-gradient(225deg, var(--app-haze-from), var(--app-haze-to));
 }
 
+/*
+ * Safe areas (phones): the notch, the rounded corners and the gesture bar. The browser gives
+ * `env(safe-area-inset-*)` once the page asks for `viewport-fit=cover` (`rawaqViewport()`). A
+ * Capacitor app also writes `--safe-area-inset-*`, because some Android web views give 0 in
+ * `env()`. The larger of the two wins. Nothing reads these at 1280 px and wider.
+ */
+html {
+  --app-safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --app-safe-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  --app-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --app-safe-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+
+  /* Room the floating bottom bar takes at the bottom of a phone page (0 without one). */
+  --app-bottom-space: 0px;
+}
+
+/*
+ * Phones (below 768 px). The header of a narrow window sits at the top with no frame margin:
+ * 64 px, or the phone bar and the safe area above it when the app gives one. Sticky parts and
+ * the focus padding measure from it, not from the desktop frame.
+ */
+html {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    --app-phone-header: rem(64px);
+    --app-sticky-top: calc(var(--app-phone-header) + rem(12px));
+    --app-table-sticky-top: var(--app-phone-header);
+
+    scroll-padding-block-end: calc(var(--app-bottom-space) + rem(16px));
+  }
+}
+
+html:has([data-phone-nav]) {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    --app-phone-header: calc(var(--app-phone-bar-height) + var(--app-safe-top));
+    --app-bottom-space: calc(
+      var(--app-bottom-bar-height) + var(--app-bottom-bar-inset) * 2 + var(--app-safe-bottom)
+    );
+  }
+}
+
+/* Tablets (768 to 1279 px): the rail stays, the frame sits closer to the window edge. */
+@media (min-width: $mantine-breakpoint-sm) and (max-width: 79.99em) {
+  html:root {
+    --app-frame-margin: var(--app-tablet-frame-margin);
+  }
+}
+
 body {
   background-color: var(--mantine-color-body);
   color: var(--mantine-color-text);
@@ -222,6 +269,35 @@ body {
 .mantine-Input-wrapper.mantine-Input-wrapper,
 .mantine-InputWrapper-root .mantine-Input-wrapper {
   --input-height-md: var(--app-control-height-md, rem(42px));
+}
+
+/*
+ * Phones: every tap target is at least 48 x 48 px (Android guidance), whatever size the app asked
+ * for. Only the size variables change, so icons and text inside stay centred. Kept after the
+ * Comfortable rules above, which would otherwise win.
+ */
+@mixin smaller-than $mantine-breakpoint-sm {
+  .mantine-Input-wrapper.mantine-Input-wrapper,
+  .mantine-InputWrapper-root .mantine-Input-wrapper {
+    --input-height-xs: var(--app-touch-target);
+    --input-height-sm: var(--app-touch-target);
+    --input-height-md: var(--app-touch-target);
+  }
+
+  .mantine-Button-root.mantine-Button-root {
+    --button-height-xs: var(--app-touch-target);
+    --button-height-sm: var(--app-touch-target);
+    --button-height-md: var(--app-touch-target);
+    --button-height-compact-xs: var(--app-touch-target);
+    --button-height-compact-sm: var(--app-touch-target);
+    --button-height-compact-md: var(--app-touch-target);
+  }
+
+  .mantine-ActionIcon-root.mantine-ActionIcon-root,
+  .mantine-CloseButton-root.mantine-CloseButton-root {
+    min-inline-size: var(--app-touch-target);
+    min-block-size: var(--app-touch-target);
+  }
 }
 
 /* Numbers in tables and totals: tabular digits, aligned to the end side (section 4.4). */

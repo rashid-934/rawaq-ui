@@ -1,0 +1,126 @@
+/*
+ * The floating bottom bar of a phone (docs/DESIGN_THEME.md, "Phone layout"): a pill in the rail
+ * colour, 12px from the window edges and above the gesture bar, 64px high, with a soft shadow.
+ * From 768px up it is not shown: the rail is the navigation.
+ */
+.bar {
+  display: none;
+
+  @mixin smaller-than $mantine-breakpoint-sm {
+    position: fixed;
+    inset-inline: calc(
+      var(--app-bottom-bar-inset) + max(var(--app-safe-left), var(--app-safe-right))
+    );
+    inset-block-end: calc(var(--app-bottom-bar-inset) + var(--app-safe-bottom));
+    z-index: 190;
+    display: block;
+    block-size: var(--app-bottom-bar-height);
+    padding-inline: rem(4px);
+    border-radius: var(--app-radius-pill);
+    background-color: var(--app-sidebar);
+    box-shadow: var(--app-shadow-lg);
+
+    /* On the dark bar the highlight ring alone reaches 3:1; the inner ring blends in. */
+    --app-focus-inner: var(--app-sidebar);
+  }
+
+  /* While the phone keyboard is open the bar steps aside, so a save bar sits on the keyboard. */
+  :global(html[data-keyboard-open]) & {
+    display: none;
+  }
+}
+
+/* The glow is measured against this box; it sits beside the list, never inside it. */
+.track {
+  position: relative;
+  block-size: 100%;
+}
+
+.list {
+  position: relative;
+  display: flex;
+  block-size: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex: 1 1 0;
+  min-inline-size: 0;
+}
+
+/* The whole slot is the tap target: about 70 x 64px on a 390px phone, never under 48 x 48. */
+.entry {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: rem(2px);
+  min-inline-size: var(--app-touch-target);
+  min-block-size: var(--app-touch-target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--app-radius-lg);
+  background: none;
+  color: var(--app-rail-icon);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &[aria-current='page'] {
+    color: var(--app-sidebar-text);
+  }
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  inline-size: rem(56px);
+  block-size: rem(32px);
+  border-radius: var(--app-radius-pill);
+
+  .entry[aria-current='page'] & {
+    color: var(--app-glow-text);
+  }
+}
+
+/* Labels are 12px at least, and wrap rather than being cut. */
+.label {
+  max-inline-size: 100%;
+  font-size: var(--app-font-size-xs);
+  font-weight: 600;
+  line-height: max(1.25, var(--app-line-height, 0));
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* The Glow pill behind the active icon. BottomBar.tsx measures the icon; the pill slides there. */
+.glow {
+  position: absolute;
+  z-index: 0;
+  border-radius: var(--app-radius-pill);
+  background-color: var(--app-glow);
+  pointer-events: none;
+  transition:
+    transform var(--app-motion-base) var(--app-ease),
+    width var(--app-motion-base) var(--app-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .entry[aria-current='page'] {
+    outline: rem(2px) solid CanvasText;
+    outline-offset: rem(-4px);
+  }
+}

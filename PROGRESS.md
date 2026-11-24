@@ -1,5 +1,32 @@
 # Progress
 
+## Status note, 24 Nov 2026, afternoon (1.2.0 part A: the review fixes are in, PR 11 ready)
+
+- **CI** on `e117ec3` (round 1 of this session): all four jobs green; `desktop pixels` gave
+  1,008 of 1,008 identical and 448 new (the phone stories).
+- **The 13 review findings** below are fixed in `3b5a811`, with tests (1,171 unit tests). One more
+  bug, found while taking the PR pictures, is fixed in `226474e`: the More sheet's hidden title kept
+  a 60 px empty header (Mantine's rule won); the phone test now checks the grab handle's place.
+- **Laptop checks after the last fix:** `yarn test`, `yarn build`, `check:dist`, `check:size`,
+  `check:starter`, the starter built from the packed package (the `file:` address never
+  committed), `yarn e2e` 21 of 21, `yarn storybook:build`, `yarn e2e:phone` 39 of 39, `yarn axe`
+  (728 checks, no violation), `yarn comfort` (no problem).
+- **styles.css:** 46.5 to 77.8 kB as shipped (not minified, with comments); minified and gzipped,
+  what a page loads, 5.2 to 7.8 kB. Nothing could be cut without dropping a part.
+  `size-budget.json` holds the 1.2.0 sizes.
+- **Phone speed** (390 x 844, CPU 4x, median of 5; `scripts/hardening/phone-speed.cjs`): `/en`
+  longest task 217 to 167 ms, LCP 944 to 1,012 ms; Work page `/en/suppliers` 216 to 225 ms,
+  1,064 to 1,076 ms; `/en/requests` (new) 184 ms, 804 ms. Tap on More to next paint: 272 ms on
+  `/en`, 168 to 184 ms on Work pages (about 130 ms is Mantine's dialog). A later idea: keep the
+  sheet drawn but hidden.
+- **PR pictures:** 56 at 390 x 844 (`SIZE=390x844 SCALE=2 DENSITIES=compact` in `shots.cjs`) on a
+  private page of the owner's Claude account, linked in PR 11.
+- **Docs:** README "On phones and tablets"; DESIGN_THEME 8.1 and the changelog have the review
+  decisions.
+- **Next:** the owner looks at the pictures and merges PR 11. Then PR B (dark mode) from `main`,
+  the 1.2.0 release, then Part 2 (Android APK). Open questions 1, 2 and 4 below still stand (3,
+  the stylesheet's growth, is answered above).
+
 ## Status note, 24 Nov 2026 (1.2.0 part A, the phone layout: in progress, draft PR 11)
 
 The owner approved on 24 Nov 2026 the plan "Rawaq UI on phones, dark mode, and an Android APK"

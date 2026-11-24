@@ -1,4 +1,8 @@
 import type { ReactNode } from 'react';
+import { IconArrowsHorizontal } from '@tabler/icons-react';
+import { labelsFor, type RawaqLabels } from '../../labels';
+import { TableOverflow } from './TableOverflow';
+import phone from './Phone.module.css';
 import classes from './WorkPage.module.css';
 
 // Work pages (docs/DESIGN_THEME.md section 4.4): every page that is not an Overview. Dense, full
@@ -69,11 +73,45 @@ export function FormGridItem({ wide = false, children }: FormGridItemProps) {
   );
 }
 
+export interface TableWrapProps {
+  /**
+   * Phones: the first column stays in place while the table scrolls sideways (mirrored in
+   * right-to-left pages), and a hint under the table says it scrolls.
+   */
+  stickyFirstColumn?: boolean;
+  /** The hint under a phone table that scrolls sideways. Default: on with `stickyFirstColumn`. */
+  hint?: boolean;
+  locale?: string;
+  labels?: Partial<Pick<RawaqLabels, 'swipeHint'>>;
+  children: ReactNode;
+}
+
 /**
  * Wraps the main table of a Work page. Give the table `{...pageTableProps}`: its header row
  * sticks under the app header. On a narrow window the table scrolls sideways on its own, and
- * its header row stays above its rows.
+ * its header row stays above its rows. On a tablet it scrolls sideways only when it is wider
+ * than the frame.
  */
-export function TableWrap({ children }: { children: ReactNode }) {
-  return <div className="table-wrap">{children}</div>;
+export function TableWrap({
+  stickyFirstColumn = false,
+  hint = stickyFirstColumn,
+  locale,
+  labels,
+  children,
+}: TableWrapProps) {
+  const words = labelsFor(locale, labels);
+  return (
+    <>
+      <div className="table-wrap" data-sticky-first={stickyFirstColumn || undefined}>
+        {children}
+        <TableOverflow />
+      </div>
+      {hint ? (
+        <p className={phone.hint} data-testid="swipe-hint">
+          <IconArrowsHorizontal size={16} stroke={1.75} aria-hidden />
+          {words.swipeHint}
+        </p>
+      ) : null}
+    </>
+  );
 }

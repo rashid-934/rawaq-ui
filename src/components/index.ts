@@ -57,10 +57,20 @@ export { NEEDS_YOU_MAX, NeedsYouList } from './Overview/NeedsYouList';
 export type { NeedsYouItem, NeedsYouListProps } from './Overview/NeedsYouList';
 export { PhoneBar } from './PhoneBar/PhoneBar';
 export type { PhoneBarProps } from './PhoneBar/PhoneBar';
+export { CardList, WorkList } from './WorkPage/CardList';
+export type { CardListProps, WorkCardItem, WorkListProps } from './WorkPage/CardList';
+export { FilterChips, SearchField, StickyActions } from './WorkPage/Controls';
+export type {
+  FilterChip,
+  FilterChipsProps,
+  SearchFieldProps,
+  StickyActionsProps,
+} from './WorkPage/Controls';
 export { FormGrid, FormGridItem, TableWrap, WorkCard, WorkPage } from './WorkPage/WorkPage';
 export type {
   FormGridItemProps,
   FormGridProps,
   WorkCardProps,
+  TableWrapProps,
   WorkPageProps,
 } from './WorkPage/WorkPage';

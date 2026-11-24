@@ -249,6 +249,39 @@ body {
 }
 
 /*
+ * Phones: a table that must stay a table (`TableWrap stickyFirstColumn`) keeps its first column
+ * in place while the rest scrolls sideways under it. Logical properties, so it mirrors in a
+ * right-to-left page. The top start cell sits above both the sticky header and the column.
+ */
+.table-wrap[data-sticky-first] {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    & :where(th, td):first-child {
+      position: sticky;
+      inset-inline-start: 0;
+      z-index: 2;
+      background-color: var(--app-surface);
+      border-inline-end: rem(1px) solid var(--app-hairline);
+    }
+
+    & thead :where(th, td):first-child {
+      z-index: 4;
+    }
+  }
+}
+
+/*
+ * Tablets: a table scrolls sideways on its own only while it is wider than the frame
+ * (`data-scrolls`, set by TableWrap); its header then stays above its rows, as on a phone.
+ */
+@media (min-width: $mantine-breakpoint-sm) and (max-width: 79.99em) {
+  .table-wrap[data-scrolls] {
+    --app-table-sticky-top: 0px;
+
+    overflow-x: auto;
+  }
+}
+
+/*
  * A control in a table row that takes the keyboard focus must not hide under the sticky table
  * header: the header row (about 36px) sits below the app header that `scroll-padding` on <html>
  * already clears, so these controls ask for that much more room (WCAG 2.4.11).

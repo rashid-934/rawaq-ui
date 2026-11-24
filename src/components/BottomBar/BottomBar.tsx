@@ -1,6 +1,13 @@
 'use client';
 
-import { type ElementType, type Ref, useCallback, useLayoutEffect, useState } from 'react';
+import {
+  type ElementType,
+  type Ref,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from 'react';
 import { IconDots } from '@tabler/icons-react';
 import { labelsFor, type RawaqLabels } from '../../labels';
 import { type IconComponent, isRailItemActive, type RailItem } from '../Rail/rail-items';
@@ -121,6 +128,30 @@ export function BottomBar({
   useLayoutEffect(() => {
     measure();
   }, [measure, pathname, moreActive, items]);
+
+  // On a touch screen a focused text field means the keyboard is open: the bar steps aside and
+  // a save bar sits right above the keyboard (`html[data-keyboard-open]`, the stylesheets).
+  useEffect(() => {
+    const touch = window.matchMedia?.('(pointer: coarse)');
+    const root = document.documentElement;
+    const update = () => {
+      const field = document.activeElement;
+      const typing =
+        field instanceof HTMLElement &&
+        (field.isContentEditable ||
+          field.matches(
+            'textarea, select, input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"], [type="range"], [type="color"], [type="file"])'
+          ));
+      root.toggleAttribute('data-keyboard-open', Boolean(touch?.matches) && typing);
+    };
+    document.addEventListener('focusin', update);
+    document.addEventListener('focusout', update);
+    return () => {
+      document.removeEventListener('focusin', update);
+      document.removeEventListener('focusout', update);
+      root.removeAttribute('data-keyboard-open');
+    };
+  }, []);
 
   useLayoutEffect(() => {
     if (!list || typeof ResizeObserver === 'undefined') {

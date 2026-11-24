@@ -13,6 +13,16 @@
   }
 }
 
+/*
+ * Phones with a phone bar (Frame `phoneHeader`): the bar holds the page title and the main
+ * action, so they are not drawn twice here. The count and the description stay.
+ */
+@mixin smaller-than $mantine-breakpoint-sm {
+  :global(html:has([data-phone-header])) :is(.title, .actions) {
+    display: none;
+  }
+}
+
 .title {
   flex: none;
   max-inline-size: 60%;

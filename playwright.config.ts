@@ -29,6 +29,27 @@ const browsers: Record<string, Project> = {
   webkit: { name: 'webkit', use: { ...devices['Desktop Safari'] } },
 };
 
+// Phones (docs/DESIGN_THEME.md, "Phone layout"): Chrome on Android, with touch, at the three sizes
+// the layout is checked at. They run the tests in e2e/phone only: `yarn e2e:phone`.
+const phone = (width: number, height: number): Project => ({
+  name: `phone-${width}`,
+  testMatch: /phone\/.*\.spec\.ts/,
+  use: {
+    ...devices['Pixel 7'],
+    viewport: { width, height },
+    channel: ci ? undefined : 'chrome',
+    launchOptions: { args: ['--disable-partial-raster'] },
+  },
+});
+const phones: Record<string, Project> = {
+  'phone-360': phone(360, 800),
+  'phone-390': phone(390, 844),
+  'phone-430': phone(430, 932),
+};
+for (const project of Object.values(browsers)) {
+  project.testIgnore = /phone\//;
+}
+
 // The perf tests (tagged @perf) measure frames: `yarn e2e:perf` runs them alone, one at a time,
 // with nothing else next to them. `yarn e2e` runs everything else.
 const perf = process.env.E2E_PERF === '1';
@@ -58,9 +79,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: wanted.map((name) => {
-    const project = browsers[name];
+    const project = browsers[name] ?? phones[name];
     if (!project) {
-      throw new Error(`Unknown browser "${name}" in E2E_BROWSERS (chromium, firefox, webkit).`);
+      throw new Error(
+        `Unknown browser "${name}" in E2E_BROWSERS (chromium, firefox, webkit, phone-360, phone-390, phone-430).`
+      );
     }
     return project;
   }),

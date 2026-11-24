@@ -17,6 +17,15 @@ export function TableOverflow() {
     const check = () => {
       const table = wrap.querySelector('table');
       wrap.toggleAttribute('data-scrolls', !!table && table.scrollWidth > wrap.clientWidth + 1);
+      // A box that really scrolls sideways (a phone, or a tablet with a wide table) takes the
+      // keyboard focus, so the arrow keys can scroll it too (WCAG 2.1.1).
+      const scrolls =
+        getComputedStyle(wrap).overflowX === 'auto' && wrap.scrollWidth > wrap.clientWidth + 1;
+      if (scrolls) {
+        wrap.tabIndex = 0;
+      } else {
+        wrap.removeAttribute('tabindex');
+      }
     };
     const observer = new ResizeObserver(check);
     observer.observe(wrap);

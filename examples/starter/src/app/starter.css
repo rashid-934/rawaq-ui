@@ -71,3 +71,10 @@
   border-radius: inherit;
   background-color: var(--app-accent);
 }
+
+/* Phones: the hero's link is a 48px tap target. */
+@media (max-width: 47.99em) {
+  .starter-hero-action {
+    min-block-size: var(--app-touch-target);
+  }
+}

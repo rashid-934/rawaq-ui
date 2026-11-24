@@ -128,6 +128,7 @@ p.company {
 
 /* Each choice is a 48px tap target. */
 .segments :global(.mantine-SegmentedControl-label) {
+  min-inline-size: var(--app-touch-target);
   min-block-size: var(--app-touch-target);
   display: grid;
   place-items: center;

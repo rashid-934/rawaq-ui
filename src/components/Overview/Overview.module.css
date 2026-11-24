@@ -220,6 +220,17 @@
   font-size: rem(30px);
   font-weight: 700;
   line-height: max(1.1, var(--app-line-height, 0));
+
+  /* Phones: two cards per row on a 360px screen; the number scales with the screen. */
+  @mixin smaller-than $mantine-breakpoint-sm {
+    font-size: clamp(rem(22px), 7vw, rem(30px));
+  }
+}
+
+.stat {
+  @mixin smaller-than $mantine-breakpoint-sm {
+    min-inline-size: 0;
+  }
 }
 
 /* Money: the currency beside the number, smaller, on the side the language puts it. */

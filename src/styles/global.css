@@ -327,7 +327,16 @@ body {
   }
 
   .mantine-ActionIcon-root.mantine-ActionIcon-root,
-  .mantine-CloseButton-root.mantine-CloseButton-root {
+  .mantine-CloseButton-root.mantine-CloseButton-root,
+  .mantine-Burger-root.mantine-Burger-root {
+    min-inline-size: var(--app-touch-target);
+    min-block-size: var(--app-touch-target);
+  }
+
+  /* A link in a table cell (a name that opens the row) is a 48px tall tap target too. */
+  .mantine-Table-td a[href] {
+    display: inline-flex;
+    align-items: center;
     min-inline-size: var(--app-touch-target);
     min-block-size: var(--app-touch-target);
   }

@@ -59,6 +59,16 @@ test('More opens the sheet; Back closes it and stays; a tile opens its page', as
   await page.getByTestId('bar-more').click();
   const sheet = page.getByRole('dialog', { name: 'المزيد' });
   await expect(sheet).toBeVisible();
+  // The hidden title takes no room: the grab handle is the first thing at the top of the sheet.
+  const gap = await page.evaluate(() => {
+    const handle = document.querySelector('[data-testid="sheet-handle"]');
+    const content = handle?.closest('section');
+    return handle && content
+      ? handle.getBoundingClientRect().top - content.getBoundingClientRect().top
+      : null;
+  });
+  expect(gap).not.toBeNull();
+  expect(gap!).toBeLessThanOrEqual(8);
   expect(await smallTargets(page)).toEqual([]);
   expect(await axeFindings(page)).toEqual([]);
   await page.goBack();

@@ -36,6 +36,48 @@ production deployment is READY with no runtime error.
   `a11y-architect`, `security-reviewer`) with their fixes; read CI of PR 11 (new jobs: phone tests,
   desktop pixels) and loop until green; then mark the PR ready and report to the owner.
 - Then PR B (dark mode, from `main` after A is merged), the 1.2.0 release, PR C (Android APK).
+- CI round 1 (on `f3cfe9d`): WebKit logged `interactive-widget` as a console error on every starter
+  page; fixed in `c3d9236` (the key is gone, the save bar follows `--app-keyboard-inset`). CI on
+  `c3d9236` was still running at the end of the session: read it first (`gh pr checks 11`), also
+  the first result of the new jobs `desktop pixels` and the phone step.
+
+**The four reviews of 24 Nov 2026 (subagents, read-only), to fix next, most important first**
+
+1. BottomSheet history (code + React reviewers, HIGH): one step, one `back()`. Use a `leaving` ref
+   and an `expectedPops` counter, so the cleanup never calls `back()` twice (two backs leave the
+   page), a late popstate never closes a reopened sheet (StrictMode, fast close and reopen), and
+   the cleanup does not undo an app navigation (only `back()` while the sheet's entry is still the
+   current one). Push a minimal state? Check with the Next.js router first (it worked in the
+   browser with the spread state). `followLink`: let `target`, `download` and Alt-clicks through,
+   and add a fallback timer.
+2. Grab handle (code + React + a11y): a click follows a drag; ignore the click after a move of
+   8 px or more; `pointercancel` only resets.
+3. Two `h1` on the phone Overview (React): PhoneBar `titleOrder={2}` on Overview pages, or the
+   hero's title steps down; decide and document.
+4. NeedsYou link name runs together (a11y HIGH): a real separator for screen readers and "Do next"
+   said first.
+5. Focus hidden (a11y, 2.4.11): `scroll-padding-inline-start` for the sticky first column, and the
+   bottom focus clearance on phones must include the save bar.
+6. More button: drop `aria-current` (keep the glow), and drop `aria-controls` while the sheet is
+   unmounted (a11y + React).
+7. Selected state by colour only (a11y 1.4.1/forced colours): tiles, chips, company row, "Do next".
+8. Lists: `role="list"` on the `ul`s with `list-style: none` (Safari).
+9. Language switch changes the address on the first arrow key (a11y 3.2.2): buttons or links
+   instead of a segmented radio.
+10. BottomBar: Glow only after hydration (CSS highlight on `[data-bar-active]` first), measure while
+    hidden gives a 0 box (skip when width 0), re-measure keyed on item keys, keyboard effect only
+    on phones, run once at mount, ignore pinch zoom (`visualViewport.scale`).
+11. TableOverflow: watch a table that arrives later and font loads, batch reads then writes, a
+    name for the focusable scroller (`role="region"`, label), hint only when it overflows.
+12. `onCloseRef` written during render; `StickyActions` out of the `'use client'` file; cache the
+    `Intl.NumberFormat` of `currencySign`; references and amounts isolated in RTL (`bdi`).
+13. Security (nothing critical or high): scan the e2e result folders before the CI upload (traces
+    are public files), `persist-credentials: false` on the checkouts.
+- Reviewer notes that were wrong and need no fix: the CSP of the starter is not new (it is on
+  `main`); the password ring and the rail glow `transform` are 1.1.x code already on `main` (the
+  reviewer compared with a stale local `main`); the desktop pictures prove no desktop change.
+- Also noticed: one reviewer tried `git checkout` of the branch; the permission prompt refused it,
+  nothing changed.
 
 **Open questions for the owner**
 
